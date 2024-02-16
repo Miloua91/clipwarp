@@ -2,7 +2,8 @@
 
 ## Getting Started
 
-bash```
+
+```
 git clone https://github.com/Miloua91/clipwarp.git
 cd clipwarp
 pip install requirements.txt

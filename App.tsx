@@ -1,11 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Alert, View, TextInput, ScrollView } from 'react-native';
+import { StyleSheet, Alert, View, Text, TextInput, ScrollView, Modal } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as SQLite from 'expo-sqlite';
 import { ThemedButton } from 'react-native-really-awesome-button';
 import AwesomeButton from "react-native-really-awesome-button";
 import { Octicons } from '@expo/vector-icons';
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 type Clip = {
   id: number | undefined;
@@ -14,19 +14,21 @@ type Clip = {
 
 
 export default function App() {
-  const [db, setDb] = useState(SQLite.openDatabase('example.db')); // SQLite database to save clipboard
+  const [db, setDb] = useState(SQLite.openDatabase('clip.db')); // SQLite database to save clipboard
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
+  const [setting, setSetting] = useState<boolean>(false);
 
-  
+  const websocket = React.useRef(new WebSocket('ws://192.168.1.9:5678/')).current;
   
 useEffect(() => {
-  const websocket = new WebSocket("ws://192.168.1.9:5678/");
 
+    /*
   websocket.onerror = (error: Event) => {
    const webSocketError = error as WebSocketErrorEvent;
    Alert.alert('WebSocket Error', webSocketError.message);
   };
+  */
 
   // Send data when `db` changes
   websocket.onopen = () => {
@@ -53,7 +55,7 @@ useEffect(() => {
 }, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect
 
 // Reset Database
-/* 
+///* 
   const resetDatabase = () => {
   db.transaction(tx => {
     // Drop the clips table if it exists
@@ -61,11 +63,9 @@ useEffect(() => {
       () => {
         console.log('Table dropped successfully');
       },
-      (txObj, error) => {
-        console.log('Error dropping table:', error);
-      }
     );
   });
+
 
   // Recreate the clips table
   db.transaction(tx => {
@@ -74,16 +74,13 @@ useEffect(() => {
       () => {
         console.log('Table created successfully');
       },
-      (txObj, error) => {
-        console.log('Error creating table:', error);
-      }
-    );
+      );
   });
 
   // Update the val state to reflect the empty database
   setVal([]);
 };
-*/
+//*/
 
 
   useEffect(() => {
@@ -149,19 +146,34 @@ useEffect(() => {
     });
   };
 
+  const settingModal = () => {
+    if (setting === true)
+    return(
+    <Modal>
+      <Text className='h-48 flex m-auto justify-center items-center'>Hello</Text>
+      <AwesomeButton className='h-48 flex m-auto justify-center items-center' onPress={() => setSetting(false)}>Close</AwesomeButton>
+    </Modal>
+    );
+  };
+
+
   return (
+    <>
     <ScrollView className='flex justfiy-center mt-20'>
     <View style={styles.container}>
       <TextInput className='w-[90%] text-center text-[16px]' multiline value={currentVal} placeholder='ClipWarp' onChangeText={setCurrentVal} />
     <View className='flex flex-col gap-4 my-4 justify-center'>
         <ThemedButton name="bruce" type="primary" onPress={addClip}>Send</ThemedButton>
         <ThemedButton name="bruce" type="secondary" onPress={fetchCopiedText}>Paste</ThemedButton>
-        {/*<ThemedButton name="bruce" type="danger" onPress={resetDatabase} >Reset</ThemedButton>*/} 
+        {<ThemedButton name="bruce" type="danger" onPress={resetDatabase} >Reset</ThemedButton>} 
     </View>
       {showClips()}
+      <AwesomeButton onPress={() => setSetting(true)}>Setting</AwesomeButton>
+      {settingModal()}
       <StatusBar style="auto" />
     </View>
     </ScrollView>
+    </>
   );
 }
 
@@ -178,5 +190,9 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     justifyContent: 'space-between',
     margin: 8
-  }
+  },
+    contentContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
 });

@@ -32,7 +32,7 @@ async def register(websocket):
 
 
 async def main():
-    async with websockets.serve(register, "localhost", 5678):
+    async with websockets.serve(register, get_ip_address(), 5678):
         print(f"server listening on {get_ip_address()}")
         await asyncio.Future()
 

@@ -3,103 +3,72 @@ from tkinter import ttk
 import pyperclip
 import customtkinter
 import asyncio
+import socket
 import websockets
 from websockets.sync.client import connect
-import threading
+import json
+from threading import Thread
 import json
 
-class WebSocketThread (threading.Thread):
-    '''WebSocketThread will make websocket run in an a new thread'''
-    
-    # overide self init
-    def __init__(self,name):
-        threading.Thread.__init__(self)
-        self.name=name
-        self.USERS = set()
-        print("Start thread", self.name)
 
-    # overide run method
-    def run(self):
-        # must set a new loop for asyncio
-        asyncio.set_event_loop(asyncio.new_event_loop())
-        # setup a server
-        asyncio.get_event_loop().run_until_complete(websockets.serve(self.listen, '192.168.1.9', 5678))
-        # keep thread running
-        asyncio.get_event_loop().run_forever()
+def get_ip_address():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
+    return ip
 
-    # listener    
-    async def listen(self, websocket, path):
-        '''listenner is called each time new client is connected
-        websockets already ensures that a new thread is run for each client'''
+CONNECTIONS = {}
 
-        print("listen: ", websocket)
-        
-        # register new client #
-        self.USERS.add(websocket)
-        await self.notify_users()
+async def register(websocket):
+    name = f'Client_{len(CONNECTIONS) + 1}'
+    CONNECTIONS[name] = websocket
+    print(f"{name} connected")
+    try:
+        async for message in websocket:
+            for conn_name, conn in CONNECTIONS.items():
+                if conn != websocket:
+                    await conn.send(message)
+                else:
+                    print(f"Message received from {conn_name}: {message}")
+        await websocket.wait_closed()
 
-        # this loop to get massage from client #
-        while True:
-            try:
-                msg = await websocket.recv()
-                if msg is None:
-                    break
-                await self.handle_message(websocket, msg)
-
-            except websockets.exceptions.ConnectionClosed:
-                print("close: ", websocket)
-                break
-
-        self.USERS.remove(websocket)
-        await self.notify_users()
-    
-    # message handler        
-    async def handle_message(self, client, data):
-        print("handle_message: ", client, data)
-
-    
-    # example of an action
-    # action: notify
-    async def notify_users(self):
-        '''notify the number of current connected clients'''
-        if self.USERS: # asyncio.wait doesn't accept an empty list
-            message = json.dumps({'type': 'users', 'count': len(self.USERS)})
-            tasks = [asyncio.create_task(user.send(message)) for user in self.USERS]
-            await asyncio.wait(tasks)
-
-    # action: action
-    async def action(self):
-        '''this is an action which will be executed when user presses on button'''
-        if self.USERS: # asyncio.wait doesn't accept an empty list
-            message = json.dumps({'type': 'activation', 'count':'true'})
-            await asyncio.wait([user.send(message) for user in self.USERS])
-
-    # expose action
-    def do_activate(self):
-        '''this method is exposed to outside, not an async coroutine'''
-        # use asyncio to run action
-        # must call self.action(), not use self.action, because it must be a async coroutine
-        asyncio.set_event_loop().run_until_complete(self.action())
+    finally:
+        del CONNECTIONS[name]
+        print(f"{name} disconnected")
 
 
-# start WebSocketThread #
-threadWebSocket=WebSocketThread("websocket_server")
-threadWebSocket.start()
+async def start_server():
+    async with websockets.serve(register, get_ip_address(), 5678):
+        print(f"server listening on {get_ip_address()}")
+        await asyncio.Future()
 
-# helper function for window
-def clicked():
-    threadWebSocket.do_activate()
-    lbl.configure(text="Button was clicked !!")
-    
+def run_server():
+    asyncio.run(start_server())
+
+# Create a new thread for the asyncio event loop
+thread = Thread(target=run_server)
+thread.start()
+
+uri = "ws://192.168.1.9:5678"  # Change this to the WebSocket server URI
+
+async def send_message(message):
+    async with websockets.connect(uri) as websocket:
+        await websocket.send(message)
+        print(f"Sent: {message}")
+
 
 root = tk.Tk()
 root.title("ClipWarp")
-root.geometry("270x300")
+root.geometry("+{}+{}".format(root.winfo_screenwidth() - 360, root.winfo_screenheight() - 400))
 root.resizable(False, False)
+root.overrideredirect(True)  # Remove window decorations
+
 
 app = customtkinter.CTk()
-app.geometry("270x300")
+app.geometry("+{}+{}".format(app.winfo_screenwidth() - 360, app.winfo_screenheight() - 400))
 app.resizable(False, False)
+app.overrideredirect(True)  # Remove window decorations
 
 
 # Create a frame to hold the text area
@@ -111,7 +80,7 @@ style = ttk.Style()
 style.configure("RoundedFrame.TFrame", borderwidth=2, relief="raised", border="2", borderradius=10)
 
 # Create the text area
-msgEntry = customtkinter.CTkEntry(master=frame, width=250, height=50, corner_radius=5, placeholder_text="put message to dissect here", justify="left")
+msgEntry = customtkinter.CTkEntry(master=frame, width=260, height=50, corner_radius=5, placeholder_text="ClipWarp", justify="left")
 msgEntry.pack(pady=2, padx=2)
 
 # Create a frame to hold the buttons
@@ -129,6 +98,8 @@ def on_paste_release(event):
 
 def on_send_press(event):
     label_send.config(image=send_flat)
+    message = msgEntry.get()
+    asyncio.run(send_message(message))  # Call a new coroutine to send the message
 
 def on_send_release(event):
     label_send.config(image=send)
@@ -159,11 +130,11 @@ label_send.bind("<ButtonRelease-1>", on_send_release)
 
 # Create a frame to hold the scrollable section
 scrollable_frame = ttk.Frame(root)
-scrollable_frame.pack(fill="both", expand=True)
+scrollable_frame.pack(fill="both", expand=False)
 
 # Create a canvas widget inside the scrollable frame
 canvas = tk.Canvas(scrollable_frame)
-canvas.pack(side=tk.LEFT, fill="both", expand=True)
+canvas.pack(side=tk.LEFT, fill="both", expand=False)
 
 # Create a frame inside the canvas to contain the scrollable content
 scrollable_content = ttk.Frame(canvas)
@@ -185,7 +156,7 @@ canvas.configure(yscrollcommand=scrollbar.set)
 
 # Function to resize the canvas when the window is resized
 def resize_canvas(event):
-    canvas.configure(width=event.width, height=event.height)
+    canvas.configure(width=240, height=200)
 
 # Function to scroll with mouse and keys
 def on_mouse_wheel(event):
@@ -193,9 +164,9 @@ def on_mouse_wheel(event):
 
 
 def on_key_scroll(event):
-    if event.keysym == "Down" or event.char == "j":
+    if event.keysym == "Down":
         canvas.yview_scroll(1, "units")
-    elif event.keysym == "Up" or event.char == "k":
+    elif event.keysym == "Up":
         canvas.yview_scroll(-1, "units")
 
 # Bind arrow keys and "j" and "k" keys globally for scrolling
@@ -207,20 +178,73 @@ root.bind_all("<KeyPress-k>", on_key_scroll)
 # Bind the mouse wheel event to the canvas
 canvas.bind("<MouseWheel>", on_mouse_wheel)
 
+class Toast(tk.Toplevel):
+    def __init__(self, parent, text):
+        super().__init__(parent)
+        self.overrideredirect(True)  # Remove window decorations
+        self.geometry("+{}+{}".format(parent.winfo_screenwidth() - 200, parent.winfo_screenheight() - 100))
+        self.configure(bg='black')
+        self.label = tk.Label(self, text=text, fg='white', bg='black', padx=10, pady=5)
+        self.label.pack()
+        self.after(3000, self.destroy)  # Auto-close after 3 seconds
+
+def show_toast(parent, text):
+    toast = Toast(parent, text)
+    
+
+# Set to store IDs of clips already added
+added_clip_ids = set()
+
+def add_message_to_scrollable_content(message):
+    try:
+        # Parse the JSON message
+        data = json.loads(message)
+
+        # Extract names and IDs and add them to the scrollable content
+        for clip in data:
+            clip_id = clip['id']
+            name = clip['clip']
+
+            # Check if the ID already exists in the set of added IDs
+            if clip_id not in added_clip_ids:
+                label_text = f"{clip_id}: {name}"
+
+                # Create label
+                label = tk.Label(scrollable_content, text=label_text, wraplength=250)
+                label.pack(anchor="w")  # Align the label to the left side
+
+                # Bind a copy function to the label
+                def copy_label_text(event):
+                    root.clipboard_clear()
+                    root.clipboard_append(name)
+                    show_toast(root, "Text copied to clipboard.")
+
+                label.bind("<Button-1>", copy_label_text)  # Bind left-click event to copy_label_text function
+
+                # Add ID to the set of added IDs
+                added_clip_ids.add(clip_id)
+
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+
 # Bind the resize_canvas function to the root window's resize event
 root.bind("<Configure>", resize_canvas)
 
-# Example content for the scrollable area
-for i in range(20):
-    label = tk.Label(scrollable_content, text=f"Label {i}")
-    label.pack()
+async def receive_messages():
+    async with websockets.connect(uri) as websocket:
+        while True:
+            message = await websocket.recv()
+            print(f"Received message: {message}")
+            add_message_to_scrollable_content(message)
 
-textbox = customtkinter.CTkTextbox(app)
 
-textbox.insert("0.0", "new text to insert")  # insert at line 0 character 0
-text = textbox.get("0.0", "end")  # get text from line 0 character 0 till the end
-textbox.delete("0.0", "end")  # delete all text
-textbox.configure(state="disabled")  # configure textbox to be read-only
+def start_msg():
+    asyncio.run(receive_messages())
+
+# Create a new thread for the asyncio event loop
+thread = Thread(target=start_msg)
+thread.start()
+
 
 root.mainloop()
 app.mainloop()

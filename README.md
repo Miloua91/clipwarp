@@ -5,8 +5,8 @@
 
 ```
 git clone https://github.com/Miloua91/clipwarp.git
-cd clipwarp
+cd clipwarp/PC-side
 pip install -r requirements.txt
-python server.py
+python main.py
 ```
-then open two index.html tabs.
+then open index.html tab to test it.

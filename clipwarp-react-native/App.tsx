@@ -18,21 +18,25 @@ export default function App() {
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
   const [setting, setSetting] = useState<boolean>(false);
-
-  const websocket = React.useRef(new WebSocket('ws://192.168.1.9:5678/')).current;
   
-useEffect(() => {
 
-    /*
+useEffect(() => {
+  const websocket = new WebSocket("ws://192.168.1.9:5678/");
+
   websocket.onerror = (error: Event) => {
    const webSocketError = error as WebSocketErrorEvent;
-   Alert.alert('WebSocket Error', webSocketError.message);
+   Alert.alert('WebSocket Status', webSocketError.message, [
+      {
+        text: 'Reset connection',
+        onPress: () => console.log('Connection reset'),
+      },
+      ]);
+
   };
-  */
 
   // Send data when `db` changes
   websocket.onopen = () => {
-    websocket.send(JSON.stringify(val.map((clip) => clip.clip)));
+    websocket.send(JSON.stringify(val));
   };
 
   // Listen for messages
@@ -52,9 +56,7 @@ useEffect(() => {
   return () => {
     websocket.close();
   };
-}, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect
-
-// Reset Database
+}, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
 ///* 
   const resetDatabase = () => {
   db.transaction(tx => {
@@ -151,7 +153,7 @@ useEffect(() => {
     return(
     <Modal>
       <Text className='h-48 flex m-auto justify-center items-center'>Hello</Text>
-      <AwesomeButton className='h-48 flex m-auto justify-center items-center' onPress={() => setSetting(false)}>Close</AwesomeButton>
+      <AwesomeButton  onPress={() => setSetting(false)}>Close</AwesomeButton>
     </Modal>
     );
   };

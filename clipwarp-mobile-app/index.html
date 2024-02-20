@@ -23,7 +23,7 @@
       const messageInput = document.getElementById("messageInput");
       const sendButton = document.getElementById("sendButton");
 
-      const websocket = new WebSocket("ws://192.168.1.9:5678/");
+      const websocket = new WebSocket("ws://localhost:5678/");
       websocket.onmessage = ({ data }) => {
         try {
           // Parse the incoming JSON data

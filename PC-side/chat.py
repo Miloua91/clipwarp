@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import  QWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QIcon
 import socket
 from widget_ui import Ui_Widget
 
@@ -10,7 +11,8 @@ class Chat(QWidget):
         super().__init__()
         self.ui = Ui_Widget()
         self.ui.setupUi(self)
-
+        icon = QIcon("./assets/clipwarp.png")
+        self.setWindowIcon(icon)
         self.ui.ip_label.setText(f'ip address: {self.get_ip_address()}')
         self.ui.sendButton.clicked.connect(self.on_button_click)
         self.ui.copyButton.clicked.connect(self.copy_text)

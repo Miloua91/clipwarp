@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_Widget(object):
     def setupUi(self, Form):
-        Form.setObjectName("Form")
+        Form.setObjectName("CLipWarp")
         Form.resize(738, 728)
         self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")

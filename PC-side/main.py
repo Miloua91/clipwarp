@@ -43,6 +43,7 @@ class MyWindow(QObject):
     def tray_function(self):
         self.icon_thread = QThread()
         self.tray = Tray()
+        self.tray.exit_signal.connect(lambda: app.quit())
         self.tray.icon_clicked.connect(self.show_chat)
         self.tray.moveToThread(self.icon_thread)
         self.icon_thread.started.connect(self.tray.run)
@@ -59,6 +60,7 @@ class MyWindow(QObject):
     def show_chat(self):
         self.Chat.show()
 
+        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

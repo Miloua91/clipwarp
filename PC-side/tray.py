@@ -8,6 +8,7 @@ from PIL import Image, ImageDraw
 
 class Tray(QObject):
     icon_clicked = pyqtSignal()
+    exit_signal = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -22,4 +23,4 @@ class Tray(QObject):
     def exit_icon(self):
         self.icon.visible=False
         self.icon.stop()
-        os._exit(1)
+        self.exit_signal.emit()

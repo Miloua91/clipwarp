@@ -1,19 +1,17 @@
 import os 
 import tkinter as tk
 from tkinter import ttk
-import pyperclip
 import customtkinter
+import pyperclip
 import asyncio
 import socket
 import websockets
 from websockets.sync.client import connect
-import json
 from threading import Thread
-import json
 import pystray
-import tkinter as tk
 from pystray import MenuItem as item
 from PIL import Image
+import json
 
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -68,9 +66,10 @@ root.title("ClipWarp")
 root.geometry("+{}+{}".format(root.winfo_screenwidth() - 360, root.winfo_screenheight() - 400))
 root.resizable(False, False)
 root.overrideredirect(True)  # Remove window decorations
+root.attributes("-topmost", True)
 
 app = customtkinter.CTk()
-app.geometry("+{}+{}".format(app.winfo_screenwidth() - 360, app.winfo_screenheight() - 400))
+app.geometry("+{}+{}".format(app.winfo_screenwidth() - 330, app.winfo_screenheight() - 400))
 app.resizable(False, False)
 app.overrideredirect(True)  # Remove window decorations
 
@@ -83,7 +82,7 @@ style = ttk.Style()
 style.configure("RoundedFrame.TFrame", borderwidth=2, relief="raised", border="2", borderradius=10)
 
 # Create the text area
-msgEntry = customtkinter.CTkEntry(master=frame, width=260, height=50, corner_radius=5, placeholder_text="ClipWarp", justify="left")
+msgEntry = customtkinter.CTkEntry(master=frame, width=240, height=50, corner_radius=5, placeholder_text="ClipWarp", justify="left")
 msgEntry.pack(pady=2, padx=2)
 
 # Create a frame to hold the buttons
@@ -102,9 +101,7 @@ def on_paste_release(event):
 def on_send_press(event):
     label_send.config(image=send_flat)
     message = msgEntry.get()
-    thread = Thread(target=asyncio.run(send_message(message)))
-    thread.start()
-
+    asyncio.run(send_message(message))
 
 def on_send_release(event):
     label_send.config(image=send)
@@ -159,11 +156,12 @@ canvas.configure(yscrollcommand=scrollbar.set)
 
 # Function to resize the canvas when the window is resized
 def resize_canvas(event):
-    canvas.configure(width=240, height=200)
+    canvas.configure(width=220, height=200)
 
 # Function to scroll with mouse and keys
 def on_mouse_wheel(event):
     canvas.yview_scroll(-1 * (event.delta // 120), "units")
+
 
 def on_key_scroll(event):
     if event.keysym == "Down":
@@ -178,11 +176,15 @@ root.bind_all("<Up>", on_key_scroll)
 # Bind the mouse wheel event to the canvas
 canvas.bind("<MouseWheel>", on_mouse_wheel)
 
+# Bind the resize_canvas function to the root window's resize event
+root.bind("<Configure>", resize_canvas)
+
 class Toast(tk.Toplevel):
     def __init__(self, parent, text):
         super().__init__(parent)
         self.overrideredirect(True)  # Remove window decorations
-        self.geometry("+{}+{}".format(parent.winfo_screenwidth() - 230, parent.winfo_screenheight() - 80))
+        self.geometry("+{}+{}".format(parent.winfo_screenwidth() - 250, parent.winfo_screenheight() - 80))
+        self.attributes("-topmost", True)
         self.configure(bg='black')
         self.label = tk.Label(self, text=text, fg='white', bg='black', padx=10, pady=5)
         self.label.pack()
@@ -191,6 +193,7 @@ class Toast(tk.Toplevel):
 def show_toast(parent, text):
     toast = Toast(parent, text)
     
+
 # Set to store IDs of clips already added
 added_clip_ids = set()
 
@@ -199,10 +202,20 @@ def add_message_to_scrollable_content(message):
         # Parse the JSON message
         data = json.loads(message)
 
-       # Extract names and IDs and add them to the scrollable content
-        for clip in data:
+        # Check if the database is empty
+        if not data:
+            # Database is empty, so clear the added_clip_ids set
+            added_clip_ids.clear()
+            for widget in scrollable_content.winfo_children():
+                widget.destroy()
+            canvas.update_idletasks()  # Ensure all pending idle tasks are completed
+            canvas.config(scrollregion=canvas.bbox("all"))
+
+        # Extract names and IDs and add them to the scrollable content
+        for clip in data:  # Iterate in reverse order            clip_id = clip['id']
             clip_id = clip['id']
             name = clip['clip']
+
 
             # Check if the ID already exists in the set of added IDs
             if clip_id not in added_clip_ids:
@@ -222,14 +235,16 @@ def add_message_to_scrollable_content(message):
 
                 # Add ID to the set of added IDs
                 added_clip_ids.add(clip_id)
+                print(added_clip_ids)
+
+
+
+        canvas.update_idletasks()  # Ensure all pending idle tasks are completed
+        canvas.config(scrollregion=canvas.bbox("all"))
 
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
-
-# Bind the resize_canvas function to the root window's resize event
-root.bind("<Configure>", resize_canvas)
-
 async def receive_messages():
     async with websockets.connect(uri) as websocket:
         while True:
@@ -244,9 +259,7 @@ def start_msg():
 thread = Thread(target=start_msg)
 thread.start()
 
-###########################################
 # Function to be called when the tray icon is clicked
-
 def on_quit(icon, item):
     icon.stop()
     os._exit(0)

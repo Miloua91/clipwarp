@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Alert, View, Text, TextInput, ScrollView, Modal } from 'react-native';
+import { StyleSheet, Alert, View, Text, TextInput, ScrollView, Modal, ToastAndroid } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as SQLite from 'expo-sqlite';
 import { ThemedButton } from 'react-native-really-awesome-button';
@@ -20,43 +20,45 @@ export default function App() {
   const [setting, setSetting] = useState<boolean>(false);
   
 
-useEffect(() => {
-  const websocket = new WebSocket("ws://192.168.1.9:5678/");
 
-  websocket.onerror = (error: Event) => {
-   const webSocketError = error as WebSocketErrorEvent;
-   Alert.alert('WebSocket Status', webSocketError.message, [
-      {
-        text: 'Reset connection',
-        onPress: () => console.log('Connection reset'),
-      },
-      ]);
+  useEffect(() => {
+    const websocket = new WebSocket("ws://192.168.1.9:5678/");
 
-  };
-
-  // Send data when `db` changes
-  websocket.onopen = () => {
-    websocket.send(JSON.stringify(val));
-  };
-
-  // Listen for messages
-  websocket.onmessage = ({ data }) => {
-  db.transaction(tx => {
-      tx.executeSql('INSERT INTO clips (clip) values (?)', [data],
-        (txObj, resultSet) => {
-          let existingClips = [...val];
-          existingClips.push({ id: resultSet.insertId, clip: data});
-          setVal(existingClips);
-          setCurrentVal(undefined);
+    websocket.onerror = (error: Event) => {
+     const webSocketError = error as WebSocketErrorEvent;
+     Alert.alert('WebSocket Status', webSocketError.message, [
+        {
+          text: 'OK',
+          onPress: () => console.log('Clicked'),
         },
-      );
-    });
+        ]);
+
     };
-  // Close the WebSocket connection when component unmounts
-  return () => {
-    websocket.close();
-  };
-}, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
+
+    // Send data when `db` changes
+    websocket.onopen = () => {
+      websocket.send(JSON.stringify(val));
+    };
+
+    // Listen for messages
+    websocket.onmessage = ({ data }) => {
+      db.transaction(tx => {
+          tx.executeSql('INSERT INTO clips (clip) values (?)', [data],
+            (txObj, resultSet) => {
+              let existingClips = [...val];
+              existingClips.push({ id: resultSet.insertId, clip: data});
+              setVal(existingClips);
+              setCurrentVal(undefined);
+            },
+          );
+        });
+      };
+    // Close the WebSocket connection when component unmounts
+    return () => {
+      websocket.close();
+    };
+  }, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
+
 ///* 
   const resetDatabase = () => {
   db.transaction(tx => {
@@ -106,8 +108,7 @@ useEffect(() => {
 
   const addClip = () => {
    if (currentVal === undefined) {
-    console.error('currentVal is undefined');
-    return;
+    return ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
    }
     db.transaction(tx => {
       tx.executeSql('INSERT INTO clips (clip) values (?)', [currentVal],

@@ -6,6 +6,7 @@ import { ThemedButton } from 'react-native-really-awesome-button';
 import AwesomeButton from "react-native-really-awesome-button";
 import { Octicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
+import websocket from './ws';
 
 type Clip = {
   id: number | undefined;
@@ -18,11 +19,19 @@ export default function App() {
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
   const [setting, setSetting] = useState<boolean>(false);
+  const [wsOpen, setWsOpen] = useState<boolean>(false);
   
 
-
   useEffect(() => {
-    const websocket = new WebSocket("ws://192.168.1.9:5678/");
+    // Send data when `db` changes
+    websocket.onopen = () => {
+      websocket.send(JSON.stringify(val));
+      setWsOpen(true);
+    };
+    
+    if (wsOpen) {
+    websocket.send(JSON.stringify(val));
+    };
 
     websocket.onerror = (error: Event) => {
      const webSocketError = error as WebSocketErrorEvent;
@@ -35,11 +44,8 @@ export default function App() {
 
     };
 
-    // Send data when `db` changes
-    websocket.onopen = () => {
-      websocket.send(JSON.stringify(val));
-    };
 
+    
     // Listen for messages
     websocket.onmessage = ({ data }) => {
       db.transaction(tx => {
@@ -53,11 +59,11 @@ export default function App() {
           );
         });
       };
+
     // Close the WebSocket connection when component unmounts
-    return () => {
-      websocket.close();
-    };
   }, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
+
+
 
 ///* 
   const resetDatabase = () => {

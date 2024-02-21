@@ -12,6 +12,7 @@ import pystray
 from pystray import MenuItem as item
 from PIL import Image
 import json
+from datetime import datetime
 
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -128,8 +129,13 @@ label_paste.bind("<ButtonRelease-1>", on_paste_release)
 label_send.bind("<ButtonPress-1>", on_send_press)
 label_send.bind("<ButtonRelease-1>", on_send_release)
 
-# Create a frame to hold the scrollable section
-scrollable_frame = ttk.Frame(root)
+# Create a frame to hold the scrollable section with a specific width
+frame_width = 200
+outer_frame = ttk.Frame(root, width=frame_width)
+outer_frame.pack(fill="both", expand=True)
+
+# Create the scrollable frame inside the outer frame
+scrollable_frame = ttk.Frame(outer_frame)
 scrollable_frame.pack(fill="both", expand=True)
 
 # Create a canvas widget inside the scrollable frame
@@ -219,11 +225,14 @@ def add_message_to_scrollable_content(message):
 
             # Check if the ID already exists in the set of added IDs
             if clip_id not in added_clip_ids:
-                label_text = f"{clip_id}: {name}"
+                label_text = f"{name}"
 
                 # Create label
-                label = tk.Label(scrollable_content, text=label_text, wraplength=250)
+                label = tk.Label(scrollable_content, text=label_text, wraplength=240, justify="left")
                 label.pack(anchor="w")  # Align the label to the left side
+
+                separator = ttk.Separator(scrollable_content, orient='horizontal')
+                separator.pack(fill='x', padx=5, pady=5)
 
                 # Bind a copy function to the label
                 def copy_label_text(event):
@@ -235,7 +244,6 @@ def add_message_to_scrollable_content(message):
 
                 # Add ID to the set of added IDs
                 added_clip_ids.add(clip_id)
-                print(added_clip_ids)
 
 
 

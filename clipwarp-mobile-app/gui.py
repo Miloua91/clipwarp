@@ -1,18 +1,20 @@
-import os 
+import asyncio
+import json
+import os
+import socket
 import tkinter as tk
+from datetime import datetime
+from threading import Thread
 from tkinter import ttk
+
 import customtkinter
 import pyperclip
-import asyncio
-import socket
-import websockets
-from websockets.sync.client import connect
-from threading import Thread
 import pystray
-from pystray import MenuItem as item
+import websockets
 from PIL import Image
-import json
-from datetime import datetime
+from pystray import MenuItem as item
+from websockets.sync.client import connect
+
 
 def get_ip_address():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -21,11 +23,12 @@ def get_ip_address():
     s.close()
     return ip
 
+
 CONNECTIONS = {}
 
 
 async def register(websocket):
-    name = f'Client_{len(CONNECTIONS) + 1}'
+    name = f"Client_{len(CONNECTIONS) + 1}"
     CONNECTIONS[name] = websocket
     print(f"{name} connected")
     try:
@@ -38,39 +41,49 @@ async def register(websocket):
         await websocket.wait_closed()
 
     finally:
-        if name in CONNECTIONS:  # Check if the name exists in CONNECTIONS before deleting
+        if (
+            name in CONNECTIONS
+        ):  # Check if the name exists in CONNECTIONS before deleting
             del CONNECTIONS[name]
             print(f"{name} disconnected")
+
 
 async def start_server():
     async with websockets.serve(register, get_ip_address(), 5678):
         print(f"server listening on {get_ip_address()}")
         await asyncio.Future()
 
+
 def run_server():
     asyncio.run(start_server())
+
 
 # Create a new thread for the asyncio event loop
 thread = Thread(target=run_server)
 thread.start()
 
-uri = "ws://192.168.1.9:5678"  # Change this to the WebSocket server URI
+uri = "ws://192.168.1.13:5678"  # Change this to the WebSocket server URI
+
 
 async def send_message(message):
     async with websockets.connect(uri) as websocket:
         await websocket.send(message)
         print(f"Sent: {message}")
 
+
 # Function to create and show the GUI window
 root = tk.Tk()
 root.title("ClipWarp")
-root.geometry("+{}+{}".format(root.winfo_screenwidth() - 360, root.winfo_screenheight() - 400))
+root.geometry(
+    "+{}+{}".format(root.winfo_screenwidth() - 360, root.winfo_screenheight() - 400)
+)
 root.resizable(False, False)
-root.overrideredirect(True)  # Remove window decorations
 root.attributes("-topmost", True)
 
 app = customtkinter.CTk()
-app.geometry("+{}+{}".format(app.winfo_screenwidth() - 330, app.winfo_screenheight() - 400))
+app.geometry(
+    "+{}+{}".format(app.winfo_screenwidth() - 330, app.winfo_screenheight() - 400)
+)
 app.resizable(False, False)
 app.overrideredirect(True)  # Remove window decorations
 
@@ -80,15 +93,25 @@ frame.pack(pady=10, padx=10, fill="both", expand=False)
 
 # Create a style to customize the border
 style = ttk.Style()
-style.configure("RoundedFrame.TFrame", borderwidth=2, relief="raised", border="2", borderradius=10)
+style.configure(
+    "RoundedFrame.TFrame", borderwidth=2, relief="raised", border="2", borderradius=10
+)
 
 # Create the text area
-msgEntry = customtkinter.CTkEntry(master=frame, width=240, height=50, corner_radius=5, placeholder_text="ClipWarp", justify="left")
+msgEntry = customtkinter.CTkEntry(
+    master=frame,
+    width=240,
+    height=50,
+    corner_radius=5,
+    placeholder_text="ClipWarp",
+    justify="left",
+)
 msgEntry.pack(pady=2, padx=2)
 
 # Create a frame to hold the buttons
 button_frame = ttk.Frame(root)
 button_frame.pack(pady=10, padx=10, fill="both", expand=False)
+
 
 def on_paste_press(event):
     label_paste.config(image=paste_flat)
@@ -96,16 +119,20 @@ def on_paste_press(event):
     clipboard_content = pyperclip.paste()
     msgEntry.insert("insert", clipboard_content)
 
+
 def on_paste_release(event):
     label_paste.config(image=paste)
+
 
 def on_send_press(event):
     label_send.config(image=send_flat)
     message = msgEntry.get()
     asyncio.run(send_message(message))
 
+
 def on_send_release(event):
     label_send.config(image=send)
+
 
 # Load images
 paste = tk.PhotoImage(file="./Button/paste.png")
@@ -148,9 +175,11 @@ scrollable_content = ttk.Frame(canvas)
 # Add the scrollable content frame to the canvas
 canvas.create_window((0, 0), window=scrollable_content, anchor="nw")
 
+
 # Function to update the scroll region when the contents of the canvas change
 def on_configure(event):
     canvas.configure(scrollregion=canvas.bbox("all"))
+
 
 # Bind the scrollbar to the canvas
 canvas.bind("<Configure>", on_configure)
@@ -160,9 +189,11 @@ scrollbar = ttk.Scrollbar(scrollable_frame, orient="vertical", command=canvas.yv
 scrollbar.pack(side=tk.RIGHT, fill="y")
 canvas.configure(yscrollcommand=scrollbar.set)
 
+
 # Function to resize the canvas when the window is resized
 def resize_canvas(event):
     canvas.configure(width=220, height=200)
+
 
 # Function to scroll with mouse and keys
 def on_mouse_wheel(event):
@@ -175,6 +206,7 @@ def on_key_scroll(event):
     elif event.keysym == "Up":
         canvas.yview_scroll(-1, "units")
 
+
 # Bind arrow keys and "j" and "k" keys globally for scrolling
 root.bind_all("<Down>", on_key_scroll)
 root.bind_all("<Up>", on_key_scroll)
@@ -185,23 +217,30 @@ canvas.bind("<MouseWheel>", on_mouse_wheel)
 # Bind the resize_canvas function to the root window's resize event
 root.bind("<Configure>", resize_canvas)
 
+
 class Toast(tk.Toplevel):
     def __init__(self, parent, text):
         super().__init__(parent)
         self.overrideredirect(True)  # Remove window decorations
-        self.geometry("+{}+{}".format(parent.winfo_screenwidth() - 250, parent.winfo_screenheight() - 80))
+        self.geometry(
+            "+{}+{}".format(
+                parent.winfo_screenwidth() - 250, parent.winfo_screenheight() - 80
+            )
+        )
         self.attributes("-topmost", True)
-        self.configure(bg='black')
-        self.label = tk.Label(self, text=text, fg='white', bg='black', padx=10, pady=5)
+        self.configure(bg="black")
+        self.label = tk.Label(self, text=text, fg="white", bg="black", padx=10, pady=5)
         self.label.pack()
         self.after(3000, self.destroy)  # Auto-close after 3 seconds
 
+
 def show_toast(parent, text):
     toast = Toast(parent, text)
-    
+
 
 # Set to store IDs of clips already added
 added_clip_ids = set()
+
 
 def add_message_to_scrollable_content(message):
     try:
@@ -219,20 +258,21 @@ def add_message_to_scrollable_content(message):
 
         # Extract names and IDs and add them to the scrollable content
         for clip in data:  # Iterate in reverse order            clip_id = clip['id']
-            clip_id = clip['id']
-            name = clip['clip']
-
+            clip_id = clip["id"]
+            name = clip["clip"]
 
             # Check if the ID already exists in the set of added IDs
             if clip_id not in added_clip_ids:
                 label_text = f"{name}"
 
                 # Create label
-                label = tk.Label(scrollable_content, text=label_text, wraplength=240, justify="left")
+                label = tk.Label(
+                    scrollable_content, text=label_text, wraplength=240, justify="left"
+                )
                 label.pack(anchor="w")  # Align the label to the left side
 
-                separator = ttk.Separator(scrollable_content, orient='horizontal')
-                separator.pack(fill='x', padx=5, pady=5)
+                separator = ttk.Separator(scrollable_content, orient="horizontal")
+                separator.pack(fill="x", padx=5, pady=5)
 
                 # Bind a copy function to the label
                 def copy_label_text(event):
@@ -240,19 +280,20 @@ def add_message_to_scrollable_content(message):
                     root.clipboard_append(name)
                     show_toast(root, "Text copied to clipboard.")
 
-                label.bind("<Button-1>", copy_label_text)  # Bind left-click event to copy_label_text function
+                label.bind(
+                    "<Button-1>", copy_label_text
+                )  # Bind left-click event to copy_label_text function
 
                 # Add ID to the set of added IDs
                 added_clip_ids.add(clip_id)
 
-
-
         canvas.update_idletasks()  # Ensure all pending idle tasks are completed
         canvas.config(scrollregion=canvas.bbox("all"))
 
-
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
+
+
 async def receive_messages():
     async with websockets.connect(uri) as websocket:
         while True:
@@ -260,20 +301,25 @@ async def receive_messages():
             print(f"Received message: {message}")
             add_message_to_scrollable_content(message)
 
+
 def start_msg():
     asyncio.run(receive_messages())
+
 
 # Create a new thread for the asyncio event loop
 thread = Thread(target=start_msg)
 thread.start()
+
 
 # Function to be called when the tray icon is clicked
 def on_quit(icon, item):
     icon.stop()
     os._exit(0)
 
+
 # Define a variable to track the visibility state of the GUI
 gui_visible = False
+
 
 def on_clicked(icon, item):
     global gui_visible
@@ -284,18 +330,25 @@ def on_clicked(icon, item):
         gui_visible = True
         root.deiconify()
 
+
 def run_gui():
     global gui_visible
     # Create a tray icon
     image = Image.open("./assets/cw.ico")
 
-    clip_warp = pystray.Icon(name="ClipWarp", icon=image, title="ClipWarp", menu=pystray.Menu(
-        pystray.MenuItem(text ="CW", action=on_clicked, default=True),
-        pystray.MenuItem(text="Exit", action=on_quit)
-    ))
+    clip_warp = pystray.Icon(
+        name="ClipWarp",
+        icon=image,
+        title="ClipWarp",
+        menu=pystray.Menu(
+            pystray.MenuItem(text="CW", action=on_clicked, default=True),
+            pystray.MenuItem(text="Exit", action=on_quit),
+        ),
+    )
 
     # Run the app
     clip_warp.run()
+
 
 # Start the GUI in a separate thread
 gui_thread = Thread(target=run_gui)

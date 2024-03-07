@@ -5,8 +5,10 @@ import * as SQLite from 'expo-sqlite';
 import { ThemedButton } from 'react-native-really-awesome-button';
 import AwesomeButton from "react-native-really-awesome-button";
 import { Octicons } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import websocket from './ws';
+import { webSocket, WS } from './ws';
 
 type Clip = {
   id: number | undefined;
@@ -15,7 +17,8 @@ type Clip = {
 
 
 export default function App() {
-  const [db, setDb] = useState(SQLite.openDatabase('clip.db')); // SQLite database to save clipboard
+  const [db, setDb] = useState(SQLite.openDatabase('1.db')); // SQLite database to save clipboard
+  const [serverVal, setServerVal] = useState<string>('');
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
   const [setting, setSetting] = useState<boolean>(false);
@@ -24,6 +27,8 @@ export default function App() {
 
   useEffect(() => {
     // Send data when `db` changes
+    const ws = async () =>{
+    const websocket = await webSocket();
     websocket.onopen = () => {
       websocket.send(JSON.stringify(val));
       setWsOpen(true);
@@ -32,7 +37,6 @@ export default function App() {
     if (wsOpen) {
     websocket.send(JSON.stringify(val));
     };
-
     websocket.onerror = (error: Event) => {
      const webSocketError = error as WebSocketErrorEvent;
      Alert.alert('WebSocket Status', webSocketError.message, [
@@ -44,28 +48,26 @@ export default function App() {
 
     };
 
-
+    }
+    ws();
     
-    // Listen for messages
-    websocket.onmessage = ({ data }) => {
-      db.transaction(tx => {
-          tx.executeSql('INSERT INTO clips (clip) values (?)', [data],
-            (txObj, resultSet) => {
-              let existingClips = [...val];
-              existingClips.push({ id: resultSet.insertId, clip: data});
-              setVal(existingClips);
-              setCurrentVal(undefined);
-            },
-          );
-        });
-      };
-
     // Close the WebSocket connection when component unmounts
   }, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
 
 
+  useEffect(() => {
+    const ws = async () =>{
+    const websocket = await webSocket();
+    websocket.onmessage = ({ data }) => {
+      if (!data.includes('[{"id":')) {
+          setServerVal(data);
+      }
+     };
+     }
+    ws();
 
-///* 
+  }, []);
+
   const resetDatabase = () => {
   db.transaction(tx => {
     // Drop the clips table if it exists
@@ -145,9 +147,9 @@ export default function App() {
   const showClips = () => {
     return val.map((clip, index) => {
       return (
-        <View key={index} style={styles.row} className='px-1 border-2 w-[84%] flex flex-row-reverse justify-center rounded'>
-          <TextInput multiline className='w-full mx-1 text-[16px]'>{clip.clip}</TextInput>
-          <AwesomeButton width={50} backgroundColor='white' onPress={() => clip.id !== undefined && deleteClip(clip.id)}>
+        <View key={index} style={styles.row} className='px-1 border-2 w-[80%] flex flex-row-reverse justify-center rounded space-x-3'>
+          <TextInput multiline className='w-full text-[16px]'>{clip.clip}</TextInput>
+          <AwesomeButton width={60} backgroundColor='white' onPress={() => clip.id !== undefined && deleteClip(clip.id)}>
             <Octicons name="trash" size={24} color="black" />
           </AwesomeButton>
          </View>
@@ -155,12 +157,33 @@ export default function App() {
     });
   };
 
+  const showSeverClips = () => {
+      return (
+        <View style={styles.row} className='px-1 border-2 w-[80%] flex flex-row-reverse justify-center rounded space-x-3'>
+          <TextInput multiline className='w-full text-[16px]'>{serverVal}</TextInput>
+          <AwesomeButton width={60} backgroundColor='white' onPress={() => Clipboard.setStringAsync(serverVal)} >
+            <Feather name="copy" size={24} color="black" />
+          </AwesomeButton>
+         </View>
+      );
+  };
+
+
   const settingModal = () => {
     if (setting === true)
     return(
     <Modal>
-      <Text className='h-48 flex m-auto justify-center items-center'>Hello</Text>
-      <AwesomeButton  onPress={() => setSetting(false)}>Close</AwesomeButton>
+        <View className='flex flex-row justify-end mx-2 my-7'>
+        <AwesomeButton backgroundColor='white' width={60} onPress={() => setSetting(false)}>
+            <FontAwesome name="close" size={24} color="black" />
+        </AwesomeButton>
+        </View>
+        <View className='flex items-center space-y-8'>
+          <View>
+        <WS/>
+        </View>
+          {<ThemedButton width={295} name="bruce" type="danger" onPress={resetDatabase} >Reset Clipboard</ThemedButton>} 
+      </View>
     </Modal>
     );
   };
@@ -168,16 +191,20 @@ export default function App() {
 
   return (
     <>
-    <ScrollView className='flex justfiy-center mt-20'>
+    <ScrollView className='flex justfiy-center mt-16'>
+    <View className='flex flex-row justify-end mx-3 mb-4'>
+     <AwesomeButton width={60} backgroundColor='white' onPress={() => setSetting(true)}>
+            <Octicons name="server" size={24} color="black" />
+     </AwesomeButton>
+     </View>
     <View style={styles.container}>
       <TextInput className='w-[90%] text-center text-[16px]' multiline value={currentVal} placeholder='ClipWarp' onChangeText={setCurrentVal} />
-    <View className='flex flex-col gap-4 my-4 justify-center'>
-        <ThemedButton name="bruce" type="primary" onPress={addClip}>Send</ThemedButton>
-        <ThemedButton name="bruce" type="secondary" onPress={fetchCopiedText}>Paste</ThemedButton>
-        {<ThemedButton name="bruce" type="danger" onPress={resetDatabase} >Reset</ThemedButton>} 
+    <View className='flex flex-row my-4 w-[96%] justify-between'>
+        <ThemedButton width={160} name="bruce" type="primary" onPress={addClip}>Send</ThemedButton>
+        <ThemedButton width={160} name="bruce" type="secondary" onPress={fetchCopiedText}>Paste</ThemedButton>
     </View>
+      {showSeverClips()}
       {showClips()}
-      <AwesomeButton onPress={() => setSetting(true)}>Setting</AwesomeButton>
       {settingModal()}
       <StatusBar style="auto" />
     </View>

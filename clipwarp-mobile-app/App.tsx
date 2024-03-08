@@ -6,7 +6,7 @@ import { ThemedButton } from 'react-native-really-awesome-button';
 import AwesomeButton from "react-native-really-awesome-button";
 import { Octicons } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { webSocket, WS } from './ws';
 
@@ -37,36 +37,30 @@ export default function App() {
     if (wsOpen) {
     websocket.send(JSON.stringify(val));
     };
+
     websocket.onerror = (error: Event) => {
      const webSocketError = error as WebSocketErrorEvent;
      Alert.alert('WebSocket Status', webSocketError.message, [
         {
           text: 'OK',
-          onPress: () => console.log('Clicked'),
         },
         ]);
-
     };
 
-    }
-    ws();
-    
-    // Close the WebSocket connection when component unmounts
-  }, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
-
-
-  useEffect(() => {
-    const ws = async () =>{
-    const websocket = await webSocket();
     websocket.onmessage = ({ data }) => {
       if (!data.includes('[{"id":')) {
           setServerVal(data);
       }
      };
      }
-    ws();
 
-  }, []);
+
+    ws();
+    
+    // Close the WebSocket connection when component unmounts
+  }, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
+
+
 
   const resetDatabase = () => {
   db.transaction(tx => {
@@ -92,7 +86,6 @@ export default function App() {
   // Update the val state to reflect the empty database
   setVal([]);
 };
-//*/
 
 
   useEffect(() => {
@@ -159,10 +152,10 @@ export default function App() {
 
   const showSeverClips = () => {
       return (
-        <View style={styles.row} className='px-1 border-2 w-[80%] flex flex-row-reverse justify-center rounded space-x-3'>
+        <View style={styles.row} className='px-1 border-2 w-[79%] flex flex-row-reverse justify-center rounded space-x-3'>
           <TextInput multiline className='w-full text-[16px]'>{serverVal}</TextInput>
           <AwesomeButton width={60} backgroundColor='white' onPress={() => Clipboard.setStringAsync(serverVal)} >
-            <Feather name="copy" size={24} color="black" />
+            <Ionicons name="copy" size={24} color="black" />
           </AwesomeButton>
          </View>
       );
@@ -204,6 +197,7 @@ export default function App() {
         <ThemedButton width={160} name="bruce" type="secondary" onPress={fetchCopiedText}>Paste</ThemedButton>
     </View>
       {showSeverClips()}
+      <View className='border-b-4 border-gray-400 w-full my-2'/>
       {showClips()}
       {settingModal()}
       <StatusBar style="auto" />

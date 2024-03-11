@@ -30,20 +30,15 @@ export default function App() {
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
   const [setting, setSetting] = useState<boolean>(false);
-  const [wsOpen, setWsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     // Send data when `db` changes
     const ws = async () => {
       const websocket = await webSocket();
       websocket.onopen = () => {
-        websocket.send(JSON.stringify(val));
-        setWsOpen(true);
+        const lastValue: string = val[val.length - 1].clip;
+        websocket.send(lastValue);
       };
-
-      if (wsOpen) {
-        websocket.send(JSON.stringify(val));
-      }
 
       websocket.onerror = (error: Event) => {
         const webSocketError = error as WebSocketErrorEvent;
@@ -53,17 +48,13 @@ export default function App() {
           },
         ]);
       };
-
+      console.log(websocket.url);
       websocket.onmessage = ({ data }) => {
-        if (!data.includes('[{"id":')) {
-          setServerVal(data);
-        }
+        setServerVal(data);
       };
     };
 
     ws();
-
-    // Close the WebSocket connection when component unmounts
   }, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
 
   const resetDatabase = () => {

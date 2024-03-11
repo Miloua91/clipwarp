@@ -2,15 +2,19 @@ import asyncio
 import json
 import os
 import socket
+import sqlite3
 import tkinter as tk
 from datetime import datetime
+from sqlite3 import Error
 from threading import Thread
 from tkinter import ttk
 
 import customtkinter
 import pyperclip
 import pystray
+import uvicorn
 import websockets
+from blacksheep import Application
 from PIL import Image
 from pystray import MenuItem as item
 from websockets.sync.client import connect
@@ -27,10 +31,15 @@ def get_ip_address():
 CONNECTIONS = {}
 
 
-async def register(websocket):
-    name = f"Client_{len(CONNECTIONS) + 1}"
+async def register(websocket, path):
+    if path == "/69":
+        name = "Client_69"  # Assign a specific name for this path
+    else:
+        name = f"Client_{len(CONNECTIONS) + 1}"
+
     CONNECTIONS[name] = websocket
     print(f"{name} connected")
+    print("Full URL:", path)
     try:
         async for message in websocket:
             for conn_name, conn in CONNECTIONS.items():
@@ -48,6 +57,56 @@ async def register(websocket):
             print(f"{name} disconnected")
 
 
+def create_connection(path):
+    connection = None
+    try:
+        connection = sqlite3.connect(path)
+        print("Connection to SQLite DB successful")
+    except Error as e:
+        print(f"The error '{e}' occurred")
+
+    return connection
+
+
+def execute_query(connection, query):
+    cursor = connection.cursor()
+    try:
+        cursor.execute(query)
+        connection.commit()
+        print("Query executed successfully")
+    except Error as e:
+        print(f"The error '{e}' occurred")
+
+
+def create_db():
+    connection = create_connection("./assets/clipwarp.db")
+
+    create_users_table = """
+    CREATE TABLE IF NOT EXISTS users(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL
+    );
+    """
+
+    create_clips_table = """
+    CREATE TABLE IF NOT EXISTS clips(
+      id INTEGER PRIMARY KEY AUTOINCREMENT, 
+      clips_text TEXT NOT NULL, 
+      user_id INTEGER NOT NULL, 
+      FOREIGN KEY (user_id) REFERENCES users (id)
+    );
+    """
+
+    execute_query(connection, create_users_table)
+    execute_query(connection, create_clips_table)
+
+    return connection
+
+
+# Call create_db function to create the database and tables
+connection = create_db()
+
+
 async def start_server():
     async with websockets.serve(register, get_ip_address(), 5678):
         print(f"server listening on {get_ip_address()}")
@@ -58,17 +117,33 @@ def run_server():
     asyncio.run(start_server())
 
 
+def serve():
+    app = Application()
+
+    # serve files contained in a "static" folder relative to the server cwd
+    app.serve_files("assets", index_document="index.html")
+    uvicorn.run(app, host="localhost", port=6969)
+
+
 # Create a new thread for the asyncio event loop
 thread = Thread(target=run_server)
 thread.start()
 
-uri = "ws://192.168.1.13:5678"  # Change this to the WebSocket server URI
+thread = Thread(target=serve)
+thread.start()
+
+uri = f"ws://{get_ip_address()}:5678"  # Change this to the WebSocket server URI
 
 
 async def send_message(message):
     async with websockets.connect(uri) as websocket:
         await websocket.send(message)
         print(f"Sent: {message}")
+        insert_clips = f"""
+        INSERT INTO clips (clips_text, user_id)
+        VALUES ('{message}', 1)
+        """
+        execute_query(connection, insert_clips)
 
 
 # Function to create and show the GUI window
@@ -238,67 +313,87 @@ def show_toast(parent, text):
     toast = Toast(parent, text)
 
 
-# Set to store IDs of clips already added
+def execute_read_query(connection, query):
+    cursor = connection.cursor()
+    result = None
+    try:
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    except Error as e:
+        print(f"The error '{e}' occurred")
+
+
 added_clip_ids = set()
 
 
 def add_message_to_scrollable_content(message):
-    try:
-        # Parse the JSON message
-        data = json.loads(message)
 
-        # Check if the database is empty
-        if not data:
-            # Database is empty, so clear the added_clip_ids set
-            added_clip_ids.clear()
-            for widget in scrollable_content.winfo_children():
-                widget.destroy()
-            canvas.update_idletasks()  # Ensure all pending idle tasks are completed
-            canvas.config(scrollregion=canvas.bbox("all"))
+    connection = create_connection("./assets/clipwarp.db")
 
-        # Extract names and IDs and add them to the scrollable content
-        for clip in data:  # Iterate in reverse order            clip_id = clip['id']
-            clip_id = clip["id"]
-            name = clip["clip"]
+    select_clips = "SELECT * from clips"
+    clips = execute_read_query(connection, select_clips)
 
-            # Check if the ID already exists in the set of added IDs
-            if clip_id not in added_clip_ids:
-                label_text = f"{name}"
+    for clip in clips:
+        clip_id = clip[0]  # Assuming the first column is the ID
+        clip_text = clip[1]  # Assuming the second column is the clips_text
+        user_id = clip[2]  # Assuming the third column is the user_id
 
-                # Create label
-                label = tk.Label(
-                    scrollable_content, text=label_text, wraplength=240, justify="left"
-                )
-                label.pack(anchor="w")  # Align the label to the left side
-
-                separator = ttk.Separator(scrollable_content, orient="horizontal")
-                separator.pack(fill="x", padx=5, pady=5)
-
-                # Bind a copy function to the label
-                def copy_label_text(event):
-                    root.clipboard_clear()
-                    root.clipboard_append(name)
-                    show_toast(root, "Text copied to clipboard.")
-
-                label.bind(
-                    "<Button-1>", copy_label_text
-                )  # Bind left-click event to copy_label_text function
-
-                # Add ID to the set of added IDs
-                added_clip_ids.add(clip_id)
-
+    # Check if the database is empty
+    if not clips:
+        # Database is empty, so clear the added_clip_ids set
+        added_clip_ids.clear()
+        for widget in scrollable_content.winfo_children():
+            widget.destroy()
         canvas.update_idletasks()  # Ensure all pending idle tasks are completed
         canvas.config(scrollregion=canvas.bbox("all"))
 
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
+    # Extract names and IDs and add them to the scrollable content
+    for clip in clips:  # Iterate in reverse order            clip_id = clip['id']
+        clip_id = clip[0]
+        name = clip[1]
+
+        # Check if the ID already exists in the set of added IDs
+        if clip_id not in added_clip_ids:
+            label_text = f"{name}"
+
+            # Create label
+            label = tk.Label(
+                scrollable_content, text=label_text, wraplength=240, justify="left"
+            )
+            label.pack(anchor="w")  # Align the label to the left side
+
+            separator = ttk.Separator(scrollable_content, orient="horizontal")
+            separator.pack(fill="x", padx=5, pady=5)
+
+            # Bind a copy function to the label
+            def copy_label_text(event):
+                root.clipboard_clear()
+                root.clipboard_append(name)
+                show_toast(root, "Text copied to clipboard.")
+
+            label.bind(
+                "<Button-1>", copy_label_text
+            )  # Bind left-click event to copy_label_text function
+
+            # Add ID to the set of added IDs
+            added_clip_ids.add(clip_id)
+
+    canvas.update_idletasks()  # Ensure all pending idle tasks are completed
+    canvas.config(scrollregion=canvas.bbox("all"))
 
 
 async def receive_messages():
+    connection = create_connection("./assets/clipwarp.db")
     async with websockets.connect(uri) as websocket:
         while True:
             message = await websocket.recv()
             print(f"Received message: {message}")
+            insert_clips = f"""
+            INSERT INTO clips (clips_text, user_id)
+            VALUES ('{message}', 1)
+            """
+            execute_query(connection, insert_clips)
             add_message_to_scrollable_content(message)
 
 

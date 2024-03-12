@@ -36,7 +36,7 @@ export default function App() {
     const ws = async () => {
       const websocket = await webSocket();
       websocket.onopen = () => {
-        const lastValue: string = val[val.length - 1].clip;
+        const lastValue: string | undefined = val[val.length - 1].clip;
         websocket.send(lastValue);
       };
 

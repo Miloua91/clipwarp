@@ -1,4 +1,5 @@
 import asyncio
+import atexit
 import json
 import os
 import socket
@@ -32,8 +33,8 @@ CONNECTIONS = {}
 
 
 async def register(websocket, path):
-    if path == "/69":
-        name = "Client_69"  # Assign a specific name for this path
+    if "/" in path:
+        name = path  # Assign a specific name for this path
     else:
         name = f"Client_{len(CONNECTIONS) + 1}"
 
@@ -132,18 +133,13 @@ thread.start()
 thread = Thread(target=serve)
 thread.start()
 
-uri = f"ws://{get_ip_address()}:5678"  # Change this to the WebSocket server URI
+uri = f"ws://{get_ip_address()}:5678/Server"  # Change this to the WebSocket server URI
 
 
 async def send_message(message):
     async with websockets.connect(uri) as websocket:
         await websocket.send(message)
         print(f"Sent: {message}")
-        insert_clips = f"""
-        INSERT INTO clips (clips_text, user_id)
-        VALUES ('{message}', 1)
-        """
-        execute_query(connection, insert_clips)
 
 
 # Function to create and show the GUI window
@@ -155,12 +151,6 @@ root.geometry(
 root.resizable(False, False)
 root.attributes("-topmost", True)
 
-app = customtkinter.CTk()
-app.geometry(
-    "+{}+{}".format(app.winfo_screenwidth() - 330, app.winfo_screenheight() - 400)
-)
-app.resizable(False, False)
-app.overrideredirect(True)  # Remove window decorations
 
 # Create a frame to hold the text area
 frame = customtkinter.CTkFrame(master=root)
@@ -384,6 +374,7 @@ def add_message_to_scrollable_content(message):
 
 
 async def receive_messages():
+    uri = f"ws://{get_ip_address()}:5678"  # Change this to the WebSocket server URI
     connection = create_connection("./assets/clipwarp.db")
     async with websockets.connect(uri) as websocket:
         while True:
@@ -449,5 +440,12 @@ def run_gui():
 gui_thread = Thread(target=run_gui)
 gui_thread.start()
 
+
+def exit_prom():
+    print("by")
+    os._exit(0)
+
+
+atexit.register(exit_prom)
+
 root.mainloop()
-app.mainloop()

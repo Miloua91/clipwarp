@@ -140,6 +140,10 @@ async def send_message(message):
     async with websockets.connect(uri) as websocket:
         await websocket.send(message)
         print(f"Sent: {message}")
+        insert_clips = f"""
+        INSERT INTO clips (clips_text, user_id)
+        VALUES ('{message}', 1)
+        """
 
 
 # Function to create and show the GUI window

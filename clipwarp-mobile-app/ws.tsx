@@ -60,5 +60,5 @@ export function WS() {
 
 export const webSocket = async () => {
   const wsAddress = await AsyncStorage.getItem("address");
-  return new WebSocket(`ws://${wsAddress}:5678/69`);
+  return new WebSocket(`ws://${wsAddress}:5678/phone`);
 };

@@ -47,7 +47,7 @@
 
       sendButton.addEventListener("click", () => {
         const message = messageInput.value;
-        websocket.send(`⬇ ${message}`);
+        websocket.send(message);
         messageInput.value = "";
       });
     });

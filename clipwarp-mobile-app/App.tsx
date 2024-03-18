@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Alert,
   View,
-  Text,
   TextInput,
   ScrollView,
   Modal,
@@ -48,7 +47,7 @@ export default function App() {
           },
         ]);
       };
-      console.log(websocket.url);
+
       websocket.onmessage = ({ data }) => {
         setServerVal(data);
       };

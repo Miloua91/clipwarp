@@ -40,15 +40,6 @@ export default function App() {
       }
       };
 
-      websocket.onerror = (error: Event) => {
-        const webSocketError = error as WebSocketErrorEvent;
-        Alert.alert("WebSocket Status", webSocketError.message, [
-          {
-            text: "OK",
-          },
-        ]);
-      };
-
       websocket.onmessage = ({ data }) => {
         setServerVal(data);
       db.transaction(tx => {
@@ -62,10 +53,28 @@ export default function App() {
           );
         });
       };
-    };
+
+      };
+
+    
 
     ws();
   }, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
+
+  useEffect(() => {
+    const ws = async () => {
+      const websocket = await webSocket();
+       websocket.onclose = () => {
+        Alert.alert("WebSocket Status", "Websocket closed", [
+          {
+            text: "OK",
+          },
+        ]);
+      };
+    };
+
+    ws();
+  }, []);
 
   const resetDatabase = () => {
     db.transaction((tx) => {
@@ -209,16 +218,19 @@ export default function App() {
             <View className="w-96">
               <WS />
             </View>
-            {
+          <View className="border rounded-xl w-[86%] h-20 p-2 flex flex-row justify-between items-center m-auto">
+            <Text className="text-lg text-stone-800">
+            Reset clipboard database
+            </Text>
               <ThemedButton
-                width={300}
+                width={75}
                 name="bruce"
                 type="danger"
                 onPress={resetDatabase}
               >
-                Reset Clipboard
+                Reset
               </ThemedButton>
-            }
+          </View>
           </View>
         </Modal>
       );

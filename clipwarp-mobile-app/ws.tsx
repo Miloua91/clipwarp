@@ -4,6 +4,7 @@ import AwesomeButton from "react-native-really-awesome-button";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Device from 'expo-device';
+import * as Updates from 'expo-updates';
 
 export function WS() {
   const [wsAddress, setWsAddress] = useState(`192.168.1.`);
@@ -54,9 +55,10 @@ export function WS() {
   };
 
   const saveDeviceName = async () => {
-    if (deviceName !== null) {
+    if (deviceName !== null && deviceName !== '') {
       try {
         await AsyncStorage.setItem("device", deviceName);
+        await Updates.reloadAsync();
       } catch (error) {
         console.error("Error saving device name:", error);
       }
@@ -67,9 +69,9 @@ export function WS() {
   return (
     <View className="w-full m-auto mt-6">
       <View className="space-x-1 mb-4 mx-6 border rounded-xl">
-        <Text className="mx-2 text-lg font-semibold">Enter server's IP</Text>
+        <Text className="mx-2 text-lg font-semibold py-1">Enter server's IP</Text>
         <TextInput
-          className="w-[75%] pl-4 text-lg m-2"
+          className="w-[75%] pl-4 text-lg m-1 bottom-2"
           placeholder="IP address"
           onChangeText={(text) => setWsAddress(text)}
           value={wsAddress}
@@ -88,13 +90,16 @@ export function WS() {
       </View>
 
       <View className="space-x-1 mx-6 mb-4 border rounded-xl">
-        <Text className="mx-2 text-lg font-semibold">Enter device's name</Text>
+        <Text className="mx-2 text-lg font-semibold py-1">Enter device's name</Text>
         <TextInput
-          className="w-[75%] pl-4 text-lg m-2"
+          className="w-[75%] pl-4 text-lg m-1 bottom-2"
           placeholder={getDevice}
           onChangeText={(text) => setDeviceName(text)}
           value={deviceName.replace(/-/g, ' ')}
         />
+        {!deviceName.trim() && (
+          <Text className="text-red-500 p-1">Please enter a device name</Text>
+        )}
         <View 
           className="absolute right-0 mx-2 my-1"
         >

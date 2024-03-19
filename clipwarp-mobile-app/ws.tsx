@@ -3,9 +3,14 @@ import { View, TextInput, Text } from "react-native";
 import AwesomeButton from "react-native-really-awesome-button";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome } from "@expo/vector-icons";
+import * as Device from 'expo-device';
 
 export function WS() {
   const [wsAddress, setWsAddress] = useState(`192.168.1.`);
+  let getDevice = `${Device.deviceName}`
+  let device = getDevice.replace(/\s+/g, '-');
+  const [deviceName, setDeviceName] = useState(device);
+
 
   // Load the WebSocket address from AsyncStorage on component mount
   useEffect(() => {
@@ -14,14 +19,26 @@ export function WS() {
         const savedAddress = await AsyncStorage.getItem("address");
         if (savedAddress !== null) {
           setWsAddress(savedAddress);
-          console.log(savedAddress);
         }
       } catch (error) {
         console.error("Error loading WebSocket address:", error);
       }
     };
 
+    const loadDevice = async () => {
+      try {
+        const savedDevice = await AsyncStorage.getItem("device");
+        if (savedDevice !== null) {
+          setDeviceName(savedDevice);
+        }
+      } catch (error) {
+        console.error("Error loading device name:", error);
+      }
+    };
+
+
     loadWsAddress();
+    loadDevice();
   }, []);
 
   // Function to handle changing the WebSocket address
@@ -36,13 +53,24 @@ export function WS() {
     }
   };
 
+  const saveDeviceName = async () => {
+    if (deviceName !== null) {
+      try {
+        await AsyncStorage.setItem("device", deviceName);
+      } catch (error) {
+        console.error("Error saving device name:", error);
+      }
+    }
+  };
+
+
   return (
     <>
       <Text className="text-lg font-bold">Enter server's IP</Text>
-      <View className="w-full flex flex-row space-x-1">
+      <View className="w-full flex flex-row space-x-1 mb-4">
         <TextInput
-          className="w-fit border-2 rounded pl-4 text-lg font-semibold"
-          placeholder="Enter WebSocket address"
+          className="w-[80%] bg-stone-800 text-gray-100 border rounded-xl pl-4 text-lg font-semibold"
+          placeholder="192.168.1.1"
           onChangeText={(text) => setWsAddress(text)}
           value={wsAddress}
         />
@@ -54,11 +82,31 @@ export function WS() {
           <FontAwesome name="save" size={24} color="black" />
         </AwesomeButton>
       </View>
+
+      <Text className="text-lg font-bold">Enter device's name</Text>
+      <View className="w-full flex flex-row space-x-1">
+        <TextInput
+          className="w-[80%] bg-stone-800 text-gray-100 border rounded-xl pl-4 text-lg font-semibold"
+          placeholder={getDevice}
+          onChangeText={(text) => setDeviceName(text)}
+          value={deviceName.replace(/-/g, ' ')}
+        />
+        <AwesomeButton
+          backgroundColor="white"
+          width={60}
+          onPress={saveDeviceName}
+        >
+          <FontAwesome name="save" size={24} color="black" />
+        </AwesomeButton>
+      </View>
+
     </>
   );
 }
 
 export const webSocket = async () => {
   const wsAddress = await AsyncStorage.getItem("address");
-  return new WebSocket(`ws://${wsAddress}:5678/phone`);
+  const getDevice = await AsyncStorage.getItem("device");
+  const device = getDevice?.replace(/\s+/g, '-');
+  return new WebSocket(`ws://${wsAddress}:5678/${device}`);
 };

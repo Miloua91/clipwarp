@@ -35,8 +35,9 @@ export default function App() {
     const ws = async () => {
       const websocket = await webSocket();
       websocket.onopen = () => {
-        const lastValue: string | undefined = val[val.length - 1].clip;
-        websocket.send(lastValue);
+        if (currentVal !== undefined) {
+        websocket.send(currentVal);
+      }
       };
 
       websocket.onerror = (error: Event) => {
@@ -50,6 +51,16 @@ export default function App() {
 
       websocket.onmessage = ({ data }) => {
         setServerVal(data);
+      db.transaction(tx => {
+          tx.executeSql('INSERT INTO clips (clip) values (?)', [data],
+            (txObj, resultSet) => {
+              let existingClips = [...val];
+              existingClips.push({ id: resultSet.insertId, clip: data});
+              setVal(existingClips);
+              setCurrentVal(undefined);
+            },
+          );
+        });
       };
     };
 
@@ -142,11 +153,11 @@ export default function App() {
             {clip.clip}
           </TextInput>
           <View className="flex flex-row justify-between py-2 px-3">
-        <Pressable onPress={() => Clipboard.setStringAsync(clip.clip)}>
+        <Pressable onPress={() => Clipboard.setStringAsync(clip.clip)} className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded">
           <FontAwesome name="clipboard" size={26} color="white" />
             </Pressable>
           <Pressable
-            onPress={() => clip.id !== undefined && deleteClip(clip.id)}
+            onPress={() => clip.id !== undefined && deleteClip(clip.id)} className="active:bg-stone-600 w-15 h-9 p-1 rounded"
           >
               <Text className="text-gray-100 text-lg">Delete</Text>
           </Pressable>
@@ -161,11 +172,11 @@ export default function App() {
       <View
         className="px-3 bg-stone-800 w-[97%] flex flex-row justify-center rounded-xl"
       >
-      <TextInput multiline className="px-4 py-2 w-full text-gray-100 text-[16px]">
+      <TextInput multiline className="px-4 py-2 w-full text-gray-100 text-[16px] right-3">
           {serverVal}
         </TextInput>
         <Pressable
-          className="flex flex-row justify-end pr-4 pt-3 h-12"
+          className="absolute flex flex-row justify-end active:bg-stone-600 h-8 p-1 right-1 top-[6px] rounded"
           onPress={() => Clipboard.setStringAsync(serverVal)}
         >
           <Ionicons name="copy" size={24} color="white" />
@@ -174,21 +185,28 @@ export default function App() {
     );
   };
 
+
+  const handleSettingPress = () => {
+    setTimeout(() => {
+      setSetting(true);
+    }, 50); 
+  };
+
   const settingModal = () => {
     if (setting === true)
       return (
         <Modal>
-          <View className="flex flex-row justify-end mx-2 my-7">
-            <AwesomeButton
-              backgroundColor="white"
-              width={60}
+          <View className="flex flex-row justify-start mx-2 my-6">
+            <Pressable
               onPress={() => setSetting(false)}
+              className="active:bg-stone-100 w-10 h-10 px-3 py-[2px] rounded absolute"
             >
-              <FontAwesome name="close" size={24} color="black" />
-            </AwesomeButton>
+              <FontAwesome name="angle-left" size={32} color="black" />
+            </Pressable>
+          <Text className="m-auto text-xl font-semibold py-1">Settings</Text>
           </View>
           <View className="flex items-center space-y-8">
-            <View>
+            <View className="w-96">
               <WS />
             </View>
             {
@@ -213,7 +231,7 @@ export default function App() {
           <AwesomeButton
             width={60}
             backgroundColor="white"
-            onPress={() => setSetting(true)}
+            onPress={handleSettingPress}
           >
             <Octicons name="server" size={24} color="black" />
           </AwesomeButton>

@@ -122,7 +122,7 @@ def serve():
     app = Application()
 
     # serve files contained in a "static" folder relative to the server cwd
-    app.serve_files("assets", index_document="index.html")
+    app.serve_files("assets/dist", index_document="index.html")
     uvicorn.run(app, host="localhost", port=6969)
 
 

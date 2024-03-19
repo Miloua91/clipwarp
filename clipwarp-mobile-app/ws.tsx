@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, TextInput, Text } from "react-native";
+import { View, TextInput, Text, Pressable } from "react-native";
 import AwesomeButton from "react-native-really-awesome-button";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome } from "@expo/vector-icons";
@@ -65,15 +65,18 @@ export function WS() {
 
 
   return (
-    <>
-      <Text className="text-lg font-bold">Enter server's IP</Text>
-      <View className="w-full flex flex-row space-x-1 mb-4">
+    <View className="w-full m-auto mt-6">
+      <View className="space-x-1 mb-4 mx-6 border rounded-xl">
+        <Text className="mx-2 text-lg font-semibold">Enter server's IP</Text>
         <TextInput
-          className="w-[80%] bg-stone-800 text-gray-100 border rounded-xl pl-4 text-lg font-semibold"
-          placeholder="192.168.1.1"
+          className="w-[75%] pl-4 text-lg m-2"
+          placeholder="IP address"
           onChangeText={(text) => setWsAddress(text)}
           value={wsAddress}
         />
+        <View 
+          className="absolute right-0 mx-2 my-1"
+        >
         <AwesomeButton
           backgroundColor="white"
           width={60}
@@ -81,16 +84,20 @@ export function WS() {
         >
           <FontAwesome name="save" size={24} color="black" />
         </AwesomeButton>
+        </View>
       </View>
 
-      <Text className="text-lg font-bold">Enter device's name</Text>
-      <View className="w-full flex flex-row space-x-1">
+      <View className="space-x-1 mx-6 mb-4 border rounded-xl">
+        <Text className="mx-2 text-lg font-semibold">Enter device's name</Text>
         <TextInput
-          className="w-[80%] bg-stone-800 text-gray-100 border rounded-xl pl-4 text-lg font-semibold"
+          className="w-[75%] pl-4 text-lg m-2"
           placeholder={getDevice}
           onChangeText={(text) => setDeviceName(text)}
           value={deviceName.replace(/-/g, ' ')}
         />
+        <View 
+          className="absolute right-0 mx-2 my-1"
+        >
         <AwesomeButton
           backgroundColor="white"
           width={60}
@@ -98,9 +105,10 @@ export function WS() {
         >
           <FontAwesome name="save" size={24} color="black" />
         </AwesomeButton>
+        </View>
       </View>
 
-    </>
+    </View>
   );
 }
 

@@ -14,7 +14,7 @@ import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite";
 import { ThemedButton } from "react-native-really-awesome-button";
 import AwesomeButton from "react-native-really-awesome-button";
-import { Octicons,FontAwesome6,FontAwesome,Ionicons } from "@expo/vector-icons";
+import { Octicons,FontAwesome,Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { webSocket, WS } from "./ws";
 
@@ -138,7 +138,7 @@ export default function App() {
           key={index}
           className="mb-2 bg-stone-800 w-[97%] py-2 rounded-xl"
         >
-          <TextInput multiline className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-700 my-2 pb-2">
+          <TextInput multiline className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-700 my-1 pb-2">
             {clip.clip}
           </TextInput>
           <View className="flex flex-row justify-between py-2 px-3">
@@ -193,7 +193,7 @@ export default function App() {
             </View>
             {
               <ThemedButton
-                width={295}
+                width={300}
                 name="bruce"
                 type="danger"
                 onPress={resetDatabase}
@@ -245,7 +245,7 @@ export default function App() {
             </ThemedButton>
           </View>
           {showSeverClips()}
-          <View className="border-b-4 border-gray-400 w-full my-2" />
+          <View className="border-b border-stone-500 w-[97%] my-2" />
           {showClips()}
           {settingModal()}
           <StatusBar style="auto" />

@@ -3,18 +3,18 @@ import {
   StyleSheet,
   Alert,
   View,
+  Text,
   TextInput,
   ScrollView,
   Modal,
   ToastAndroid,
+  Pressable,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite";
 import { ThemedButton } from "react-native-really-awesome-button";
 import AwesomeButton from "react-native-really-awesome-button";
-import { Octicons } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
-import { Ionicons } from "@expo/vector-icons";
+import { Octicons,FontAwesome6,FontAwesome,Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { webSocket, WS } from "./ws";
 
@@ -136,19 +136,21 @@ export default function App() {
       return (
         <View
           key={index}
-          style={styles.row}
-          className="px-1 border-2 w-[80%] flex flex-row-reverse justify-center rounded space-x-3"
+          className="mb-2 bg-stone-800 w-[97%] py-2 rounded-xl"
         >
-          <TextInput multiline className="w-full text-[16px]">
+          <TextInput multiline className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-700 my-2 pb-2">
             {clip.clip}
           </TextInput>
-          <AwesomeButton
-            width={60}
-            backgroundColor="white"
+          <View className="flex flex-row justify-between py-2 px-3">
+        <Pressable onPress={() => Clipboard.setStringAsync(clip.clip)}>
+          <FontAwesome name="clipboard" size={26} color="white" />
+            </Pressable>
+          <Pressable
             onPress={() => clip.id !== undefined && deleteClip(clip.id)}
           >
-            <Octicons name="trash" size={24} color="black" />
-          </AwesomeButton>
+              <Text className="text-gray-100 text-lg">Delete</Text>
+          </Pressable>
+          </View>
         </View>
       );
     });
@@ -157,19 +159,17 @@ export default function App() {
   const showSeverClips = () => {
     return (
       <View
-        style={styles.row}
-        className="px-1 border-2 w-[79%] flex flex-row-reverse justify-center rounded space-x-3"
+        className="px-3 bg-stone-800 w-[97%] flex flex-row justify-center rounded-xl"
       >
-        <TextInput multiline className="w-full text-[16px]">
+      <TextInput multiline className="px-4 py-2 w-full text-gray-100 text-[16px]">
           {serverVal}
         </TextInput>
-        <AwesomeButton
-          width={60}
-          backgroundColor="white"
+        <Pressable
+          className="flex flex-row justify-end pr-4 pt-3 h-12"
           onPress={() => Clipboard.setStringAsync(serverVal)}
         >
-          <Ionicons name="copy" size={24} color="black" />
-        </AwesomeButton>
+          <Ionicons name="copy" size={24} color="white" />
+        </Pressable>
       </View>
     );
   };

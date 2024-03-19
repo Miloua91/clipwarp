@@ -58,6 +58,7 @@ export function WS() {
     if (deviceName !== null && deviceName !== '') {
       try {
         await AsyncStorage.setItem("device", deviceName);
+        await new Promise(resolve => setTimeout(resolve, 80));
         await Updates.reloadAsync();
       } catch (error) {
         console.error("Error saving device name:", error);

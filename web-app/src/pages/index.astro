@@ -1,0 +1,63 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { Textarea } from "../components/ui/textarea";
+import { Button } from "../components/ui/button";
+import Collection from "../components/collection.tsx";
+---
+
+<Layout title="ClipWarp">
+  <main class="max-w-[600px] m-auto p-1 mt-2">
+    <div class="flex gap-5">
+      <Textarea
+        className="bg-stone-800 text-stone-100"
+        placeholder="ClipWarp"
+        id="textarea"
+      />
+      <div class="flex flex-col gap-2">
+        <Button id="paste">Paste</Button>
+        <Button id="send" className="bg-white text-stone-900 hover:bg-stone-200"
+          >Send</Button
+        >
+      </div>
+    </div>
+    <div class="w-full my-2">
+      <Collection client:load />
+    </div>
+  </main>
+</Layout>
+<script>
+  const websocket = new WebSocket("ws://192.168.1.13:5678/webapp");
+
+  function sendClip() {
+    const textarea = document.getElementById("textarea") as HTMLTextAreaElement;
+
+    const textareaValue = textarea.value;
+
+    if (!textareaValue) return console.log(textareaValue);
+
+    console.log(textareaValue);
+    websocket.send(textareaValue);
+  }
+
+  function pasteFromClipboard() {
+    navigator.clipboard
+      .readText()
+      .then((text) => {
+        const textarea = document.querySelector(
+          "#textarea",
+        ) as HTMLTextAreaElement | null;
+        if (textarea !== null) {
+          textarea.value = text;
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to read clipboard contents: ", err);
+      });
+  }
+
+  const pasteButton = document.querySelector("#paste");
+  pasteButton?.addEventListener("click", () => pasteFromClipboard());
+
+  const sendButton = document.querySelector("#send");
+  sendButton?.addEventListener("click", () => sendClip());
+</script>

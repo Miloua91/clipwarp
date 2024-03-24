@@ -1,14 +1,13 @@
 import sys
-from PyQt5.QtWidgets import QApplication
+
+from notifypy import Notify
 from PyQt5.QtCore import QObject, QThread
-from server import Server
-from tray import Tray
+from PyQt5.QtWidgets import QApplication
+
 from chat import Chat
 from pc import Client
-from notifypy import Notify
-
-
-
+from server import Server
+from tray import Tray
 
 
 class MyWindow(QObject):
@@ -56,11 +55,10 @@ class MyWindow(QObject):
         notification.message = msg[1]
         notification.icon = "./assets/clipwarp.png"
         notification.send()
-    
+
     def show_chat(self):
         self.Chat.show()
 
-        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

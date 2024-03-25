@@ -29,14 +29,14 @@ import Collection from "../components/collection.tsx";
   const websocket = new WebSocket("ws://192.168.1.13:5678/webapp");
 
   function sendClip() {
-    const textarea = document.getElementById("textarea") as HTMLTextAreaElement;
+    let textarea = document.getElementById("textarea") as HTMLTextAreaElement;
 
     const textareaValue = textarea.value;
 
     if (!textareaValue) return console.log(textareaValue);
 
-    console.log(textareaValue);
     websocket.send(textareaValue);
+    textarea.value = "";
   }
 
   function pasteFromClipboard() {

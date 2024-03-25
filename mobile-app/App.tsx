@@ -14,49 +14,72 @@ import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite";
 import { ThemedButton } from "react-native-really-awesome-button";
 import AwesomeButton from "react-native-really-awesome-button";
-import { Octicons,FontAwesome,Ionicons } from "@expo/vector-icons";
+import { Octicons, FontAwesome, Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { webSocket, WS } from "./ws";
+import { io } from "socket.io-client";
 
 type Clip = {
   id: number | undefined;
   clip: string;
 };
 
+interface ClipDb {
+  id: number;
+  clips_text: string; // Add the 'clips_text' property
+  // Add other properties as needed
+}
+
 export default function App() {
   const [db, setDb] = useState(SQLite.openDatabase("1.db")); // SQLite database to save clipboard
-  const [serverVal, setServerVal] = useState<string>("");
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
+  const [clipsDb, setClipsDb] = useState<ClipDb[]>([]);
+  const [connection, setConnection] = useState(false);
   const [setting, setSetting] = useState<boolean>(false);
+
+  async function getClips() {
+    const response = await fetch("http://192.168.1.13:5000/");
+    const data = await response.json();
+    setClipsDb(data);
+  }
+
+  useEffect(() => {
+    getClips();
+  }, []);
+
+  useEffect(() => {
+    const socket = io("ws://192.168.1.13:5000/");
+
+    socket.onAny((event) => {
+      getClips();
+    });
+    socket.on("disconnect", () => {
+      socket.connect;
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [getClips]);
 
   useEffect(() => {
     // Send data when `db` changes
     const ws = async () => {
       const websocket = await webSocket();
       websocket.onopen = () => {
-        if (currentVal !== undefined) {
-        websocket.send(currentVal);
-      }
-      };
-
-      websocket.onmessage = ({ data }) => {
-        setServerVal(data);
-      db.transaction(tx => {
-          tx.executeSql('INSERT INTO clips (clip) values (?)', [data],
-            (txObj, resultSet) => {
-              let existingClips = [...val];
-              existingClips.push({ id: resultSet.insertId, clip: data});
-              setVal(existingClips);
-              setCurrentVal(undefined);
-            },
-          );
+        val.forEach((vals) => {
+          websocket.send(vals.clip);
+          getClips();
+          deleteClip(vals.id as number);
         });
+        setConnection(true);
       };
 
+      websocket.onmessage = () => {
+        getClips();
       };
-
-    
+    };
 
     ws();
   }, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
@@ -64,7 +87,9 @@ export default function App() {
   useEffect(() => {
     const ws = async () => {
       const websocket = await webSocket();
-       websocket.onclose = () => {
+
+      websocket.onclose = () => {
+        setConnection(false);
         Alert.alert("WebSocket Status", "Websocket closed", [
           {
             text: "OK",
@@ -76,7 +101,39 @@ export default function App() {
     ws();
   }, []);
 
+  async function deleteClipsDb(clipId: number) {
+    try {
+      const response = await fetch(
+        `http://192.168.1.13:5000/delete/${clipId}`,
+        {
+          method: "DELETE",
+        },
+      );
+      if (!response.ok) {
+        throw new Error("Failed to delete clip");
+      }
+      getClips();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function deleteAllClipsDb() {
+    try {
+      const response = await fetch(`http://192.168.1.13:5000/reset`, {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete clips");
+      }
+      getClips();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const resetDatabase = () => {
+    deleteAllClipsDb();
     db.transaction((tx) => {
       // Drop the clips table if it exists
       tx.executeSql("DROP TABLE IF EXISTS clips", [], () => {
@@ -122,18 +179,32 @@ export default function App() {
     if (currentVal === undefined) {
       return ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
     }
-    db.transaction((tx) => {
-      tx.executeSql(
-        "INSERT INTO clips (clip) values (?)",
-        [currentVal],
-        (txObj, resultSet) => {
-          let existingClips = [...val];
-          existingClips.push({ id: resultSet.insertId, clip: currentVal });
-          setVal(existingClips);
-          setCurrentVal(undefined);
-        },
-      );
-    });
+    if (connection) {
+      const ws = async () => {
+        const websocket = await webSocket();
+        websocket.onopen = () => {
+          if (currentVal !== undefined) {
+            websocket.send(currentVal);
+            setCurrentVal(undefined);
+            getClips();
+          }
+        };
+      };
+      ws();
+    } else {
+      db.transaction((tx) => {
+        tx.executeSql(
+          "INSERT INTO clips (clip) values (?)",
+          [currentVal],
+          (txObj, resultSet) => {
+            let existingClips = [...val];
+            existingClips.push({ id: resultSet.insertId, clip: currentVal });
+            setVal(existingClips);
+            setCurrentVal(undefined);
+          },
+        );
+      });
+    }
   };
 
   const deleteClip = (id: number) => {
@@ -152,53 +223,67 @@ export default function App() {
   };
 
   const showClips = () => {
-    return val.map((clip, index) => {
+    return val.reverse().map((clip, index) => {
       return (
-        <View
-          key={index}
-          className="mb-2 bg-stone-800 w-[97%] py-2 rounded-xl"
-        >
-          <TextInput multiline className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-700 my-1 pb-2">
+        <View key={index} className="mb-2 bg-stone-800 w-[97%] py-2 rounded-xl">
+          <TextInput
+            multiline
+            className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-700 my-1 pb-2"
+          >
             {clip.clip}
           </TextInput>
           <View className="flex flex-row justify-between py-2 px-3">
-        <Pressable onPress={() => Clipboard.setStringAsync(clip.clip)} className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded">
-          <FontAwesome name="clipboard" size={26} color="white" />
+            <Pressable
+              onPress={() => Clipboard.setStringAsync(clip.clip)}
+              className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
+            >
+              <FontAwesome name="clipboard" size={26} color="white" />
             </Pressable>
-          <Pressable
-            onPress={() => clip.id !== undefined && deleteClip(clip.id)} className="active:bg-stone-600 w-15 h-9 p-1 rounded"
-          >
+            <Pressable
+              onPress={() => clip.id !== undefined && deleteClip(clip.id)}
+              className="active:bg-stone-600 w-15 h-9 p-1 rounded"
+            >
               <Text className="text-gray-100 text-lg">Delete</Text>
-          </Pressable>
+            </Pressable>
           </View>
         </View>
       );
     });
   };
 
-  const showSeverClips = () => {
-    return (
-      <View
-        className="px-3 bg-stone-800 w-[97%] flex flex-row justify-center rounded-xl"
-      >
-      <TextInput multiline className="px-4 py-2 w-full text-gray-100 text-[16px] right-3">
-          {serverVal}
-        </TextInput>
-        <Pressable
-          className="absolute flex flex-row justify-end active:bg-stone-600 h-8 p-1 right-1 top-[6px] rounded"
-          onPress={() => Clipboard.setStringAsync(serverVal)}
-        >
-          <Ionicons name="copy" size={24} color="white" />
-        </Pressable>
-      </View>
-    );
+  const showClipsBd = () => {
+    return clipsDb.reverse().map((clip, index) => {
+      return (
+        <View key={index} className="mb-2 bg-stone-800 w-[97%] py-2 rounded-xl">
+          <TextInput
+            multiline
+            className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-700 my-1 pb-2"
+          >
+            {clip.clips_text}
+          </TextInput>
+          <View className="flex flex-row justify-between py-2 px-3">
+            <Pressable
+              onPress={() => Clipboard.setStringAsync(clip.clips_text)}
+              className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
+            >
+              <FontAwesome name="clipboard" size={26} color="white" />
+            </Pressable>
+            <Pressable
+              onPress={() => clip.id !== undefined && deleteClipsDb(clip.id)}
+              className="active:bg-stone-600 w-15 h-9 p-1 rounded"
+            >
+              <Text className="text-gray-100 text-lg">Delete</Text>
+            </Pressable>
+          </View>
+        </View>
+      );
+    });
   };
-
 
   const handleSettingPress = () => {
     setTimeout(() => {
       setSetting(true);
-    }, 50); 
+    }, 50);
   };
 
   const settingModal = () => {
@@ -212,16 +297,16 @@ export default function App() {
             >
               <FontAwesome name="angle-left" size={32} color="black" />
             </Pressable>
-          <Text className="m-auto text-xl font-semibold py-1">Settings</Text>
+            <Text className="m-auto text-xl font-semibold py-1">Settings</Text>
           </View>
           <View className="flex items-center space-y-8">
             <View className="w-96">
               <WS />
             </View>
-          <View className="border rounded-xl w-[86%] h-20 p-2 flex flex-row justify-between items-center m-auto">
-            <Text className="text-lg text-stone-800">
-            Reset clipboard database
-            </Text>
+            <View className="border rounded-xl w-[86%] h-20 p-2 flex flex-row justify-between items-center m-auto">
+              <Text className="text-lg text-stone-800">
+                Reset clipboard database
+              </Text>
               <ThemedButton
                 width={75}
                 name="bruce"
@@ -230,7 +315,7 @@ export default function App() {
               >
                 Reset
               </ThemedButton>
-          </View>
+            </View>
           </View>
         </Modal>
       );
@@ -274,9 +359,8 @@ export default function App() {
               Paste
             </ThemedButton>
           </View>
-          {showSeverClips()}
           <View className="border-b border-stone-500 w-[97%] my-2" />
-          {showClips()}
+          {connection ? showClipsBd() : showClips()}
           {settingModal()}
           <StatusBar style="auto" />
         </View>

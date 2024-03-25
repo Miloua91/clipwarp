@@ -8,6 +8,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { io } from "socket.io-client";
 
 interface Clip {
   clips_text: string;
@@ -26,6 +27,18 @@ export default function Collection() {
   useEffect(() => {
     getClips();
   }, []);
+
+  useEffect(() => {
+    const socket = io("ws://localhost:5000");
+
+    socket.onAny((event) => {
+      getClips();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [getClips]);
 
   useEffect(() => {
     const websocket = new WebSocket("ws://192.168.1.13:5678/webapp");

@@ -14,7 +14,7 @@ import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite";
 import { ThemedButton } from "react-native-really-awesome-button";
 import AwesomeButton from "react-native-really-awesome-button";
-import { Octicons, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { Octicons, FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { webSocket, WS } from "./ws";
 import { io } from "socket.io-client";
@@ -31,7 +31,7 @@ interface ClipDb {
 }
 
 export default function App() {
-  const [db, setDb] = useState(SQLite.openDatabase("1.db")); // SQLite database to save clipboard
+  const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
   const [clipsDb, setClipsDb] = useState<ClipDb[]>([]);

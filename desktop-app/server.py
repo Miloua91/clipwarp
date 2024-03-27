@@ -47,11 +47,12 @@ class Server(QObject):
                             self.message_signal.emit((conn_name, message))
                         print(f"Message received from {conn_name}: {message}")
                         connection = self.db.create_connection("./assets/clipwarp.db")
-                        insert_clips = f"""
-                        INSERT INTO clips (clips_text, user_id)
-                        VALUES ('{message}', 1)
+                        insert_clips = """
+                            INSERT INTO clips (clips_text, user_id)
+                            VALUES (?, ?)
                         """
-                        self.db.execute_query(connection, insert_clips)
+                        params = (message, 1)
+                        self.db.execute_query(connection, insert_clips, params)
             await websocket.wait_closed()
 
         finally:

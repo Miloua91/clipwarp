@@ -1,4 +1,5 @@
 import sqlite3
+from sqlite3 import Error
 
 from PyQt5.QtCore import QObject
 
@@ -13,10 +14,13 @@ class Database(QObject):
 
         return connection
 
-    def execute_query(self, connection, query):
+    def execute_query(self, connection, query, params=None):
         cursor = connection.cursor()
         try:
-            cursor.execute(query)
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
             connection.commit()
         except Error as e:
             print(f"The error '{e}' occurred")

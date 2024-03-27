@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication
 
 from chat import Chat
 from db import Database
+from flaskapi import FlaskAPI
 from pc import Client
 from server import Server
 from tray import Tray
@@ -21,6 +22,14 @@ class MyWindow(QObject):
         self.tray_function()
         self.client_function()
         self.db_function()
+        self.start_api()
+
+    def start_api(self):
+        self.thread = QThread()
+        self.api = FlaskAPI()
+        self.api.moveToThread(self.thread)
+        self.thread.started.connect(self.api.start)
+        self.thread.start()
 
     def client_function(self):
         self.client_thread = QThread()

@@ -5,6 +5,7 @@ from PyQt5.QtCore import QObject, QThread
 from PyQt5.QtWidgets import QApplication
 
 from chat import Chat
+from db import Database
 from pc import Client
 from server import Server
 from tray import Tray
@@ -19,6 +20,7 @@ class MyWindow(QObject):
         self.server_function()
         self.tray_function()
         self.client_function()
+        self.db_function()
 
     def client_function(self):
         self.client_thread = QThread()
@@ -59,9 +61,12 @@ class MyWindow(QObject):
     def show_chat(self):
         self.Chat.show()
 
+    def db_function(self):
+        self.connection = Database().create_db()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(False)
+    app.setQuitOnLastWindowClosed(True)
     window = MyWindow()
     sys.exit(app.exec_())

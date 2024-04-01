@@ -5,7 +5,7 @@
 
 ```
 git clone https://github.com/Miloua91/clipwarp.git
-cd clipwarp/PC-side
+cd clipwarp/desktop-app
 pip install -r requirements.txt
 python main.py
 ```

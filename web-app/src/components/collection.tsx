@@ -20,7 +20,7 @@ export default function Collection() {
   const [clips, setClips] = useState<Clip[]>([]);
 
   async function getClips() {
-    const response = await fetch("http://localhost:5000/");
+    const response = await fetch("http://192.168.1.13:5000/");
     const data = await response.json();
     setClips(data);
   }
@@ -29,7 +29,7 @@ export default function Collection() {
   }, []);
 
   useEffect(() => {
-    const socket = io("ws://localhost:5000");
+    const socket = io("ws://192.168.1.13:5000");
 
     socket.onAny((event) => {
       getClips();
@@ -49,9 +49,12 @@ export default function Collection() {
 
   async function deleteClip(clipId: number) {
     try {
-      const response = await fetch(`http://localhost:5000/delete/${clipId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `http://192.168.1.13:5000/delete/${clipId}`,
+        {
+          method: "DELETE",
+        },
+      );
       if (!response.ok) {
         throw new Error("Failed to delete clip");
       }

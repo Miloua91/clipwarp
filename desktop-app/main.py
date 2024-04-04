@@ -16,13 +16,13 @@ class MyWindow(QObject):
     def __init__(self):
         super().__init__()
 
+        self.start_api()
         self.Chat = Chat()
         self.show_chat()
         self.server_function()
         self.tray_function()
         self.client_function()
         self.db_function()
-        self.start_api()
 
     def start_api(self):
         self.thread = QThread()
@@ -51,14 +51,7 @@ class MyWindow(QObject):
         self.server_thread.start()
 
     def tray_function(self):
-        self.icon_thread = QThread()
         self.tray = Tray()
-        self.tray.exit_signal.connect(lambda: app.quit())
-        self.tray.icon_clicked.connect(self.show_chat)
-        self.tray.moveToThread(self.icon_thread)
-        self.icon_thread.started.connect(self.tray.run)
-        self.icon_thread.finished.connect(self.icon_thread.deleteLater)
-        self.icon_thread.start()
 
     def show_msg(self, msg):
         notification = Notify()

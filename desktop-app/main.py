@@ -8,6 +8,7 @@ from chat import Chat
 from db import Database
 from flaskapi import FlaskAPI
 from pc import Client
+from serve import Serve
 from server import Server
 from tray import Tray
 
@@ -17,6 +18,7 @@ class MyWindow(QObject):
         super().__init__()
 
         self.start_api()
+        self.serve_function()
         self.Chat = Chat()
         self.show_chat()
         self.server_function()
@@ -65,6 +67,13 @@ class MyWindow(QObject):
 
     def db_function(self):
         self.connection = Database().create_db()
+
+    def serve_function(self):
+        self.serve_thread = QThread()
+        self.serve = Serve()
+        self.serve.moveToThread(self.serve_thread)
+        self.serve_thread.started.connect(self.serve.start)
+        self.serve_thread.start()
 
 
 if __name__ == "__main__":

@@ -16,17 +16,17 @@ class Chat(QMainWindow):
         self.ui.setupUi(self)
         self.setStyleSheet(
             """
-            QPlainTextEdit, QMainWindow, QLabel, QPushButton, VerticalTabWidget {
+            QPlainTextEdit, QMainWindow, QFrame, QLabel, QPushButton, VerticalTabWidget {
                 background-color: #333;
                 color: #FFF;
             }
-            QPlainTextEdit,TabBar {
+            QPlainTextEdit,TabBar, QListWidget {
                 background-color: #4d4d4d;
                 color: #FFF;
             }
             TabBar::tab {
                 width: 32px;
-                height: 140px; 
+                height: 139px; 
             }
         """
         )
@@ -43,7 +43,7 @@ class Chat(QMainWindow):
 
         self.setFixedSize(612, 392)
 
-        icon = QIcon("./assets/clipwarp.png")
+        icon = QIcon("./assets/cw.ico")
         self.setWindowIcon(icon)
         self.tray = QSystemTrayIcon(self)
 

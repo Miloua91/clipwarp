@@ -12,7 +12,17 @@ import re
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import QObject, QSize
+from PyQt5.QtWidgets import (
+    QListWidget,
+    QListWidgetItem,
+    QMainWindow,
+    QStyle,
+    QStyleOptionTab,
+    QStylePainter,
+    QTabBar,
+    QTabWidget,
+)
 
 
 class TabBar(QTabBar):
@@ -51,7 +61,7 @@ class VerticalTabWidget(QTabWidget):
         self.setTabPosition(QtWidgets.QTabWidget.West)
 
 
-class Ui_MainWindow(object):
+class Ui_MainWindow(QObject):
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("ClipWarp")
@@ -130,64 +140,3 @@ class Ui_MainWindow(object):
         self.Paste.setText(_translate("MainWindow", "Paste"))
         self.label.setText(_translate("MainWindow", "ClipWarp"))
         self.pushButton.setText(_translate("MainWindow", "Settings"))
-
-
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super(MainWindow, self).__init__()
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.setStyleSheet(
-            """
-            QPlainTextEdit, QMainWindow, QLabel, QPushButton, VerticalTabWidget {
-                background-color: #333;
-                color: #FFF;
-            }
-            QPlainTextEdit,TabBar {
-                background-color: #4d4d4d;
-                color: #FFF;
-            }
-            TabBar::tab {
-                width: 32px;
-                height: 140px; 
-            }
-        """
-        )
-        self.ui.tabWidget.setCurrentIndex(0)
-        self.setFixedSize(612, 392)
-
-        # SysTray Icon
-        self.tray = QSystemTrayIcon(self)
-
-        # Check if System supports STray icons
-        if self.tray.isSystemTrayAvailable():
-            self.tray.setIcon(self.windowIcon())
-
-            # Context Menu
-            ctmenu = QMenu()
-            actionshow = ctmenu.addAction("Show/Hide")
-            actionshow.triggered.connect(
-                lambda: self.hide() if self.isVisible() else self.show()
-            )
-            actionquit = ctmenu.addAction("Quit")
-            actionquit.triggered.connect(self.close)
-
-            self.tray.setContextMenu(ctmenu)
-            self.tray.show()
-        else:
-            # Destroy unused var
-            self.tray = None
-
-        # Show App
-        self.show()
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    app.setApplicationName("ClipWarp")
-    app.setApplicationVersion("0.1.0")
-    app.setOrganizationName("mokhincode")
-
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec_())

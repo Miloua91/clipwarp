@@ -19,12 +19,12 @@ class MyWindow(QObject):
 
         self.start_api()
         self.serve_function()
-        self.Chat = Chat()
-        self.show_chat()
         self.server_function()
         self.tray_function()
-        self.client_function()
         self.db_function()
+        self.Chat = Chat()
+        self.client_function()
+        self.show_chat()
 
     def start_api(self):
         self.thread = QThread()

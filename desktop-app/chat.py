@@ -2,7 +2,7 @@ import requests
 import socketio
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
 
 from ui import Ui_MainWindow
 
@@ -12,35 +12,6 @@ class Chat(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.setStyleSheet(
-            """
-            QPlainTextEdit, QMainWindow, QFrame, QLabel, QPushButton, VerticalTabWidget {
-                background-color: #333;
-                color: #FFF;
-            }
-            QPlainTextEdit,TabBar, QListWidget {
-                background-color: #4d4d4d;
-                color: #FFF;
-            }
-            TabBar::tab {
-                width: 32px;
-                height: 139px; 
-            }
-        """
-        )
-
-        self.socketio = socketio.Client()
-
-        def on_refresh():
-            print("wssup")
-
-        self.socketio.on("refresh", on_refresh)
-        self.socketio.connect("http://localhost:5000")
-
-        self.fetch_clips()
-
         self.setFixedSize(612, 392)
 
         icon = QIcon("./assets/cw.ico")
@@ -68,6 +39,38 @@ class Chat(QMainWindow):
 
         # Show App
         self.show()
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.setStyleSheet(
+            """
+            QPlainTextEdit, QMainWindow, QFrame, QLabel, QPushButton, VerticalTabWidget {
+                background-color: #333;
+                color: #FFF;
+            }
+            QPlainTextEdit,TabBar, QListWidget {
+                background-color: #4d4d4d;
+                color: #FFF;
+            }
+            TabBar::tab {
+                width: 32px;
+                height: 139px; 
+            }
+            QListWidget::item {
+                padding: 5px;            
+            }
+        """
+        )
+
+        self.socketio = socketio.Client()
+
+        def on_refresh():
+            print("wssup")
+
+        self.socketio.on("refresh", on_refresh)
+        self.socketio.connect("http://localhost:5000")
+
+        self.fetch_clips()
+
         self.ui.Send.clicked.connect(self.on_button_click)
         self.ui.Paste.clicked.connect(self.paste_text)
 

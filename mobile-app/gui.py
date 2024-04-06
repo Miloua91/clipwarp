@@ -123,7 +123,7 @@ def serve():
 
     # serve files contained in a "static" folder relative to the server cwd
     app.serve_files("assets/dist", index_document="index.html")
-    uvicorn.run(app, host="localhost", port=6969)
+    uvicorn.run(app, host=get_ip_address(), port=6969)
 
 
 # Create a new thread for the asyncio event loop

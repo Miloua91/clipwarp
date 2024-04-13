@@ -63,7 +63,7 @@ class FlaskAPI(QObject):
 
         conn.close()
 
-        self.socketio.emit("refresh")
+        self.socketio.emit("delete")
 
         return jsonify({"message": "Clip deleted successfully"}), 200
 
@@ -76,6 +76,6 @@ class FlaskAPI(QObject):
         conn.commit()
         conn.close()
 
-        self.socketio.emit("refresh")
+        self.socketio.emit("reset")
 
         return jsonify({"message": "Database reset successfully"}), 200

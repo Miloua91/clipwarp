@@ -76,11 +76,11 @@ class Ui_MainWindow(QObject):
         self.plainTextEdit.setGeometry(QtCore.QRect(20, 8, 331, 54))
         self.plainTextEdit.setObjectName("plainTextEdit")
         self.Send = QtWidgets.QPushButton(self.frame_2)
-        self.Send.setGeometry(QtCore.QRect(370, 8, 80, 24))
+        self.Send.setGeometry(QtCore.QRect(370, 38, 81, 24))
         self.Send.setObjectName("Send")
         self.Send.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.Paste = QtWidgets.QPushButton(self.frame_2)
-        self.Paste.setGeometry(QtCore.QRect(370, 38, 81, 24))
+        self.Paste.setGeometry(QtCore.QRect(370, 8, 80, 24))
         self.Paste.setObjectName("Paste")
         self.Paste.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.tabWidget = VerticalTabWidget(self.centralwidget)
@@ -128,7 +128,8 @@ class Ui_MainWindow(QObject):
         self.tabWidget.clear()
         for category, clips in categorized_clips.items():
             list_widget = QListWidget()
-            for clip in clips:
+            reversed_clips = reversed(clips)
+            for clip in reversed_clips:
                 item = QListWidgetItem(clip["clips_text"])
                 list_widget.addItem(item)
             self.tabWidget.addTab(list_widget, category)

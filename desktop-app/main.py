@@ -2,7 +2,8 @@ import sys
 
 from notifypy import Notify
 from PyQt5.QtCore import QObject, QThread
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
 
 from chat import Chat
 from db import Database
@@ -11,20 +12,31 @@ from pc import Client
 from serve import Serve
 from server import Server
 from tray import Tray
+from ui import Ui_MainWindow
 
 
-class MyWindow(QObject):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.init_ui()
+        self.setup_connections()
+        self.setStyleSheet(self.stylesheet())
+        self.setFixedSize(612, 392)
+        self.set_window_icon("./assets/cw.ico")
+        self.setup_system_tray()
 
+    def init_ui(self):
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+
+    def setup_connections(self):
         self.start_api()
         self.serve_function()
         self.server_function()
         self.tray_function()
         self.db_function()
-        self.Chat = Chat()
+        self.Chat = Chat(self.ui)
         self.client_function()
-        self.show_chat()
 
     def start_api(self):
         self.thread = QThread()
@@ -37,6 +49,8 @@ class MyWindow(QObject):
         self.client_thread = QThread()
         self.client = Client()
         self.Chat.message_signal.connect(self.client.bridge)
+        self.Chat.clips_fetched.connect(self.ui.load_clips)
+        self.Chat.clip_deleted.connect(self.ui.load_clips)
         self.client.recv_signal.connect(self.Chat.show_msg)
         self.client.moveToThread(self.client_thread)
         self.client_thread.started.connect(self.client.run)
@@ -62,9 +76,6 @@ class MyWindow(QObject):
         notification.icon = "./assets/clipwarp.png"
         notification.send()
 
-    def show_chat(self):
-        self.Chat.show()
-
     def db_function(self):
         self.connection = Database().create_db()
 
@@ -75,9 +86,51 @@ class MyWindow(QObject):
         self.serve_thread.started.connect(self.serve.start)
         self.serve_thread.start()
 
+    def setup_system_tray(self):
+        self.tray = QSystemTrayIcon(self)
+        if self.tray.isSystemTrayAvailable():
+            self.tray.setIcon(self.windowIcon())
+            ctmenu = QMenu()
+            actionshow = ctmenu.addAction("Show/Hide")
+            actionshow.triggered.connect(
+                lambda: self.hide() if self.isVisible() else self.show()
+            )
+            actionquit = ctmenu.addAction("Quit")
+            actionquit.triggered.connect(self.close)
+            self.tray.setContextMenu(ctmenu)
+            self.tray.show()
+        self.show()
+
+    def stylesheet(self):
+        return """
+                QPlainTextEdit, QMainWindow, QFrame, QLabel, QPushButton, VerticalTabWidget {
+                    background-color: #333;
+                    color: #FFF;
+                }
+                QPlainTextEdit,TabBar, QListWidget {
+                    background-color: #4d4d4d;
+                    color: #FFF;
+                }
+                TabBar::tab {
+                    width: 32px;
+                    height: 139px; 
+                }
+                QListWidget::item {
+                    padding: 5px;            
+                }
+                QPushButton#Send {
+                    background-color: #ffffff;
+                    color: #333
+                }
+            """
+
+    def set_window_icon(self, icon_path):
+        icon = QIcon(icon_path)
+        self.setWindowIcon(icon)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
-    window = MyWindow()
+    window = MainWindow()
     sys.exit(app.exec_())

@@ -1,72 +1,22 @@
 import requests
 import socketio
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
 
-from ui import Ui_MainWindow
 
-
-class Chat(QMainWindow):
+class Chat(QObject):
     message_signal = pyqtSignal(str)
+    clips_fetched = pyqtSignal(list)
+    clip_deleted = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, ui):
         super().__init__()
-        self.setFixedSize(612, 392)
-
-        icon = QIcon("./assets/cw.ico")
-        self.setWindowIcon(icon)
-        self.tray = QSystemTrayIcon(self)
-
-        # Check if System supports STray icons
-        if self.tray.isSystemTrayAvailable():
-            self.tray.setIcon(self.windowIcon())
-
-            # Context Menu
-            ctmenu = QMenu()
-            actionshow = ctmenu.addAction("Show/Hide")
-            actionshow.triggered.connect(
-                lambda: self.hide() if self.isVisible() else self.show()
-            )
-            actionquit = ctmenu.addAction("Quit")
-            actionquit.triggered.connect(self.close)
-
-            self.tray.setContextMenu(ctmenu)
-            self.tray.show()
-        else:
-            # Destroy unused var
-            self.tray = None
-
-        # Show App
-        self.show()
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.setStyleSheet(
-            """
-            QPlainTextEdit, QMainWindow, QFrame, QLabel, QPushButton, VerticalTabWidget {
-                background-color: #333;
-                color: #FFF;
-            }
-            QPlainTextEdit,TabBar, QListWidget {
-                background-color: #4d4d4d;
-                color: #FFF;
-            }
-            TabBar::tab {
-                width: 32px;
-                height: 139px; 
-            }
-            QListWidget::item {
-                padding: 5px;            
-            }
-        """
-        )
+        self.ui = ui
 
         self.socketio = socketio.Client()
 
-        def on_refresh():
-            print("wssup")
-
-        self.socketio.on("refresh", on_refresh)
+        self.socketio.on("delete", self.on_delete)
         self.socketio.connect("http://localhost:5000")
 
         self.fetch_clips()
@@ -78,7 +28,15 @@ class Chat(QMainWindow):
         response = requests.get("http://localhost:5000")
         if response.status_code == 200:
             clips = response.json()
-            self.ui.load_clips(clips)
+            self.clips_fetched.emit(clips)
+        else:
+            print("Failed to fetch clips from server")
+
+    def on_delete(self):
+        response = requests.get("http://localhost:5000")
+        if response.status_code == 200:
+            clips = response.json()
+            self.clips_fetched.emit(clips)
         else:
             print("Failed to fetch clips from server")
 

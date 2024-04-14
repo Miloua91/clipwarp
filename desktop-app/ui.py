@@ -12,16 +12,23 @@ import re
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QObject, QSize
+from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
+    QMenu,
+    QPushButton,
+    QSizePolicy,
     QStyle,
     QStyleOptionTab,
     QStylePainter,
     QTabBar,
     QTabWidget,
+    QWidget,
 )
 
 
@@ -62,9 +69,15 @@ class VerticalTabWidget(QTabWidget):
 
 
 class Ui_MainWindow(QObject):
+    itemDeleted = pyqtSignal(int)
+
+    def __init__(self):
+        super().__init__()
+        self.current_tab_index = 0
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("ClipWarp")
+        MainWindow.setGeometry(QtCore.QRect(140, 0, 612, 392))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.frame_2 = QtWidgets.QFrame(self.centralwidget)
@@ -90,9 +103,11 @@ class Ui_MainWindow(QObject):
         self.label.setGeometry(QtCore.QRect(10, 25, 57, 24))
         self.label.setObjectName("label")
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(70, 25, 61, 24))
+        self.pushButton.setGeometry(QtCore.QRect(110, 25, 24, 24))
         self.pushButton.setObjectName("pushButton")
         self.pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        setting_icon = QIcon("./assets/setting.svg")
+        self.pushButton.setIcon(setting_icon)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 619, 21))
@@ -125,14 +140,90 @@ class Ui_MainWindow(QObject):
         self.render_tabs(categorized_clips)
 
     def render_tabs(self, categorized_clips):
+        self.current_tab_index = self.tabWidget.currentIndex()
         self.tabWidget.clear()
         for category, clips in categorized_clips.items():
             list_widget = QListWidget()
             reversed_clips = reversed(clips)
             for clip in reversed_clips:
-                item = QListWidgetItem(clip["clips_text"])
+                clip_text = clip["clips_text"]
+                max_text_length = 69
+                if len(clip_text) > max_text_length:
+                    clip_text = clip_text[:max_text_length] + "..."
+                item = QListWidgetItem(clip_text)
+                item.setData(Qt.UserRole, clip["id"])
+                item.setSizeHint(QSize(200, 50))
+
+                delete_button = QPushButton("")
+                delete_button.setStyleSheet(
+                    """
+                    QPushButton {
+                        border: none; 
+                        background-color: transparent; 
+                    }
+                    QPushButton:hover {
+                        background-color: #E08976; 
+                        border-radius: 4px;
+                    }
+                    QPushButton:pressed {
+                        background-color: #333; 
+                    }
+                    """
+                )
+                delete_button.setFixedSize(24, 24)
+                delete_icon = QIcon("./assets/delete.svg")
+                delete_button.setIcon(delete_icon)
+                delete_button.clicked.connect(
+                    lambda _, item=item: self.delete_item(item, list_widget)
+                )
+
+                copy_button = QPushButton("")
+                copy_button.setStyleSheet(
+                    """
+                    QPushButton {
+                        border: none; 
+                        background-color: transparent; 
+                    }
+                    QPushButton:hover {
+                        background-color: #A46877; 
+                        border-radius: 4px;
+                    }
+                    QPushButton:pressed {
+                        background-color: #333; 
+                    }
+                    """
+                )
+                copy_button.setFixedSize(24, 24)
+                copy_icon = QIcon("./assets/copy.svg")
+                copy_button.setIcon(copy_icon)
+                copy_button.clicked.connect(
+                    lambda _, text=clip["clips_text"]: self.copy_clip(text)
+                )
+
                 list_widget.addItem(item)
+
+                button_layout = QHBoxLayout()
+                button_layout.addWidget(delete_button)
+                button_layout.addWidget(copy_button)
+                button_layout.setAlignment(Qt.AlignRight)
+
+                button_widget = QWidget()
+                button_widget.setLayout(button_layout)
+                list_widget.setItemWidget(item, button_widget)
+
             self.tabWidget.addTab(list_widget, category)
+        self.tabWidget.setCurrentIndex(self.current_tab_index)
+
+    def delete_item(self, item, list_widget):
+        row = list_widget.row(item)
+        if row != -1:
+            clip_id = item.data(Qt.UserRole)
+            list_widget.takeItem(row)
+            self.itemDeleted.emit(clip_id)
+
+    def copy_clip(self, text):
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -140,4 +231,4 @@ class Ui_MainWindow(QObject):
         self.Send.setText(_translate("MainWindow", "Send"))
         self.Paste.setText(_translate("MainWindow", "Paste"))
         self.label.setText(_translate("MainWindow", "ClipWarp"))
-        self.pushButton.setText(_translate("MainWindow", "Settings"))
+        self.pushButton.setText(_translate("MainWindow", ""))

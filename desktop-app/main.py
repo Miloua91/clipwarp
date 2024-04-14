@@ -11,7 +11,6 @@ from flaskapi import FlaskAPI
 from pc import Client
 from serve import Serve
 from server import Server
-from tray import Tray
 from ui import Ui_MainWindow
 
 
@@ -21,7 +20,7 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.setup_connections()
         self.setStyleSheet(self.stylesheet())
-        self.setFixedSize(612, 392)
+        # self.setFixedSize(612, 392)
         self.set_window_icon("./assets/cw.ico")
         self.setup_system_tray()
 
@@ -33,7 +32,6 @@ class MainWindow(QMainWindow):
         self.start_api()
         self.serve_function()
         self.server_function()
-        self.tray_function()
         self.db_function()
         self.Chat = Chat(self.ui)
         self.client_function()
@@ -50,7 +48,7 @@ class MainWindow(QMainWindow):
         self.client = Client()
         self.Chat.message_signal.connect(self.client.bridge)
         self.Chat.clips_fetched.connect(self.ui.load_clips)
-        self.Chat.clip_deleted.connect(self.ui.load_clips)
+        self.ui.itemDeleted.connect(self.Chat.delete_clip)
         self.client.recv_signal.connect(self.Chat.show_msg)
         self.client.moveToThread(self.client_thread)
         self.client_thread.started.connect(self.client.run)
@@ -66,14 +64,11 @@ class MainWindow(QMainWindow):
         self.server_thread.finished.connect(self.server_thread.deleteLater)
         self.server_thread.start()
 
-    def tray_function(self):
-        self.tray = Tray()
-
     def show_msg(self, msg):
         notification = Notify()
         notification.title = msg[0]
         notification.message = msg[1]
-        notification.icon = "./assets/clipwarp.png"
+        notification.icon = "./assets/cw.svg"
         notification.send()
 
     def db_function(self):
@@ -98,8 +93,20 @@ class MainWindow(QMainWindow):
             actionquit = ctmenu.addAction("Quit")
             actionquit.triggered.connect(self.close)
             self.tray.setContextMenu(ctmenu)
+
+            # Connect the activated signal to a slot
+            self.tray.activated.connect(self.trayActivated)
+
             self.tray.show()
-        self.show()
+
+    def trayActivated(self, reason):
+        # Check if the reason for activation is a left mouse button click
+        if reason == QSystemTrayIcon.Trigger:
+            # Show or hide the main window depending on its visibility
+            if self.isVisible():
+                self.hide()
+            else:
+                self.show()
 
     def stylesheet(self):
         return """
@@ -118,10 +125,7 @@ class MainWindow(QMainWindow):
                 QListWidget::item {
                     padding: 5px;            
                 }
-                QPushButton#Send {
-                    background-color: #ffffff;
-                    color: #333
-                }
+
             """
 
     def set_window_icon(self, icon_path):
@@ -133,4 +137,5 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
     window = MainWindow()
+    window.show()
     sys.exit(app.exec_())

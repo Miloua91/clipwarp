@@ -8,7 +8,6 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
 class Chat(QObject):
     message_signal = pyqtSignal(str)
     clips_fetched = pyqtSignal(list)
-    clip_deleted = pyqtSignal()
 
     def __init__(self, ui):
         super().__init__()
@@ -29,8 +28,16 @@ class Chat(QObject):
         if response.status_code == 200:
             clips = response.json()
             self.clips_fetched.emit(clips)
+            self.ui.load_clips(clips)
         else:
             print("Failed to fetch clips from server")
+
+    def delete_clip(self, clip_id):
+        response = requests.delete(f"http://localhost:5000/delete/{clip_id}")
+        if response.status_code == 200:
+            clips = response.json()
+        else:
+            print("Failed to delete clip from server")
 
     def on_delete(self):
         response = requests.get("http://localhost:5000")

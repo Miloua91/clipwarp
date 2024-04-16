@@ -1,4 +1,3 @@
-import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
   Alert,
@@ -9,12 +8,13 @@ import {
   Modal,
   ToastAndroid,
   Pressable,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite";
 import { ThemedButton } from "react-native-really-awesome-button";
-import AwesomeButton from "react-native-really-awesome-button";
-import { Octicons, FontAwesome } from "@expo/vector-icons";
+import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { webSocket, WS } from "./ws";
 import { io } from "socket.io-client";
@@ -29,6 +29,9 @@ interface ClipDb {
   clips_text: string; // Add the 'clips_text' property
   // Add other properties as needed
 }
+
+const bgColor = "#252422";
+const cardColor = "#403d39";
 
 export default function App() {
   const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard
@@ -223,9 +226,14 @@ export default function App() {
   };
 
   const showClips = () => {
-    return val.reverse().map((clip, index) => {
+    const reversedVal = [...val].reverse();
+    return reversedVal.map((clip, index) => {
       return (
-        <View key={index} className="mb-2 bg-stone-800 w-[97%] py-2 rounded-xl">
+        <View
+          key={index}
+          className={`mb-2 w-[97%] py-2 rounded-xl`}
+          style={styles.card}
+        >
           <TextInput
             multiline
             className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-700 my-1 pb-2"
@@ -252,9 +260,14 @@ export default function App() {
   };
 
   const showClipsBd = () => {
-    return clipsDb.reverse().map((clip, index) => {
+    const reversedClipsDb = [...clipsDb].reverse();
+    return reversedClipsDb.map((clip, index) => {
       return (
-        <View key={index} className="mb-2 bg-stone-800 w-[97%] py-2 rounded-xl">
+        <View
+          key={index}
+          className={`mb-2 w-[97%] py-2 rounded-xl`}
+          style={styles.card}
+        >
           <TextInput
             multiline
             className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-700 my-1 pb-2"
@@ -290,21 +303,32 @@ export default function App() {
     if (setting === true)
       return (
         <Modal>
-          <View className="flex flex-row justify-start mx-2 my-6">
+          <View
+            className="flex flex-row justify-start px-2 py-2"
+            style={styles.background}
+          >
             <Pressable
               onPress={() => setSetting(false)}
-              className="active:bg-stone-100 w-10 h-10 px-3 py-[2px] rounded absolute"
+              className="active:bg-stone-600 w-10 h-10 px-3 py-[2px] rounded absolute"
             >
-              <FontAwesome name="angle-left" size={32} color="black" />
+              <FontAwesome name="angle-left" size={32} color="white" />
             </Pressable>
-            <Text className="m-auto text-xl font-semibold py-1">Settings</Text>
+            <Text className="m-auto text-xl font-semibold pb-10 text-white">
+              Settings
+            </Text>
           </View>
-          <View className="flex items-center space-y-8">
+          <View
+            style={styles.background}
+            className="flex items-center space-y-8 h-full"
+          >
             <View className="w-96">
               <WS />
             </View>
-            <View className="border rounded-xl w-[86%] h-20 p-2 flex flex-row justify-between items-center m-auto">
-              <Text className="text-lg text-stone-800">
+            <View
+              style={styles.card}
+              className="border rounded-xl w-[86%] h-20 p-2 flex flex-row justify-between items-center m-auto"
+            >
+              <Text className="text-lg text-white">
                 Reset clipboard database
               </Text>
               <ThemedButton
@@ -323,46 +347,49 @@ export default function App() {
 
   return (
     <>
-      <ScrollView className="flex justfiy-center mt-16">
-        <View className="flex flex-row justify-end mx-3 mb-4">
-          <AwesomeButton
-            width={60}
-            backgroundColor="white"
+      <SafeAreaView>
+        <StatusBar backgroundColor={`${bgColor}`} />
+      </SafeAreaView>
+      <ScrollView className={`flex justfiy-center `} style={styles.background}>
+        <View className="flex flex-row justify-end">
+          <Pressable
+            className="h-12 w-12 p-2 mx-1 my-4 active:bg-stone-600 rounded-lg"
             onPress={handleSettingPress}
           >
-            <Octicons name="server" size={24} color="black" />
-          </AwesomeButton>
+            <Ionicons name="settings-sharp" size={32} color="white" />
+          </Pressable>
         </View>
         <View style={styles.container}>
           <TextInput
-            className="w-[90%] text-center text-[16px]"
+            className="w-[97%] rounded-lg h-16 text-center text-[16px]  text-white"
             multiline
             value={currentVal}
             placeholder="ClipWarp"
             onChangeText={setCurrentVal}
+            style={styles.card}
           />
           <View className="flex flex-row my-4 w-[96%] justify-between">
             <ThemedButton
               width={160}
               name="bruce"
+              backgroundColor="#403d39"
               type="primary"
-              onPress={addClip}
+              onPress={fetchCopiedText}
             >
-              Send
+              Paste
             </ThemedButton>
             <ThemedButton
               width={160}
               name="bruce"
               type="secondary"
-              onPress={fetchCopiedText}
+              onPress={addClip}
             >
-              Paste
+              Send
             </ThemedButton>
           </View>
           <View className="border-b border-stone-500 w-[97%] my-2" />
           {connection ? showClipsBd() : showClips()}
           {settingModal()}
-          <StatusBar style="auto" />
         </View>
       </ScrollView>
     </>
@@ -372,9 +399,10 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: `${bgColor}`,
     alignItems: "center",
     justifyContent: "center",
+    color: "#fff",
   },
   row: {
     flexDirection: "row",
@@ -386,5 +414,11 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     alignItems: "center",
+  },
+  card: {
+    backgroundColor: `${cardColor}`,
+  },
+  background: {
+    backgroundColor: `${bgColor}`,
   },
 });

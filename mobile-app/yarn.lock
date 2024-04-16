@@ -3431,6 +3431,7 @@ __metadata:
     expo-device: "npm:~5.9.3"
     expo-sqlite: "npm:^13.4.0"
     expo-status-bar: "npm:~1.11.1"
+    expo-system-ui: "npm:^2.9.3"
     expo-updates: "npm:~0.24.12"
     metro: "npm:^0.80.7"
     metro-cache: "npm:^0.80.6"
@@ -5409,6 +5410,18 @@ __metadata:
   version: 3.7.2
   resolution: "expo-structured-headers@npm:3.7.2"
   checksum: 10c0/9b6ca76ffbd92cc6a352807d5e6c87f7bff0b298821b6ca823fdaedaf88bd141f197d2fcbd1fe44123209686c124b43bacd30a5d763edc76c71d65585640a980
+  languageName: node
+  linkType: hard
+
+"expo-system-ui@npm:^2.9.3":
+  version: 2.9.3
+  resolution: "expo-system-ui@npm:2.9.3"
+  dependencies:
+    "@react-native/normalize-color": "npm:^2.0.0"
+    debug: "npm:^4.3.2"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/145427e8c097db5d9735224eda9496aa1f9ac3d4ee081c44714272d4f29a27649c0dd3fccc0fc62063850b034e5dfcc0042a71ee4de0a3cebfacf68fbca567ae
   languageName: node
   linkType: hard
 

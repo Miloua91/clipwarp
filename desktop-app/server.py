@@ -2,9 +2,8 @@ import asyncio
 import socket
 
 import websockets
-from PyQt5.QtCore import QObject, pyqtSignal
-
 from db import Database
+from PyQt5.QtCore import QObject, pyqtSignal
 
 
 class Server(QObject):

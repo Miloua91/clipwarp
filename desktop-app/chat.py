@@ -1,3 +1,5 @@
+import socket
+
 import requests
 import socketio
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -16,7 +18,7 @@ class Chat(QObject):
         self.socketio = socketio.Client()
 
         self.socketio.on("delete", self.on_delete)
-        self.socketio.connect("http://localhost:5000")
+        self.socketio.connect(f"http://{self.get_ip_address()}:5000")
 
         self.fetch_clips()
 
@@ -24,7 +26,7 @@ class Chat(QObject):
         self.ui.Paste.clicked.connect(self.paste_text)
 
     def fetch_clips(self):
-        response = requests.get("http://localhost:5000")
+        response = requests.get(f"http://{self.get_ip_address()}:5000")
         if response.status_code == 200:
             clips = response.json()
             self.clips_fetched.emit(clips)
@@ -33,14 +35,16 @@ class Chat(QObject):
             print("Failed to fetch clips from server")
 
     def delete_clip(self, clip_id):
-        response = requests.delete(f"http://localhost:5000/delete/{clip_id}")
+        response = requests.delete(
+            f"http://{self.get_ip_address()}:5000/delete/{clip_id}"
+        )
         if response.status_code == 200:
             clips = response.json()
         else:
             print("Failed to delete clip from server")
 
     def on_delete(self):
-        response = requests.get("http://localhost:5000")
+        response = requests.get(f"http://{self.get_ip_address()}:5000")
         if response.status_code == 200:
             clips = response.json()
             self.clips_fetched.emit(clips)

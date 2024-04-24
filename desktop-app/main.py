@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.setup_connections()
         self.setStyleSheet(self.stylesheet())
-        # self.setFixedSize(612, 392)
+        self.setFixedSize(612, 392)
         self.set_window_icon("./assets/cw.ico")
         self.setup_system_tray()
 
@@ -94,15 +94,12 @@ class MainWindow(QMainWindow):
             actionquit.triggered.connect(self.close)
             self.tray.setContextMenu(ctmenu)
 
-            # Connect the activated signal to a slot
             self.tray.activated.connect(self.trayActivated)
 
             self.tray.show()
 
     def trayActivated(self, reason):
-        # Check if the reason for activation is a left mouse button click
         if reason == QSystemTrayIcon.Trigger:
-            # Show or hide the main window depending on its visibility
             if self.isVisible():
                 self.hide()
             else:

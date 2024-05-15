@@ -27,13 +27,14 @@
     "web": {
       "favicon": "./assets/icon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "36a89c3c-ef92-49b0-9f1c-c5d5e2bc17fc"
-      }
-    },
+    "eas": {},
     "plugins": [
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ffea7838-506a-44fa-8d17-9ead3a93c317"
+      }
+    }
   }
 }

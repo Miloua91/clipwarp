@@ -12,7 +12,7 @@ import {
   StatusBar,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import * as SQLite from "expo-sqlite";
+import * as SQLite from "expo-sqlite/legacy";
 import { ThemedButton } from "react-native-really-awesome-button";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
@@ -34,7 +34,7 @@ const bgColor = "#252422";
 const cardColor = "#403d39";
 
 export default function App() {
-  const db = await SQLite.openDatabaseAsync("clipwarp.db"); // SQLite database to save clipboard
+  const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
   const [clipsDb, setClipsDb] = useState<ClipDb[]>([]);
@@ -135,17 +135,24 @@ export default function App() {
     }
   }
 
-  const resetDatabase = async () => {
+  const resetDatabase = () => {
     deleteAllClipsDb();
-   await db.withTransactionAsync(async () => {
-      await db.execAsync("DROP TABLE IF EXISTS clips");
-      ;
+    db.transaction((tx) => {
+      // Drop the clips table if it exists
+      tx.executeSql("DROP TABLE IF EXISTS clips", [], () => {
+        console.log("Table dropped successfully");
+      });
     });
 
     // Recreate the clips table
-    db.withTransactionAsync(async () => {
-      await db.execAsync(
-        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)")
+    db.transaction((tx) => {
+      tx.executeSql(
+        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
+        [],
+        () => {
+          console.log("Table created successfully");
+        },
+      );
     });
 
     // Update the val state to reflect the empty database
@@ -153,14 +160,17 @@ export default function App() {
   };
 
   useEffect(() => {
-   await db.withTransactionAsync(async () => {
-      db.execAsync(
-        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)")});
+    db.transaction((tx) => {
+      tx.executeSql(
+        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
+      );
+    });
 
-    db.withTransactionAsync(async () => {
-    const resultSet = await  db.execAsync("SELECT * FROM clips")
-    setVal(resultSet.rows._array);
-    })
+    db.transaction((tx) => {
+      tx.executeSql("SELECT * FROM clips", [], (txObj, resultSet) =>
+        setVal(resultSet.rows._array),
+      );
+    });
   }, [db]);
 
   const fetchCopiedText = async () => {
@@ -185,7 +195,7 @@ export default function App() {
       };
       ws();
     } else {
-      db.withTransactionAsync(async () => {
+      db.transaction((tx) => {
         tx.executeSql(
           "INSERT INTO clips (clip) values (?)",
           [currentVal],
@@ -201,8 +211,8 @@ export default function App() {
   };
 
   const deleteClip = (id: number) => {
-    db.withTransactionAsync((tx) => {
-      tx.(
+    db.transaction((tx) => {
+      tx.executeSql(
         "DELETE FROM clips WHERE id = ?",
         [id],
         (txObj, resultSet) => {

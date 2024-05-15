@@ -1186,9 +1186,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@expo/cli@npm:0.18.11":
-  version: 0.18.11
-  resolution: "@expo/cli@npm:0.18.11"
+"@expo/cli@npm:0.18.12":
+  version: 0.18.12
+  resolution: "@expo/cli@npm:0.18.12"
   dependencies:
     "@babel/runtime": "npm:^7.20.0"
     "@expo/code-signing-certificates": "npm:0.0.5"
@@ -1268,7 +1268,7 @@ __metadata:
     ws: "npm:^8.12.1"
   bin:
     expo-internal: build/bin/cli
-  checksum: 10c0/4bea139e45e2306dca3169761bbcdd160527dc81ff81ecee97a3b5d77818edf3ddb1380ad4f98cc4ca557eedae5fb07cf51d4c4b0bc18d29f818449c2491ad2a
+  checksum: 10c0/f4361c64ec7f905e9222f585063a05334ae65e909c93b908bbebbc9463123c9672b7e7a0612ce0903d182fed628cd003b3fa1a4116c0a7ed02e7333d888649ef
   languageName: node
   linkType: hard
 
@@ -3034,15 +3034,15 @@ __metadata:
     "@react-native/metro-config": "npm:0.75.0-main"
     "@types/react": "npm:~18.2.79"
     "@types/react-dom": "npm:~18.2.25"
-    expo: "npm:51"
-    expo-asset: "npm:~10.0.6"
+    expo: "npm:~51.0.6"
+    expo-asset: "npm:^10.0.6"
     expo-clipboard: "npm:~6.0.3"
     expo-device: "npm:~6.0.2"
     expo-sqlite: "npm:~14.0.3"
     expo-status-bar: "npm:~1.12.1"
     expo-system-ui: "npm:~3.0.4"
-    expo-updates: "npm:~0.25.11"
-    metro: "npm:~0.80.8"
+    expo-updates: "npm:~0.25.12"
+    metro: "npm:^0.80.9"
     metro-cache: "npm:^0.80.6"
     metro-cache-key: "npm:^0.80.7"
     metro-config: "npm:^0.80.7"
@@ -4753,7 +4753,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-asset@npm:~10.0.6":
+"expo-asset@npm:^10.0.6, expo-asset@npm:~10.0.6":
   version: 10.0.6
   resolution: "expo-asset@npm:10.0.6"
   dependencies:
@@ -4923,9 +4923,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-updates@npm:~0.25.11":
-  version: 0.25.11
-  resolution: "expo-updates@npm:0.25.11"
+"expo-updates@npm:~0.25.12":
+  version: 0.25.12
+  resolution: "expo-updates@npm:0.25.12"
   dependencies:
     "@expo/code-signing-certificates": "npm:0.0.5"
     "@expo/config": "npm:~9.0.0-beta.0"
@@ -4946,16 +4946,16 @@ __metadata:
     expo: "*"
   bin:
     expo-updates: bin/cli.js
-  checksum: 10c0/72d69e2897f52a68720bd129ec6729178f7f819be8f2fe6d2a4c324b7a0f7d0f68b3995733cbc0e795db8667600951ba1ecef7a6bc82e232fe6f6052249decb5
+  checksum: 10c0/8c2736481216d31acc037718f99632ebffcc3e4d2df0e8fce4ed46a94fa38377f7fd9e81391c7cda80a39925c7e1c7604730a9e67b08e97aeb4d2ecab3c92802
   languageName: node
   linkType: hard
 
-"expo@npm:51":
-  version: 51.0.5
-  resolution: "expo@npm:51.0.5"
+"expo@npm:~51.0.6":
+  version: 51.0.6
+  resolution: "expo@npm:51.0.6"
   dependencies:
     "@babel/runtime": "npm:^7.20.0"
-    "@expo/cli": "npm:0.18.11"
+    "@expo/cli": "npm:0.18.12"
     "@expo/config": "npm:9.0.1"
     "@expo/config-plugins": "npm:8.0.4"
     "@expo/metro-config": "npm:0.18.3"
@@ -4971,7 +4971,7 @@ __metadata:
     whatwg-url-without-unicode: "npm:8.0.0-3"
   bin:
     expo: bin/cli
-  checksum: 10c0/924782dbdb74da2fae04235fb55707e9e899f56f28e007417e34be11f2b3cb6fe1fa8e3c1f52214fee1a440bb6c813e9b77035bc2f5ce04f287ba8ca34223f92
+  checksum: 10c0/223d7b230baff07393eae1c781394c1299c93ab21bf0ef7d60e19bdb0589aab36217ec4753073160dd10d8d0c92484d5e46274431d7ffc111ffc830114171d95
   languageName: node
   linkType: hard
 
@@ -7091,7 +7091,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metro@npm:0.80.9, metro@npm:~0.80.8":
+"metro@npm:0.80.9, metro@npm:^0.80.9":
   version: 0.80.9
   resolution: "metro@npm:0.80.9"
   dependencies:

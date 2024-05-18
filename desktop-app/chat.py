@@ -18,6 +18,7 @@ class Chat(QObject):
         self.socketio = socketio.Client()
 
         self.socketio.on("delete", self.on_delete)
+        self.socketio.on("reset", self.reset_db)
         self.socketio.connect(f"http://{self.get_ip_address()}:5000")
 
         self.fetch_clips()
@@ -50,6 +51,15 @@ class Chat(QObject):
             self.clips_fetched.emit(clips)
         else:
             print("Failed to fetch clips from server")
+
+    def reset_db(self):
+        response = requests.post(f"http://{self.get_ip_address()}:5000/reset")
+        if response.status_code == 200:
+            clips = response.json()
+            self.clips_fetched.emit(clips)
+        else:
+            print("Failed to fetch clips from server")
+
 
     def show_msg(self, msg):
         self.fetch_clips()

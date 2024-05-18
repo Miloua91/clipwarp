@@ -22,7 +22,7 @@ class FlaskAPI(QObject):
         self.app.add_url_rule(
             "/reset",
             "reset",
-            self.delete_clip,
+            self.reset_database,
             methods=["POST"],
         )
 

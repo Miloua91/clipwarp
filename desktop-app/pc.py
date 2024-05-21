@@ -14,6 +14,10 @@ class Client(QObject):
             with open("settings.txt", "r") as f:
                 port = f.read()
                 return port
+        else: 
+            return 42069
+
+
 
     def run(self):
         asyncio.run(self.client())
@@ -26,7 +30,7 @@ class Client(QObject):
         return ip
 
     async def client(self):
-        uri = f"ws://{self.get_ip_address()}:5678/Server"
+        uri = f"ws://{self.get_ip_address()}:{self.load_port()}/Server"
         async with websockets.connect(uri) as self.websocket:
             async for message in self.websocket:
                 self.recv_signal.emit(message)

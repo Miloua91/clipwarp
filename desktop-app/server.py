@@ -20,6 +20,8 @@ class Server(QObject):
             with open("settings.txt", "r") as f:
                 port = f.read()
                 return port
+        else: 
+            return 42069
 
     def run(self):
         print("server is runnig")
@@ -33,7 +35,7 @@ class Server(QObject):
         return ip
 
     async def start_server(self):
-        async with websockets.serve(self.register, self.get_ip_address(), 5678):
+        async with websockets.serve(self.register, self.get_ip_address(), self.load_port()):
             await asyncio.Future()
 
     async def register(self, websocket, path):

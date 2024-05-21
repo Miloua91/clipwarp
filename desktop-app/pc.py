@@ -1,3 +1,4 @@
+import os
 import asyncio
 import socket
 
@@ -7,6 +8,12 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 class Client(QObject):
     recv_signal = pyqtSignal(str)
+
+    def load_port(self):
+        if os.path.exists("settings.txt"):
+            with open("settings.txt", "r") as f:
+                port = f.read()
+                return port
 
     def run(self):
         asyncio.run(self.client())

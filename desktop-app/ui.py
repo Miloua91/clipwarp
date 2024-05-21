@@ -226,7 +226,7 @@ class Ui_MainWindow(QObject):
         layout.addLayout(ip_layout)
 
         port_label = QLabel("Port")
-        self.port_edit = QPlainTextEdit("6969")
+        self.port_edit = QPlainTextEdit("42069")
         self.port_edit.setFixedHeight(26)
         self.port_edit.setStyleSheet(
             """

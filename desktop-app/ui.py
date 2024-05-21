@@ -351,8 +351,67 @@ class Ui_MainWindow(QObject):
     def save_port(self):
         port = self.port_edit.toPlainText()
         if port.isdigit():
-            with open("settings.txt", "w") as f:
-                f.write(port)
+            dlg = QDialog()
+            dlg.setFixedSize(340, 100)
+
+            layout = QVBoxLayout()
+            message_label = QLabel("You must exit the application to save the changes!")
+            message_label.setWordWrap(True)
+            message_layout = QHBoxLayout()
+            message_layout.addWidget(message_label)
+
+            exit_button = QPushButton("Exit")
+            exit_button.setFixedSize(50, 33)
+            exit_button.clicked.connect(dlg.accept)
+            exit_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            exit_button.setStyleSheet(
+                """
+                    QPushButton {
+                        height: 32px;
+                        background-color: #333;
+                        color: #f0f0f0;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;    
+                    }
+                    QPushButton::hover {
+                        background-color: #474747
+                    }
+                """
+            )
+            cancel_button = QPushButton("Cancel")
+            cancel_button.setFixedSize(50, 33)
+            cancel_button.clicked.connect(dlg.reject)
+            cancel_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            cancel_button.setStyleSheet(
+                """
+                        QPushButton {
+                            height: 32px;
+                            background-color: #d4d4d4;
+                            color: #18181b;
+                            border: 1px solid #ccc;
+                            border-radius: 5px;    
+                        }
+                        QPushButton::hover {
+                            background-color: #e5e5e5
+                        }
+                    """
+            )
+
+            button_layout = QHBoxLayout()
+            button_layout.addStretch()
+            button_layout.addWidget(exit_button)
+            button_layout.addWidget(cancel_button)
+            layout.addLayout(message_layout)
+            layout.addLayout(button_layout)
+
+
+            dlg.setLayout(layout)
+            dlg.setWindowTitle("Change Port")
+            result = dlg.exec()
+            if result == QDialog.Accepted:
+                with open("settings.txt", "w") as f:
+                    f.write(port)
+                os._exit(1)
             print("Port saved successfully.")
         else:
             dlg = QDialog()

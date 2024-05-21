@@ -47,6 +47,7 @@ class VerticalTabWidget(QTabWidget):
 
 class Ui_MainWindow(QObject):
     itemDeleted = pyqtSignal(int)
+    resetDB = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -242,6 +243,26 @@ class Ui_MainWindow(QObject):
         port_layout.addWidget(self.port_edit)
         layout.addLayout(port_layout)
 
+        reset_button = QPushButton("Reset Database")
+        reset_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        reset_button.setStyleSheet(
+            """
+                        QPushButton {
+                                height: 32px;
+                                background-color: #ef4444;
+        color: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 5px;    
+    }
+    QPushButton::hover {
+        background-color: #f87171;
+        color: #f9fafb;
+    }
+    """
+        )
+        reset_button.clicked.connect(self.reset_db)
+        layout.addWidget(reset_button)
+
         save_button = QPushButton("Save")
         save_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         save_button.setStyleSheet(
@@ -263,8 +284,69 @@ class Ui_MainWindow(QObject):
 
         new_window.setLayout(layout)
         self.load_settings()
-        new_window.setFixedSize(200, 120)
+        new_window.setFixedSize(200, 160)
         new_window.exec_()
+
+    def reset_db(self):
+        dlg = QDialog()
+        dlg.setFixedSize(340, 100)
+
+        layout = QVBoxLayout()
+        message_label = QLabel("Resetting the Clips database is irreversible. Are you sure you want to proceed?")
+        message_label.setWordWrap(True)
+        message_layout = QHBoxLayout()
+        message_layout.addWidget(message_label)
+
+        yes_button = QPushButton("Yes")
+        yes_button.setFixedSize(42, 33)
+        yes_button.clicked.connect(dlg.accept)
+        yes_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        yes_button.setStyleSheet(
+            """
+                    QPushButton {
+                        height: 32px;
+                        background-color: #ef4444;
+                        color: #f0f0f0;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;    
+                    }
+                    QPushButton::hover {
+                        background-color: #f87171
+                    }
+                """
+        )
+        no_button = QPushButton("No")
+        no_button.setFixedSize(42, 33)
+        no_button.clicked.connect(dlg.reject)
+        no_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        no_button.setStyleSheet(
+            """
+                    QPushButton {
+                        height: 32px;
+                        background-color: #d4d4d4;
+                        color: #18181b;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;    
+                    }
+                    QPushButton::hover {
+                        background-color: #e5e5e5
+                    }
+                """
+        )
+
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(yes_button)
+        button_layout.addWidget(no_button)
+        layout.addLayout(message_layout)
+        layout.addLayout(button_layout)
+
+
+        dlg.setLayout(layout)
+        dlg.setWindowTitle("Reset Database")
+        result = dlg.exec()
+        if result == QDialog.Accepted:
+            self.resetDB.emit()
 
     def save_port(self):
         port = self.port_edit.toPlainText()
@@ -273,7 +355,45 @@ class Ui_MainWindow(QObject):
                 f.write(port)
             print("Port saved successfully.")
         else:
-            print("Invalid port value. Port must be a number.")
+            dlg = QDialog()
+            dlg.setFixedSize(240, 100)
+
+            layout = QVBoxLayout()
+            message_label = QLabel("Invalid port value. Port must be a number.")
+            message_label.setWordWrap(True)
+            message_layout = QHBoxLayout()
+            message_layout.addWidget(message_label)
+
+            ok_button = QPushButton("Ok")
+            ok_button.setFixedSize(42, 33)
+            ok_button.clicked.connect(dlg.accept)
+            ok_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            ok_button.setStyleSheet(
+                """
+                        QPushButton {
+                            height: 32px;
+                            background-color: #0ea5e9;
+                            color: #f0f0f0;
+                            border: 1px solid #ccc;
+                            border-radius: 5px;    
+                        }
+                        QPushButton::hover {
+                            background-color: #38bdf8
+                        }
+                    """
+            )
+            button_layout = QHBoxLayout()
+            button_layout.addStretch()
+            button_layout.addWidget(ok_button)
+            layout.addLayout(message_layout)
+            layout.addLayout(button_layout)
+
+
+            dlg.setLayout(layout)
+            dlg.setWindowTitle("Invalid Input")
+            result = dlg.exec()
+            if result == QDialog.Accepted:
+                print("Database reset confirmed")
 
     def load_settings(self):
         if os.path.exists("settings.txt"):

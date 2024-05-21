@@ -44,14 +44,6 @@ class Chat(QObject):
         else:
             print("Failed to delete clip from server")
 
-    def on_delete(self):
-        response = requests.get(f"http://{self.get_ip_address()}:5000")
-        if response.status_code == 200:
-            clips = response.json()
-            self.clips_fetched.emit(clips)
-        else:
-            print("Failed to fetch clips from server")
-
     def reset_db(self):
         response = requests.post(f"http://{self.get_ip_address()}:5000/reset")
         if response.status_code == 200:

@@ -52,6 +52,12 @@ class Chat(QObject):
         else:
             print("Failed to fetch clips from server")
 
+    def reset_db(self):
+        response = requests.post(f"http://{self.get_ip_address()}:5000/reset")
+        if response.status_code == 200:
+            self.fetch_clips
+        else:
+            print("Failed to fetch clips from server")
 
     def show_msg(self, msg):
         self.fetch_clips()

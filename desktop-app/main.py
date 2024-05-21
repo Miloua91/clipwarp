@@ -49,6 +49,7 @@ class MainWindow(QMainWindow):
         self.Chat.message_signal.connect(self.client.bridge)
         self.Chat.clips_fetched.connect(self.ui.load_clips)
         self.ui.itemDeleted.connect(self.Chat.delete_clip)
+        self.ui.resetDB.connect(self.Chat.reset_db)
         self.client.recv_signal.connect(self.Chat.show_msg)
         self.client.moveToThread(self.client_thread)
         self.client_thread.started.connect(self.client.run)

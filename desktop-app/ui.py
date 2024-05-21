@@ -151,7 +151,7 @@ class Ui_MainWindow(QObject):
                 delete_icon = QIcon("./assets/delete.svg")
                 delete_button.setIcon(delete_icon)
                 delete_button.clicked.connect(
-                    lambda _, item=item: self.delete_item(item, list_widget)
+                    lambda _, item=item, list_widget=list_widget: self.delete_item(item, list_widget)
                 )
 
                 copy_button = QPushButton("")
@@ -191,12 +191,14 @@ class Ui_MainWindow(QObject):
             self.tabWidget.addTab(list_widget, category)
         self.tabWidget.setCurrentIndex(self.current_tab_index)
 
+    
     def delete_item(self, item, list_widget):
         row = list_widget.row(item)
         if row != -1:
             clip_id = item.data(Qt.UserRole)
             list_widget.takeItem(row)
             self.itemDeleted.emit(clip_id)
+
 
     def copy_clip(self, text):
         clipboard = QApplication.clipboard()

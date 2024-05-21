@@ -1,3 +1,4 @@
+import os
 import asyncio
 import socket
 
@@ -13,6 +14,12 @@ class Server(QObject):
     def __init__(self):
         super().__init__()
         self.db = Database()
+
+    def load_port(self):
+        if os.path.exists("settings.txt"):
+            with open("settings.txt", "r") as f:
+                port = f.read()
+                return port
 
     def run(self):
         print("server is runnig")

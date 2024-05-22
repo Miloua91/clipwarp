@@ -23,6 +23,8 @@ export function WS() {
         const savedAddress = await AsyncStorage.getItem("address");
         if (savedAddress !== null) {
           setWsAddress(savedAddress);
+        } else {
+          await AsyncStorage.setItem("address", wsAddress);
         }
       } catch (error) {
         console.error("Error loading WebSocket address:", error);
@@ -34,6 +36,8 @@ export function WS() {
         const savedPort = await AsyncStorage.getItem("port");
         if (savedPort !== null) {
           setWsPort(savedPort);
+        } else {
+          await AsyncStorage.setItem("port", wsPort);
         }
       } catch (error) {
         console.error("Error loading WebSocket port:", error);
@@ -45,6 +49,8 @@ export function WS() {
         const savedDevice = await AsyncStorage.getItem("device");
         if (savedDevice !== null) {
           setDeviceName(savedDevice);
+        } else {
+          await AsyncStorage.setItem("device", deviceName);
         }
       } catch (error) {
         console.error("Error loading device name:", error);

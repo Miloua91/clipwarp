@@ -18,6 +18,7 @@ import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { webSocket, WS } from "./ws";
 import { io } from "socket.io-client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Clip = {
   id: number | undefined;
@@ -40,9 +41,23 @@ export default function App() {
   const [clipsDb, setClipsDb] = useState<ClipDb[]>([]);
   const [connection, setConnection] = useState(false);
   const [setting, setSetting] = useState<boolean>(false);
+  const [wsAddress, setWsAddress] = useState<string>();
+  const [wsPort, setWsPort] = useState<number>();
+
+  useEffect(() => {
+    async function getAddress() {
+      const address = await AsyncStorage.getItem("address");
+      const port = await AsyncStorage.getItem("port");
+      setWsAddress(address ?? "192.168.1");
+      setWsPort(Number(port) ?? 42069);
+    }
+    getAddress();
+  }, []);
 
   async function getClips() {
-    const response = await fetch("http://192.168.1.13:5000/");
+    const response = await fetch(
+      `http://${wsAddress}:${(wsPort ?? 42069) + 1}/`,
+    );
     const data = await response.json();
     setClipsDb(data);
   }
@@ -52,7 +67,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const socket = io("ws://192.168.1.13:5000/");
+    const socket = io(`http://${wsAddress}:${(wsPort ?? 42069) + 1}/`);
 
     socket.onAny((event) => {
       getClips();
@@ -73,8 +88,8 @@ export default function App() {
       websocket.onopen = () => {
         val.forEach((vals) => {
           websocket.send(vals.clip);
+          deleteDatabase();
           getClips();
-          deleteClip(vals.id as number);
         });
         setConnection(true);
       };
@@ -107,7 +122,7 @@ export default function App() {
   async function deleteClipsDb(clipId: number) {
     try {
       const response = await fetch(
-        `http://192.168.1.13:5000/delete/${clipId}`,
+        `http://${wsAddress}:${(wsPort ?? 42069) + 1}/delete/${clipId}`,
         {
           method: "DELETE",
         },
@@ -123,9 +138,12 @@ export default function App() {
 
   async function deleteAllClipsDb() {
     try {
-      const response = await fetch(`http://192.168.1.13:5000/reset`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `http://${wsAddress}:${(wsPort ?? 42069) + 1}/reset`,
+        {
+          method: "POST",
+        },
+      );
       if (!response.ok) {
         throw new Error("Failed to delete clips");
       }
@@ -134,6 +152,29 @@ export default function App() {
       console.error(error);
     }
   }
+
+  const deleteDatabase = () => {
+    db.transaction((tx) => {
+      // Drop the clips table if it exists
+      tx.executeSql("DROP TABLE IF EXISTS clips", [], () => {
+        console.log("Table dropped successfully");
+      });
+    });
+
+    // Recreate the clips table
+    db.transaction((tx) => {
+      tx.executeSql(
+        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
+        [],
+        () => {
+          console.log("Table created successfully");
+        },
+      );
+    });
+
+    // Update the val state to reflect the empty database
+    setVal([]);
+  };
 
   const resetDatabase = () => {
     deleteAllClipsDb();
@@ -236,7 +277,7 @@ export default function App() {
         >
           <TextInput
             multiline
-            className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-700 my-1 pb-2"
+            className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-600 my-1 pb-4"
           >
             {clip.clip}
           </TextInput>
@@ -270,7 +311,7 @@ export default function App() {
         >
           <TextInput
             multiline
-            className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-700 my-1 pb-2"
+            className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-600 my-1 pb-4"
           >
             {clip.clips_text}
           </TextInput>

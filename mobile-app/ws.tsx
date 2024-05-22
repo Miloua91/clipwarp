@@ -73,6 +73,8 @@ export function WS() {
     if (wsPort !== null) {
       try {
         await AsyncStorage.setItem("port", wsPort);
+        await new Promise((resolve) => setTimeout(resolve, 80));
+        await Updates.reloadAsync();
       } catch (error) {
         console.error("Error saving WebSocket port:", error);
       }
@@ -118,6 +120,30 @@ export function WS() {
       </View>
 
       <View
+        className="space-x-1 mb-4 mx-6 border rounded-xl"
+        style={styles.card}
+      >
+        <Text className="mx-2 text-lg font-semibold py-1 text-white">
+          Enter server's port
+        </Text>
+        <TextInput
+          className="w-[75%] pl-4 text-lg m-1 bottom-2 text-white"
+          placeholder="IP address"
+          onChangeText={(text) => setWsPort(text)}
+          value={wsPort}
+        />
+        <View className="absolute right-0 mx-2 my-1">
+          <AwesomeButton
+            backgroundColor="#403d39"
+            width={60}
+            onPress={handleWsPortChange}
+          >
+            <FontAwesome name="save" size={24} color="white" />
+          </AwesomeButton>
+        </View>
+      </View>
+
+      <View
         className="space-x-1 mx-6 mb-4 border rounded-xl"
         style={styles.card}
       >
@@ -149,9 +175,12 @@ export function WS() {
 
 export const webSocket = async () => {
   const wsAddress = await AsyncStorage.getItem("address");
+  const wsPort = await AsyncStorage.getItem("port");
   const getDevice = await AsyncStorage.getItem("device");
   const device = getDevice?.replace(/\s+/g, "-");
-  return new WebSocket(`ws://${wsAddress}:5678/${device}`);
+  return new WebSocket(
+    `ws://${wsAddress}:${wsPort ?? "42069"}/${device ?? "Phone"}`,
+  );
 };
 
 const styles = StyleSheet.create({

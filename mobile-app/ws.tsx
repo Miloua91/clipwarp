@@ -68,6 +68,17 @@ export function WS() {
     }
   };
 
+  const handleWsPortChange = async () => {
+    // Store the updated WebSocket address in AsyncStorage
+    if (wsPort !== null) {
+      try {
+        await AsyncStorage.setItem("port", wsPort);
+      } catch (error) {
+        console.error("Error saving WebSocket port:", error);
+      }
+    }
+  };
+
   const saveDeviceName = async () => {
     if (deviceName !== null && deviceName !== "") {
       try {

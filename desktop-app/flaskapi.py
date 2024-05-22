@@ -1,3 +1,4 @@
+import os
 import sqlite3
 
 from flask import Flask, jsonify, request
@@ -26,8 +27,17 @@ class FlaskAPI(QObject):
             methods=["POST"],
         )
 
+    def load_port(self):
+        if os.path.exists("settings.txt"):
+            with open("settings.txt", "r") as f:
+                port = f.read()
+                return (int(port) + 1)
+        else: 
+            return 42070
+
+
     def start(self):
-        self.socketio.run(self.app, host="0.0.0.0")
+        self.socketio.run(self.app, host="0.0.0.0", port=self.load_port())
 
     def get_db_connection(self):
         conn = sqlite3.connect("./assets/clipwarp.db")

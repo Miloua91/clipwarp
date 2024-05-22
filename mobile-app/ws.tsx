@@ -11,6 +11,7 @@ const cardColor = "#403d39";
 
 export function WS() {
   const [wsAddress, setWsAddress] = useState(`192.168.1.`);
+  const [wsPort, setWsPort] = useState(`42069`);
   let getDevice = `${Device.deviceName}`;
   let device = getDevice.replace(/\s+/g, "-");
   const [deviceName, setDeviceName] = useState(device);
@@ -28,6 +29,17 @@ export function WS() {
       }
     };
 
+    const loadWsPort = async () => {
+      try {
+        const savedPort = await AsyncStorage.getItem("port");
+        if (savedPort !== null) {
+          setWsPort(savedPort);
+        }
+      } catch (error) {
+        console.error("Error loading WebSocket port:", error);
+      }
+    };
+
     const loadDevice = async () => {
       try {
         const savedDevice = await AsyncStorage.getItem("device");
@@ -40,6 +52,7 @@ export function WS() {
     };
 
     loadWsAddress();
+    loadWsPort();
     loadDevice();
   }, []);
 

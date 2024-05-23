@@ -149,6 +149,7 @@ export default function Collection() {
                       <Button
                         onClick={() => deleteClip(clip.id)}
                         variant="ghost"
+                        className="hover:bg-red-500 hover:text-white"
                       >
                         Delete
                       </Button>
@@ -174,6 +175,7 @@ export default function Collection() {
                       <Button
                         onClick={() => deleteClip(clip.id)}
                         variant="ghost"
+                        className="hover:bg-red-500 hover:text-white"
                       >
                         Delete
                       </Button>

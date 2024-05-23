@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { io } from "socket.io-client";
+import settings from "../../../desktop-app/settings.txt";
 
 interface Clip {
   clips_text: string;
@@ -18,47 +19,65 @@ interface Clip {
 
 export default function Collection() {
   const [clips, setClips] = useState<Clip[]>([]);
+  const [port, setPort] = useState<number>();
+
+  useEffect(() => {
+    fetch(settings)
+      .then((r) => r.text())
+      .then((text) => {
+        setPort(Number(text));
+      });
+  }, []);
 
   async function getClips() {
-    const response = await fetch("http://192.168.1.13:5000/");
-    const data = await response.json();
-    setClips(data);
+    if (port) {
+      const response = await fetch(`http://192.168.1.13:${port + 1}/`);
+      const data = await response.json();
+      setClips(data);
+    }
   }
+
   useEffect(() => {
     getClips();
-  }, []);
+  }, [port]);
 
   useEffect(() => {
-    const socket = io("ws://192.168.1.13:5000");
+    if (port) {
+      const socket = io(`ws://192.168.1.13:${port + 1}`);
 
-    socket.onAny((event) => {
-      getClips();
-    });
+      socket.onAny((event) => {
+        getClips();
+      });
 
-    return () => {
-      socket.disconnect();
-    };
-  }, [getClips]);
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [getClips, port]);
 
   useEffect(() => {
-    const websocket = new WebSocket("ws://192.168.1.13:5678/webapp");
-    websocket.onmessage = () => {
-      getClips();
-    };
-  }, []);
+    if (port) {
+      const websocket = new WebSocket(`ws://192.168.1.13:${port}/webapp`);
+      websocket.onmessage = () => {
+        getClips();
+      };
+    }
+  }, [port]);
 
   async function deleteClip(clipId: number) {
     try {
-      const response = await fetch(
-        `http://192.168.1.13:5000/delete/${clipId}`,
-        {
-          method: "DELETE",
-        },
-      );
-      if (!response.ok) {
-        throw new Error("Failed to delete clip");
+      if (port) {
+        const response = await fetch(
+          `http://192.168.1.13:${port + 1}/delete/${clipId}`,
+          {
+            method: "DELETE",
+          },
+        );
+        if (!response.ok) {
+          throw new Error("Failed to delete clip");
+        }
+        getClips();
       }
-      getClips();
     } catch (error) {
       console.error(error);
     }

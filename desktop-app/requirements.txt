@@ -11,3 +11,7 @@ win32-setctime==1.1.0
 blacksheep==2.0.7
 uvicorn==0.29.0
 flask==3.0.3
+requests==2.32.2
+socketio==0.2.1
+Flask-Cors==4.0.1
+Flask-SocketIO==5.3.6

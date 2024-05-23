@@ -9,7 +9,12 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { io } from "socket.io-client";
-import settings from "../../../desktop-app/settings.txt";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input } from "./ui/input";
 
 interface Clip {
   clips_text: string;
@@ -20,13 +25,17 @@ interface Clip {
 export default function Collection() {
   const [clips, setClips] = useState<Clip[]>([]);
   const [port, setPort] = useState<number>();
+  const [app, setApp] = useState<string>();
 
   useEffect(() => {
-    fetch(settings)
-      .then((r) => r.text())
-      .then((text) => {
-        setPort(Number(text));
-      });
+    const savedPort = localStorage.getItem("port");
+    const savedName = localStorage.getItem("name");
+    if (savedPort) {
+      setPort(Number(savedPort));
+    }
+    if (savedName) {
+      setApp(String(savedName));
+    }
   }, []);
 
   async function getClips() {
@@ -57,7 +66,7 @@ export default function Collection() {
 
   useEffect(() => {
     if (port) {
-      const websocket = new WebSocket(`ws://192.168.1.13:${port}/webapp`);
+      const websocket = new WebSocket(`ws://192.168.1.13:${port}/${app}0`);
       websocket.onmessage = () => {
         getClips();
       };
@@ -191,11 +200,59 @@ export default function Collection() {
     );
   };
 
+  const handlePortChange = (event: any) => {
+    const newValue = event.target.value;
+    setPort(Number(newValue));
+    localStorage.setItem("port", newValue);
+  };
+
+  const handleNameChange = (event: any) => {
+    const newValue = event.target.value;
+    const value = newValue.replace(/ /g, "-");
+    setApp(value);
+    localStorage.setItem("name", value);
+  };
+
   return (
     <Tabs defaultValue="Text" className="text-white flex flex-col items-start">
-      <TabsList className="max-w-[800px] flex-wrap flex flex-col overflow-x-auto overflow-y-clip">
-        {renderTabsTriggers()}
-      </TabsList>
+      <div className="w-full flex gap-3 sm:gap-2 items-center">
+        <TabsList className="max-w-[800px] flex-wrap flex flex-col overflow-x-auto overflow-y-clip w-full">
+          {renderTabsTriggers()}
+        </TabsList>
+        <div>
+          <Popover>
+            <PopoverTrigger>
+              <Button>Setting</Button>
+            </PopoverTrigger>
+            <PopoverContent className="bg-stone-800 flex flex-col gap-4 mt-2 mr-2 sm:mr-0">
+              <div className="flex gap-2 items-center">
+                <h1 className="text-white w-36">App Name</h1>
+                <Input
+                  value={app?.replace(/-/g, " ")}
+                  placeholder={"Webapp"}
+                  className="text-white"
+                  onChange={handleNameChange}
+                />
+              </div>
+              <div className="flex gap-2 items-center">
+                <h1 className="text-white w-36">Port</h1>
+                <Input
+                  value={port}
+                  placeholder="42069"
+                  className="text-white"
+                  onChange={handlePortChange}
+                />
+              </div>
+              <Button
+                onClick={() => window.location.reload()}
+                variant={"secondary"}
+              >
+                Refresh Page
+              </Button>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
       {renderTabsContent()}
     </Tabs>
   );

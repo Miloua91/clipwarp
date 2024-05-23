@@ -26,38 +26,48 @@ import Collection from "../components/collection.tsx";
   </main>
 </Layout>
 <script>
-  const websocket = new WebSocket("ws://192.168.1.13:5678/Webapp");
+  import port from "../../../desktop-app/settings.txt";
 
-  function sendClip() {
-    let textarea = document.getElementById("textarea") as HTMLTextAreaElement;
+  fetch(port)
+    .then((r) => r.text())
+    .then((text) => {
+      const por = text;
 
-    const textareaValue = textarea.value;
+      const websocket = new WebSocket(`ws://192.168.1.13:${por}/Webapp`);
 
-    if (!textareaValue) return console.log(textareaValue);
+      function sendClip() {
+        let textarea = document.getElementById(
+          "textarea",
+        ) as HTMLTextAreaElement;
 
-    websocket.send(textareaValue);
-    textarea.value = "";
-  }
+        const textareaValue = textarea.value;
 
-  function pasteFromClipboard() {
-    navigator.clipboard
-      .readText()
-      .then((text) => {
-        const textarea = document.querySelector(
-          "#textarea",
-        ) as HTMLTextAreaElement | null;
-        if (textarea !== null) {
-          textarea.value = text;
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to read clipboard contents: ", err);
-      });
-  }
+        if (!textareaValue) return console.log(textareaValue);
 
-  const pasteButton = document.querySelector("#paste");
-  pasteButton?.addEventListener("click", () => pasteFromClipboard());
+        websocket.send(textareaValue);
+        textarea.value = "";
+      }
 
-  const sendButton = document.querySelector("#send");
-  sendButton?.addEventListener("click", () => sendClip());
+      function pasteFromClipboard() {
+        navigator.clipboard
+          .readText()
+          .then((text) => {
+            const textarea = document.querySelector(
+              "#textarea",
+            ) as HTMLTextAreaElement | null;
+            if (textarea !== null) {
+              textarea.value = text;
+            }
+          })
+          .catch((err) => {
+            console.error("Failed to read clipboard contents: ", err);
+          });
+      }
+
+      const pasteButton = document.querySelector("#paste");
+      pasteButton?.addEventListener("click", () => pasteFromClipboard());
+
+      const sendButton = document.querySelector("#send");
+      sendButton?.addEventListener("click", () => sendClip());
+    });
 </script>

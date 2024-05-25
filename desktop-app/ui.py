@@ -3,6 +3,7 @@ import re
 import socket
 import sys
 
+import webbrowser
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QIcon
@@ -140,7 +141,7 @@ class Ui_MainWindow(QObject):
                         background-color: transparent; 
                     }
                     QPushButton:hover {
-                        background-color: #E08976; 
+                        background-color: #e76f51; 
                         border-radius: 4px;
                     }
                     QPushButton:pressed {
@@ -163,7 +164,7 @@ class Ui_MainWindow(QObject):
                         background-color: transparent; 
                     }
                     QPushButton:hover {
-                        background-color: #A46877; 
+                        background-color: #2a9d8f; 
                         border-radius: 4px;
                     }
                     QPushButton:pressed {
@@ -178,11 +179,36 @@ class Ui_MainWindow(QObject):
                     lambda _, text=clip["clips_text"]: self.copy_clip(text)
                 )
 
+                url_button = QPushButton("")
+                url_button.setStyleSheet(
+                    """
+                    QPushButton {
+                        border: none; 
+                        background-color: transparent; 
+                    }
+                    QPushButton:hover {
+                        background-color: #e9c46a; 
+                        border-radius: 4px;
+                    }
+                    QPushButton:pressed {
+                        background-color: #333; 
+                    }
+                    """
+                )
+                url_button.setFixedSize(24, 24)
+                url_icon = QIcon("./assets/open.svg")
+                url_button.setIcon(url_icon)
+                url_button.clicked.connect(
+                    lambda _, text=clip["clips_text"]: self.open_url(text)
+                )
+
                 list_widget.addItem(item)
 
                 button_layout = QHBoxLayout()
-                button_layout.addWidget(delete_button)
+                if self.tabWidget.count() > 0:
+                    button_layout.addWidget(url_button)
                 button_layout.addWidget(copy_button)
+                button_layout.addWidget(delete_button)
                 button_layout.setAlignment(Qt.AlignRight)
 
                 button_widget = QWidget()
@@ -192,7 +218,6 @@ class Ui_MainWindow(QObject):
             self.tabWidget.addTab(list_widget, category)
         self.tabWidget.setCurrentIndex(self.current_tab_index)
 
-    
     def delete_item(self, item, list_widget):
         row = list_widget.row(item)
         if row != -1:
@@ -200,6 +225,8 @@ class Ui_MainWindow(QObject):
             list_widget.takeItem(row)
             self.itemDeleted.emit(clip_id)
 
+    def open_url(self, text):
+        webbrowser.open(f'{text}')
 
     def copy_clip(self, text):
         clipboard = QApplication.clipboard()
@@ -228,6 +255,7 @@ class Ui_MainWindow(QObject):
         port_label = QLabel("Port")
         self.port_edit = QPlainTextEdit("42069")
         self.port_edit.setFixedHeight(26)
+        self.port_edit.setFixedWidth(90)
         self.port_edit.setStyleSheet(
             """
                 QPlainTextEdit {

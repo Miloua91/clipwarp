@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, TextInput, Text, Pressable, StyleSheet } from "react-native";
+import { View, TextInput, Text, StyleSheet } from "react-native";
 import AwesomeButton from "react-native-really-awesome-button";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome } from "@expo/vector-icons";
@@ -101,15 +101,12 @@ export function WS() {
 
   return (
     <View className="w-full m-auto mt-6">
-      <View
-        className="space-x-1 mb-4 mx-6 border rounded-xl"
-        style={styles.card}
-      >
+      <View className="space-x-1 mb-4  border rounded-xl" style={styles.card}>
         <Text className="mx-2 text-lg font-semibold py-1 text-white">
           Enter server's IP
         </Text>
         <TextInput
-          className="w-[75%] pl-4 text-lg m-1 bottom-2 text-white"
+          className="w-full pl-4 text-lg m-1 bottom-2 text-white"
           placeholder="IP address"
           onChangeText={(text) => setWsAddress(text)}
           value={wsAddress}
@@ -125,15 +122,12 @@ export function WS() {
         </View>
       </View>
 
-      <View
-        className="space-x-1 mb-4 mx-6 border rounded-xl"
-        style={styles.card}
-      >
+      <View className="space-x-1 mb-4 border rounded-xl" style={styles.card}>
         <Text className="mx-2 text-lg font-semibold py-1 text-white">
           Enter server's port
         </Text>
         <TextInput
-          className="w-[75%] pl-4 text-lg m-1 bottom-2 text-white"
+          className="w-full pl-4 text-lg m-1 bottom-2 text-white"
           placeholder="IP address"
           onChangeText={(text) => setWsPort(text)}
           value={wsPort}
@@ -149,15 +143,12 @@ export function WS() {
         </View>
       </View>
 
-      <View
-        className="space-x-1 mx-6 mb-4 border rounded-xl"
-        style={styles.card}
-      >
+      <View className="space-x-1 mb-4 border rounded-xl" style={styles.card}>
         <Text className="mx-2 text-lg font-semibold py-1 text-white">
           Enter device's name
         </Text>
         <TextInput
-          className="w-[75%] pl-4 text-lg m-1 bottom-2 text-white"
+          className="w-full pl-4 text-lg m-1 bottom-2 text-white"
           placeholder={getDevice}
           onChangeText={(text) => setDeviceName(text)}
           value={deviceName.replace(/-/g, " ")}

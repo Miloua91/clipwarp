@@ -10,6 +10,7 @@ import {
   Pressable,
   SafeAreaView,
   StatusBar,
+  Share,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite/legacy";
@@ -27,15 +28,14 @@ type Clip = {
 
 interface ClipDb {
   id: number;
-  clips_text: string; // Add the 'clips_text' property
-  // Add other properties as needed
+  clips_text: string;
 }
 
 const bgColor = "#252422";
 const cardColor = "#403d39";
 
 export default function App() {
-  const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard
+  const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
   const [clipsDb, setClipsDb] = useState<ClipDb[]>([]);
@@ -52,7 +52,7 @@ export default function App() {
       setWsPort(Number(port) ?? 42069);
     }
     getAddress();
-  }, []);
+  }, [wsPort]);
 
   async function getClips() {
     const response = await fetch(
@@ -64,7 +64,7 @@ export default function App() {
 
   useEffect(() => {
     getClips();
-  }, []);
+  }, [wsPort]);
 
   useEffect(() => {
     const socket = io(`http://${wsAddress}:${(wsPort ?? 42069) + 1}/`);
@@ -79,7 +79,7 @@ export default function App() {
     return () => {
       socket.disconnect();
     };
-  }, [getClips]);
+  }, [getClips, wsPort]);
 
   useEffect(() => {
     // Send data when `db` changes
@@ -100,7 +100,7 @@ export default function App() {
     };
 
     ws();
-  }, [db, val]); // Include `val` in the dependencies array if `val` is also used inside the effect// Reset Database
+  }, [db, val]);
 
   useEffect(() => {
     const ws = async () => {
@@ -117,7 +117,7 @@ export default function App() {
     };
 
     ws();
-  }, []);
+  }, [connection]);
 
   async function deleteClipsDb(clipId: number) {
     try {
@@ -175,6 +175,24 @@ export default function App() {
     // Update the val state to reflect the empty database
     setVal([]);
   };
+
+  function resetAlert() {
+    Alert.alert(
+      "Reset Database",
+      "Resetting the Clips database is irreversible. Are you sure want to proceed?",
+      [
+        {
+          text: "Yes",
+          onPress: resetDatabase,
+          style: "destructive",
+        },
+        {
+          text: "No",
+          style: "cancel",
+        },
+      ],
+    );
+  }
 
   const resetDatabase = () => {
     deleteAllClipsDb();
@@ -266,6 +284,16 @@ export default function App() {
     });
   };
 
+  const shareClip = async (clip: string) => {
+    try {
+      await Share.share({
+        message: clip,
+      });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
+
   const showClips = () => {
     const reversedVal = [...val].reverse();
     return reversedVal.map((clip, index) => {
@@ -322,6 +350,15 @@ export default function App() {
             >
               <FontAwesome name="clipboard" size={26} color="white" />
             </Pressable>
+
+            <Pressable
+              onPress={() =>
+                clip.clips_text !== undefined && shareClip(clip.clips_text)
+              }
+              className="active:bg-stone-600 w-15 h-9 p-1 rounded"
+            >
+              <Text className="text-gray-100 text-lg">Share</Text>
+            </Pressable>
             <Pressable
               onPress={() => clip.id !== undefined && deleteClipsDb(clip.id)}
               className="active:bg-stone-600 w-15 h-9 p-1 rounded"
@@ -335,15 +372,17 @@ export default function App() {
   };
 
   const handleSettingPress = () => {
-    setTimeout(() => {
-      setSetting(true);
-    }, 50);
+    setSetting(true);
   };
 
   const settingModal = () => {
     if (setting === true)
       return (
-        <Modal>
+        <Modal
+          onRequestClose={() => {
+            setSetting(false);
+          }}
+        >
           <View
             className="flex flex-row justify-start px-2 py-2"
             style={styles.background}
@@ -360,23 +399,23 @@ export default function App() {
           </View>
           <View
             style={styles.background}
-            className="flex items-center space-y-8 h-full"
+            className="flex items-center space-y-8 h-full px-6"
           >
-            <View className="w-96">
+            <View className="w-full">
               <WS />
             </View>
             <View
               style={styles.card}
-              className="border rounded-xl w-[86%] h-20 p-2 flex flex-row justify-between items-center m-auto"
+              className="border rounded-xl w-full h-20 p-2 flex flex-row justify-between items-center m-auto"
             >
-              <Text className="text-lg text-white">
+              <Text className="text-lg text-white ">
                 Reset clipboard database
               </Text>
               <ThemedButton
                 width={75}
                 name="bruce"
                 type="danger"
-                onPress={resetDatabase}
+                onPress={() => resetAlert()}
               >
                 Reset
               </ThemedButton>
@@ -392,7 +431,10 @@ export default function App() {
         <StatusBar backgroundColor={`${bgColor}`} />
       </SafeAreaView>
       <ScrollView className={`flex justfiy-center `} style={styles.background}>
-        <View className="flex flex-row justify-end">
+        <View className="flex flex-row justify-between items-center">
+          <View
+            className={`w-3 h-3 m-5 rounded-full ${connection ? "bg-green-500" : "bg-red-500"}`}
+          />
           <Pressable
             className="h-12 w-12 p-2 mx-1 my-4 active:bg-stone-600 rounded-lg"
             onPress={handleSettingPress}
@@ -402,7 +444,7 @@ export default function App() {
         </View>
         <View style={styles.container}>
           <TextInput
-            className="w-[97%] rounded-lg h-16 text-center text-[16px]  text-white"
+            className="w-[97%] rounded-lg h-16 text-center text-[16px] text-white"
             multiline
             value={currentVal}
             placeholder="ClipWarp"

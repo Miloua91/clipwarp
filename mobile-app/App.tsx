@@ -15,7 +15,12 @@ import {
 import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite/legacy";
 import { ThemedButton } from "react-native-really-awesome-button";
-import { Ionicons, FontAwesome } from "@expo/vector-icons";
+import {
+  Entypo,
+  FontAwesome6,
+  Ionicons,
+  FontAwesome,
+} from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { webSocket, WS } from "./ws";
 import { io } from "socket.io-client";
@@ -43,6 +48,7 @@ export default function App() {
   const [setting, setSetting] = useState<boolean>(false);
   const [wsAddress, setWsAddress] = useState<string>();
   const [wsPort, setWsPort] = useState<number>();
+  const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
     async function getAddress() {
@@ -82,6 +88,18 @@ export default function App() {
   }, [getClips, wsPort]);
 
   useEffect(() => {
+    if (!connection) {
+      const timer = setInterval(() => {
+        setSeconds((prevSeconds) => prevSeconds + 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    } else {
+      setSeconds(0);
+    }
+  }, [connection]);
+
+  useEffect(() => {
     // Send data when `db` changes
     const ws = async () => {
       const websocket = await webSocket();
@@ -100,7 +118,7 @@ export default function App() {
     };
 
     ws();
-  }, [db, val]);
+  }, [db, val, seconds]);
 
   useEffect(() => {
     const ws = async () => {
@@ -317,10 +335,16 @@ export default function App() {
               <FontAwesome name="clipboard" size={26} color="white" />
             </Pressable>
             <Pressable
-              onPress={() => clip.id !== undefined && deleteClip(clip.id)}
+              onPress={() => clip.clip !== undefined && shareClip(clip.clip)}
               className="active:bg-stone-600 w-15 h-9 p-1 rounded"
             >
-              <Text className="text-gray-100 text-lg">Delete</Text>
+              <Entypo name="share" size={26} color="white" />
+            </Pressable>
+            <Pressable
+              onPress={() => clip.id !== undefined && deleteClip(clip.id)}
+              className="active:bg-red-500 w-15 h-9 p-1 rounded"
+            >
+              <FontAwesome6 name="delete-left" size={26} color="white" />
             </Pressable>
           </View>
         </View>
@@ -350,20 +374,19 @@ export default function App() {
             >
               <FontAwesome name="clipboard" size={26} color="white" />
             </Pressable>
-
             <Pressable
               onPress={() =>
                 clip.clips_text !== undefined && shareClip(clip.clips_text)
               }
               className="active:bg-stone-600 w-15 h-9 p-1 rounded"
             >
-              <Text className="text-gray-100 text-lg">Share</Text>
+              <Entypo name="share" size={26} color="white" />
             </Pressable>
             <Pressable
               onPress={() => clip.id !== undefined && deleteClipsDb(clip.id)}
-              className="active:bg-stone-600 w-15 h-9 p-1 rounded"
+              className="active:bg-red-500 w-15 h-9 p-1 rounded"
             >
-              <Text className="text-gray-100 text-lg">Delete</Text>
+              <FontAwesome6 name="delete-left" size={26} color="white" />
             </Pressable>
           </View>
         </View>
@@ -457,7 +480,7 @@ export default function App() {
               name="bruce"
               backgroundColor="#403d39"
               type="primary"
-              onPress={fetchCopiedText}
+              onPressIn={fetchCopiedText}
             >
               Paste
             </ThemedButton>
@@ -465,7 +488,7 @@ export default function App() {
               width={160}
               name="bruce"
               type="secondary"
-              onPress={addClip}
+              onPressIn={addClip}
             >
               Send
             </ThemedButton>

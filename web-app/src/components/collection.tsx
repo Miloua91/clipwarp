@@ -19,7 +19,7 @@ import { Input } from "./ui/input";
 interface Clip {
   clips_text: string;
   id: number;
-  user_id: number;
+  user_name: string;
 }
 
 export default function Collection() {
@@ -102,7 +102,9 @@ export default function Collection() {
   }
 
   const categorizeClips = () => {
-    const categorized: { [key: string]: { id: number; content: string }[] } = {
+    const categorized: {
+      [key: string]: { id: number; content: string; user: string }[];
+    } = {
       Text: [],
     };
     clips.forEach((clip) => {
@@ -115,9 +117,17 @@ export default function Collection() {
         if (!categorized[domain]) {
           categorized[domain] = [];
         }
-        categorized[domain].push({ id: clip.id, content: match[0] });
+        categorized[domain].push({
+          id: clip.id,
+          content: match[0],
+          user: clip.user_name,
+        });
       } else {
-        categorized.Text.push({ id: clip.id, content: clip.clips_text });
+        categorized.Text.push({
+          id: clip.id,
+          content: clip.clips_text,
+          user: clip.user_name,
+        });
       }
     });
 
@@ -146,9 +156,14 @@ export default function Collection() {
             {clips.reverse().map((clip, index) => (
               <div key={index}>
                 {category === "Text" ? (
-                  <div className="flex gap-1 justify-between">
-                    <span className="break-all">{clip.content}</span>
-                    <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1 justify-between">
+                    <div className="w-full flex flex-col gap-1">
+                      <div className="break-words">{clip.content}</div>
+                      <div className="text-end w-full text-sm pr-4">
+                        {clip.user}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 justify-end">
                       <Button
                         variant="ghost"
                         onClick={() => copyToClipboard(clip.content)}
@@ -165,16 +180,21 @@ export default function Collection() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex justify-between">
-                    <a
-                      href={clip.content}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="break-all"
-                    >
-                      {clip.content}
-                    </a>
-                    <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1 justify-between">
+                    <div className="flex flex-col gap-1">
+                      <a
+                        href={clip.content}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-fit break-all"
+                      >
+                        {clip.content}
+                      </a>
+                      <div className="text-end w-full text-sm pr-4">
+                        {clip.user}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 justify-end">
                       <Button
                         variant="ghost"
                         onClick={() => copyToClipboard(clip.content)}
@@ -202,8 +222,10 @@ export default function Collection() {
 
   const handlePortChange = (event: any) => {
     const newValue = event.target.value;
-    setPort(Number(newValue));
-    localStorage.setItem("port", newValue);
+    if (newValue >= 0 && newValue <= 65353) {
+      setPort(Number(newValue));
+      localStorage.setItem("port", newValue);
+    }
   };
 
   const handleNameChange = (event: any) => {

@@ -44,10 +44,15 @@ class FlaskAPI(QObject):
         conn.row_factory = sqlite3.Row
         return conn
 
+
     def get_clips(self):
         conn = self.get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM clips")
+        cursor.execute("""
+            SELECT clips.id, clips.clips_text, clips.user_id, users.name
+            FROM clips
+            JOIN users ON clips.user_id = users.id
+        """)
         clips = cursor.fetchall()
         conn.close()
 
@@ -56,6 +61,7 @@ class FlaskAPI(QObject):
                 "id": clip["id"],
                 "clips_text": clip["clips_text"],
                 "user_id": clip["user_id"],
+                "user_name": clip["name"]
             }
             for clip in clips
         ]
@@ -63,6 +69,7 @@ class FlaskAPI(QObject):
         self.socketio.emit("refresh")
 
         return jsonify(clip_data)
+
 
     def delete_clip(self, clip_id):
         conn = self.get_db_connection()

@@ -1,6 +1,7 @@
 import os
 import asyncio
 import socket
+import ssl
 
 import websockets
 from db import Database
@@ -35,7 +36,9 @@ class Server(QObject):
         return ip
 
     async def start_server(self):
-        async with websockets.serve(self.register, self.get_ip_address(), self.load_port()):
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain(certfile='./assets/cert.pem', keyfile='./assets/key.pem')
+        async with websockets.serve(self.register, self.get_ip_address(), self.load_port(), ssl=ssl_context):
             await asyncio.Future()
 
     async def register(self, websocket, path):

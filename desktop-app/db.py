@@ -25,6 +25,21 @@ class Database(QObject):
         except Error as e:
             print(f"The error '{e}' occurred")
 
+
+    def execute_read_query(self, connection, query, params=None):
+        cursor = connection.cursor()
+        result = None
+        try:
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
+            result = cursor.fetchall()
+            return result
+        except Error as e:
+            print(f"The error '{e}' occurred")
+            return result
+
     def create_db(self):
         connection = self.create_connection("./assets/clipwarp.db")
 

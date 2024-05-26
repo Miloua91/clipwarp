@@ -6,7 +6,7 @@ import sys
 import webbrowser
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFontMetrics
 from PyQt5.QtWidgets import *
 
 
@@ -119,6 +119,18 @@ class Ui_MainWindow(QObject):
         categorized_clips = self.categorize_clips(clips)
         self.render_tabs(categorized_clips)
 
+    def truncate_text_to_width(self, text, font, max_width):
+        metrics = QFontMetrics(font)
+        ellipsis = "..."
+        text_width = metrics.width(text)
+        if text_width <= max_width:
+            return text
+        for i in range(len(text), 0, -1):
+            truncated_text = text[:i] + ellipsis
+            if metrics.width(truncated_text) <= max_width:
+                return truncated_text
+        return text[:max_width]  
+
     def render_tabs(self, categorized_clips):
         self.current_tab_index = self.tabWidget.currentIndex()
         self.tabWidget.clear()
@@ -127,12 +139,13 @@ class Ui_MainWindow(QObject):
             reversed_clips = reversed(clips)
             for clip in reversed_clips:
                 clip_text = clip["clips_text"]
-                max_text_length = 63
-                if len(clip_text.replace(" ", "")) > max_text_length:
-                    clip_text = clip_text[: max_text_length - 3] + "..."
+                username = clip["user_name"]
+                max_pixel_width = 340  
+                font = list_widget.font()  
+                clip_text = self.truncate_text_to_width(clip_text, font, max_pixel_width)
                 item = QListWidgetItem(clip_text)
                 item.setData(Qt.UserRole, clip["id"])
-                item.setSizeHint(QSize(200, 50))
+                item.setSizeHint(QSize(200, 68))
                 delete_button = QPushButton("")
                 delete_button.setStyleSheet(
                     """
@@ -202,9 +215,22 @@ class Ui_MainWindow(QObject):
                     lambda _, text=clip["clips_text"]: self.open_url(text)
                 )
 
+                user_label = QLabel()
+                user_label.setStyleSheet(
+                        """
+                        QLabel {
+                            font: 10px;
+                            background-color: transparent; 
+                            padding-top: 28px;
+                        }
+                        """
+                )
+                user_label.setText(username)
+
                 list_widget.addItem(item)
 
                 button_layout = QHBoxLayout()
+                button_layout.addWidget(user_label)
                 if self.tabWidget.count() > 0:
                     button_layout.addWidget(url_button)
                 button_layout.addWidget(copy_button)

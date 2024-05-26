@@ -39,9 +39,27 @@ class Server(QObject):
             await asyncio.Future()
 
     async def register(self, websocket, path):
-        name = path
+        name = path.strip("/")
         self.CONNECTIONS[name] = websocket
         print(f"{name} connected")
+
+        connection = self.db.create_connection("./assets/clipwarp.db")
+
+        # Check if the user exists, if not, insert the user and get the user_id
+        select_user = "SELECT id FROM users WHERE name = ?"
+        result = self.db.execute_read_query(connection, select_user, (name,))
+        if result:
+            user_id = result[0][0]
+        else:
+            insert_user = "INSERT INTO users (name) VALUES (?)"
+            self.db.execute_query(connection, insert_user, (name,))
+            # Rerun the select query to get the new user_id
+            result = self.db.execute_read_query(connection, select_user, (name,))
+            if result:
+                user_id = result[0][0]
+            else:
+                print(f"Failed to insert or retrieve user_id for {name}")
+                return
 
         try:
             async for message in websocket:
@@ -51,15 +69,14 @@ class Server(QObject):
                         await conn.send(message)
                     else:
                         # Emit signal for message received
-                        if conn_name != "/Server":
+                        if conn_name != "Server":
                             self.message_signal.emit((conn_name, message))
                         print(f"Message received from {conn_name}: {message}")
-                        connection = self.db.create_connection("./assets/clipwarp.db")
                         insert_clips = """
                             INSERT INTO clips (clips_text, user_id)
                             VALUES (?, ?)
                         """
-                        params = (message, 1)
+                        params = (message, user_id)
                         self.db.execute_query(connection, insert_clips, params)
             await websocket.wait_closed()
 

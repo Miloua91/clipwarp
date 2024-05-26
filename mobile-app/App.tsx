@@ -34,6 +34,7 @@ type Clip = {
 interface ClipDb {
   id: number;
   clips_text: string;
+  user_name: string;
 }
 
 const bgColor = "#252422";
@@ -86,6 +87,7 @@ export default function App() {
       socket.disconnect();
     };
   }, [getClips, wsPort]);
+  /*
 
   useEffect(() => {
     if (!connection) {
@@ -98,6 +100,7 @@ export default function App() {
       setSeconds(0);
     }
   }, [connection]);
+  */
 
   useEffect(() => {
     // Send data when `db` changes
@@ -361,12 +364,17 @@ export default function App() {
           className={`mb-2 w-[97%] py-2 rounded-xl`}
           style={styles.card}
         >
-          <TextInput
-            multiline
-            className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-600 my-1 pb-4"
-          >
-            {clip.clips_text}
-          </TextInput>
+          <View className="px-2 w-full border-b border-stone-600 my-1 pb-4 flex flex-col">
+            <TextInput multiline className="text-gray-100 text-[16px]">
+              {clip.clips_text}
+            </TextInput>
+            <Text
+              style={styles.text}
+              className="w-full text-gray-100 text-[14px]"
+            >
+              {clip.user_name}
+            </Text>
+          </View>
           <View className="flex flex-row justify-between py-2 px-3">
             <Pressable
               onPress={() => Clipboard.setStringAsync(clip.clips_text)}
@@ -526,5 +534,8 @@ const styles = StyleSheet.create({
   },
   background: {
     backgroundColor: `${bgColor}`,
+  },
+  text: {
+    textAlign: "right",
   },
 });

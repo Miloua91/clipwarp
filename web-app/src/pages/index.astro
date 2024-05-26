@@ -26,10 +26,25 @@ import Collection from "../components/collection.tsx";
   </main>
 </Layout>
 <script>
-  const port = localStorage.getItem("port");
-  const name = localStorage.getItem("name");
+  let websocket: WebSocket;
 
-  const websocket = new WebSocket(`ws://192.168.1.13:${port}/${name}`);
+  function connectWebSocket() {
+    const port = localStorage.getItem("port");
+    const name = localStorage.getItem("name");
+    websocket = new WebSocket(`ws://192.168.1.13:${port}/${name}`);
+
+    websocket.addEventListener("close", () => {
+      console.log("WebSocket connection closed");
+      setTimeout(connectWebSocket, 3000);
+    });
+
+    websocket.addEventListener("error", (error) => {
+      console.error("WebSocket error:", error);
+      setTimeout(connectWebSocket, 3000);
+    });
+  }
+
+  connectWebSocket();
 
   function sendClip() {
     let textarea = document.getElementById("textarea") as HTMLTextAreaElement;

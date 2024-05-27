@@ -11,8 +11,8 @@ class Serve(QObject):
         app = Application()
         app.serve_files("assets/dist", index_document="index.html")
         uvicorn.run(app, host=self.get_ip_address(), port=6969,
-        ssl_keyfile='./assets/ip.key',
-        ssl_certfile='./assets/ip.crt')
+        ssl_keyfile='./assets/key.pem',
+        ssl_certfile='./assets/cert.pem')
 
     def get_ip_address(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

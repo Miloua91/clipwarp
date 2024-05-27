@@ -40,7 +40,7 @@ export default function Collection() {
 
   async function getClips() {
     if (port) {
-      const response = await fetch(`https://192.168.1.13:${port + 1}/`);
+      const response = await fetch(`http://192.168.1.13:${port + 1}/`);
       const data = await response.json();
       setClips(data);
     }
@@ -52,7 +52,7 @@ export default function Collection() {
 
   useEffect(() => {
     if (port) {
-      const socket = io(`wss://192.168.1.13:${port + 1}`);
+      const socket = io(`ws://192.168.1.13:${port + 1}`);
 
       socket.onAny((event) => {
         getClips();
@@ -66,7 +66,7 @@ export default function Collection() {
 
   useEffect(() => {
     if (port) {
-      const websocket = new WebSocket(`wss://192.168.1.13:${port}/${app}0`);
+      const websocket = new WebSocket(`ws://192.168.1.13:${port}/${app}0`);
       websocket.onmessage = () => {
         getClips();
       };
@@ -77,7 +77,7 @@ export default function Collection() {
     try {
       if (port) {
         const response = await fetch(
-          `https://192.168.1.13:${port + 1}/delete/${clipId}`,
+          `http://192.168.1.13:${port + 1}/delete/${clipId}`,
           {
             method: "DELETE",
           },

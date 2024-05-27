@@ -37,7 +37,7 @@ class FlaskAPI(QObject):
 
 
     def start(self):
-        self.socketio.run(self.app, host="0.0.0.0", port=self.load_port(), ssl_context=('./assets/cert.pem', './assets/key.pem'))
+        self.socketio.run(self.app, host="0.0.0.0", port=self.load_port())
 
     def get_db_connection(self):
         conn = sqlite3.connect("./assets/clipwarp.db")

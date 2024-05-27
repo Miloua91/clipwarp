@@ -19,11 +19,11 @@ class Chat(QObject):
         http_session = requests.Session()
         http_session.verify = False        
 
-        self.socketio = socketio.Client(http_session=http_session)
+        self.socketio = socketio.Client()
 
         self.socketio.on("delete", self.on_delete)
         self.socketio.on("reset", self.on_delete)
-        self.socketio.connect(f"https://{self.get_ip_address()}:{self.load_port()}")
+        self.socketio.connect(f"http://{self.get_ip_address()}:{self.load_port()}")
 
         self.fetch_clips()
 
@@ -41,7 +41,7 @@ class Chat(QObject):
 
 
     def fetch_clips(self):
-        response = requests.get(f"https://{self.get_ip_address()}:{self.load_port()}", verify=False)
+        response = requests.get(f"http://{self.get_ip_address()}:{self.load_port()}", verify=False)
         if response.status_code == 200:
             clips = response.json()
             self.clips_fetched.emit(clips)
@@ -51,7 +51,7 @@ class Chat(QObject):
 
     def delete_clip(self, clip_id):
         response = requests.delete(
-            f"https://{self.get_ip_address()}:{self.load_port()}/delete/{clip_id}", verify=False
+            f"http://{self.get_ip_address()}:{self.load_port()}/delete/{clip_id}", verify=False
         )
         if response.status_code == 200:
             clips = response.json()
@@ -59,7 +59,7 @@ class Chat(QObject):
             print("Failed to delete clip from server")
 
     def on_delete(self):
-        response = requests.get(f"https://{self.get_ip_address()}:{self.load_port()}", verify=False)
+        response = requests.get(f"http://{self.get_ip_address()}:{self.load_port()}", verify=False)
         if response.status_code == 200:
             clips = response.json()
             self.clips_fetched.emit(clips)
@@ -67,7 +67,7 @@ class Chat(QObject):
             print("Failed to fetch clips from server")
 
     def reset_db(self):
-        response = requests.post(f"https://{self.get_ip_address()}:{self.load_port()}/reset", verify=False)
+        response = requests.post(f"http://{self.get_ip_address()}:{self.load_port()}/reset", verify=False)
         if response.status_code == 200:
             self.fetch_clips
         else:

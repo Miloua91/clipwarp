@@ -63,7 +63,7 @@ export default function App() {
 
   async function getClips() {
     const response = await fetch(
-      `http://${wsAddress}:${(wsPort ?? 42069) + 1}/`,
+      `https://${wsAddress}:${(wsPort ?? 42069) + 1}/`,
     );
     const data = await response.json();
     setClipsDb(data);
@@ -74,7 +74,7 @@ export default function App() {
   }, [wsPort]);
 
   useEffect(() => {
-    const socket = io(`http://${wsAddress}:${(wsPort ?? 42069) + 1}/`);
+    const socket = io(`https://${wsAddress}:${(wsPort ?? 42069) + 1}/`);
 
     socket.onAny((event) => {
       getClips();
@@ -87,7 +87,6 @@ export default function App() {
       socket.disconnect();
     };
   }, [getClips, wsPort]);
-  /*
 
   useEffect(() => {
     if (!connection) {
@@ -100,7 +99,6 @@ export default function App() {
       setSeconds(0);
     }
   }, [connection]);
-  */
 
   useEffect(() => {
     // Send data when `db` changes
@@ -143,7 +141,7 @@ export default function App() {
   async function deleteClipsDb(clipId: number) {
     try {
       const response = await fetch(
-        `http://${wsAddress}:${(wsPort ?? 42069) + 1}/delete/${clipId}`,
+        `https://${wsAddress}:${(wsPort ?? 42069) + 1}/delete/${clipId}`,
         {
           method: "DELETE",
         },
@@ -160,7 +158,7 @@ export default function App() {
   async function deleteAllClipsDb() {
     try {
       const response = await fetch(
-        `http://${wsAddress}:${(wsPort ?? 42069) + 1}/reset`,
+        `https://${wsAddress}:${(wsPort ?? 42069) + 1}/reset`,
         {
           method: "POST",
         },

@@ -176,7 +176,7 @@ export const webSocket = async () => {
   const getDevice = await AsyncStorage.getItem("device");
   const device = getDevice?.replace(/\s+/g, "-");
   return new WebSocket(
-    `ws://${wsAddress}:${wsPort ?? "42069"}/${device ?? "Phone"}`,
+    `wss://${wsAddress}:${wsPort ?? "42069"}/${device ?? "Phone"}`,
   );
 };
 

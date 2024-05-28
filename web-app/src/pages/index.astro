@@ -21,7 +21,7 @@ import Collection from "../components/collection.tsx";
       </div>
     </div>
     <div class="w-full my-2">
-      <Collection client:load />
+      <Collection client:only />
     </div>
   </main>
 </Layout>
@@ -31,16 +31,17 @@ import Collection from "../components/collection.tsx";
   function connectWebSocket() {
     const port = localStorage.getItem("port");
     const name = localStorage.getItem("name");
-    websocket = new WebSocket(`ws://192.168.1.13:${port}/${name}`);
+    const ip = localStorage.getItem("ip");
+    websocket = new WebSocket(`ws://${ip}:${port}/${name}`);
 
     websocket.addEventListener("close", () => {
       console.log("WebSocket connection closed");
-      setTimeout(connectWebSocket, 3000);
+      setTimeout(connectWebSocket, 10000);
     });
 
     websocket.addEventListener("error", (error) => {
       console.error("WebSocket error:", error);
-      setTimeout(connectWebSocket, 3000);
+      setTimeout(connectWebSocket, 10000);
     });
   }
 

@@ -87,7 +87,6 @@ export default function App() {
       socket.disconnect();
     };
   }, [getClips, wsPort]);
-  /*
 
   useEffect(() => {
     if (!connection) {
@@ -100,7 +99,6 @@ export default function App() {
       setSeconds(0);
     }
   }, [connection]);
-  */
 
   useEffect(() => {
     // Send data when `db` changes

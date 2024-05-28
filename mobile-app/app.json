@@ -29,21 +29,17 @@
     },
     "eas": {},
     "plugins": [
-      "expo-asset", 
       [
-      "@bam.tech/react-native-app-security",
-      {
-        "sslPinning": {
-          "192.168.1.13": [
-            "rtJ2pHLlrE5hyEh3I/rdFMaP+qoObKwXm1Lv+SWCmj4="
-          ]
-        },
-        "preventRecentScreenshots": {
-          "ios": { "enabled": true },
-          "android": { "enabled": true }
+      "expo-asset" 
+      ],
+      [
+      "expo-build-properties",
+        {
+          "android": {
+          "usesCleartextTraffic": true
+          }
         }
-      }
-    ]
+      ]
     ],
     "extra": {
       "eas": {

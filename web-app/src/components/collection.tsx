@@ -25,11 +25,18 @@ interface Clip {
 export default function Collection() {
   const [clips, setClips] = useState<Clip[]>([]);
   const [port, setPort] = useState<number>();
+  const [ipAddress, setIpAddress] = useState<string>();
   const [app, setApp] = useState<string>();
+
+  const ip = window.location.hostname;
 
   useEffect(() => {
     const savedPort = localStorage.getItem("port");
     const savedName = localStorage.getItem("name");
+    const savedIp = localStorage.setItem("ip", ip);
+    if (ip) {
+      setIpAddress(ip);
+    }
     if (savedPort) {
       setPort(Number(savedPort));
     }
@@ -40,7 +47,7 @@ export default function Collection() {
 
   async function getClips() {
     if (port) {
-      const response = await fetch(`http://192.168.1.13:${port + 1}/`);
+      const response = await fetch(`http://${ip}:${port + 1}/`);
       const data = await response.json();
       setClips(data);
     }
@@ -52,7 +59,7 @@ export default function Collection() {
 
   useEffect(() => {
     if (port) {
-      const socket = io(`ws://192.168.1.13:${port + 1}`);
+      const socket = io(`ws://${ip}:${port + 1}`);
 
       socket.onAny((event) => {
         getClips();
@@ -66,7 +73,7 @@ export default function Collection() {
 
   useEffect(() => {
     if (port) {
-      const websocket = new WebSocket(`ws://192.168.1.13:${port}/${app}0`);
+      const websocket = new WebSocket(`ws://${ip}:${port}/${app}0`);
       websocket.onmessage = () => {
         getClips();
       };
@@ -77,7 +84,7 @@ export default function Collection() {
     try {
       if (port) {
         const response = await fetch(
-          `http://192.168.1.13:${port + 1}/delete/${clipId}`,
+          `http://${ip}:${port + 1}/delete/${clipId}`,
           {
             method: "DELETE",
           },

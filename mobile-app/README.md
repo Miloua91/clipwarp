@@ -1,4 +1,4 @@
-### Mobile app
+## Mobile app
 
 Clone the repo to your machine
 

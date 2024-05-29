@@ -1,4 +1,4 @@
-### Desktop app
+## Desktop app
 
 Clone the repo to your machine
 

@@ -1,4 +1,4 @@
-### Web app
+## Web app
 
 Clone the repo to your machine
 

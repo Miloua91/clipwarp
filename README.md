@@ -1,11 +1,6 @@
-# clipwarp
+# ClipWarp
 
-## Getting Started
+## Elevator pitch
 
+Ever get frustrated trying to share links or text between your desktop and phone? ClipWarp makes it super easy. Just install it on both devices, and you’ll have a simple way to manage links and text across platforms without any hassle.
 
-```
-git clone https://github.com/Miloua91/clipwarp.git
-cd clipwarp/desktop-app
-pip install -r requirements.txt
-python main.py
-```

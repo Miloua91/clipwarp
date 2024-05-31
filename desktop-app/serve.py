@@ -1,15 +1,21 @@
 import socket
 
-import uvicorn
-from blacksheep import Application
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject
+
+from flask import Flask, render_template
+
+app = Flask(__name__)
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 
 class Serve(QObject):
     def start(self):
-        app = Application()
-        app.serve_files("assets/dist", index_document="index.html")
-        uvicorn.run(app, host=self.get_ip_address(), port=6969)
+        ip_address = self.get_ip_address()
+        app.run(host=ip_address, port=6969)
 
     def get_ip_address(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

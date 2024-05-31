@@ -81,13 +81,20 @@ class Ui_MainWindow(QObject):
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(10, 25, 57, 24))
         self.label.setObjectName("label")
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(110, 25, 24, 24))
-        self.pushButton.setObjectName("pushButton")
-        self.pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.pushButton.clicked.connect(self.open_new_window)
+        self.setting = QtWidgets.QPushButton(self.centralwidget)
+        self.setting.setGeometry(QtCore.QRect(110, 25, 24, 24))
+        self.setting.setObjectName("pushButton")
+        self.setting.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.setting.clicked.connect(self.open_new_window)
         setting_icon = QIcon("./assets/setting.svg")
-        self.pushButton.setIcon(setting_icon)
+        self.setting.setIcon(setting_icon)
+        self.openapp = QtWidgets.QPushButton(self.centralwidget)
+        self.openapp.setGeometry(QtCore.QRect(80, 25, 24, 24))
+        self.openapp.setObjectName("pushButton")
+        self.openapp.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.openapp.clicked.connect(self.open_app)
+        webapp_icon = QIcon("./assets/see.svg")
+        self.openapp.setIcon(webapp_icon)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 619, 21))
@@ -129,7 +136,7 @@ class Ui_MainWindow(QObject):
             truncated_text = text[:i] + ellipsis
             if metrics.width(truncated_text) <= max_width:
                 return truncated_text
-        return text[:max_width]  
+        return text[:max_width]
 
     def render_tabs(self, categorized_clips):
         self.current_tab_index = self.tabWidget.currentIndex()
@@ -140,9 +147,11 @@ class Ui_MainWindow(QObject):
             for clip in reversed_clips:
                 clip_text = clip["clips_text"]
                 username = clip["user_name"]
-                max_pixel_width = 340  
-                font = list_widget.font()  
-                clip_text = self.truncate_text_to_width(clip_text, font, max_pixel_width)
+                max_pixel_width = 340
+                font = list_widget.font()
+                clip_text = self.truncate_text_to_width(
+                    clip_text, font, max_pixel_width
+                )
                 item = QListWidgetItem(clip_text)
                 item.setData(Qt.UserRole, clip["id"])
                 item.setSizeHint(QSize(200, 68))
@@ -166,7 +175,9 @@ class Ui_MainWindow(QObject):
                 delete_icon = QIcon("./assets/delete.svg")
                 delete_button.setIcon(delete_icon)
                 delete_button.clicked.connect(
-                    lambda _, item=item, list_widget=list_widget: self.delete_item(item, list_widget)
+                    lambda _, item=item, list_widget=list_widget: self.delete_item(
+                        item, list_widget
+                    )
                 )
 
                 copy_button = QPushButton("")
@@ -217,7 +228,7 @@ class Ui_MainWindow(QObject):
 
                 user_label = QLabel()
                 user_label.setStyleSheet(
-                        """
+                    """
                         QLabel {
                             font: 10px;
                             background-color: transparent; 
@@ -252,11 +263,14 @@ class Ui_MainWindow(QObject):
             self.itemDeleted.emit(clip_id)
 
     def open_url(self, text):
-        webbrowser.open(f'{text}')
+        webbrowser.open(f"{text}")
 
     def copy_clip(self, text):
         clipboard = QApplication.clipboard()
         clipboard.setText(text)
+
+    def open_app(self):
+        webbrowser.open(f"http://{self.get_ip_address()}:6969")
 
     def open_new_window(self):
         new_window = QDialog()
@@ -346,7 +360,9 @@ class Ui_MainWindow(QObject):
         dlg.setFixedSize(340, 100)
 
         layout = QVBoxLayout()
-        message_label = QLabel("Resetting the Clips database is irreversible. Are you sure you want to proceed?")
+        message_label = QLabel(
+            "Resetting the Clips database is irreversible. Are you sure you want to proceed?"
+        )
         message_label.setWordWrap(True)
         message_layout = QHBoxLayout()
         message_layout.addWidget(message_label)
@@ -394,7 +410,6 @@ class Ui_MainWindow(QObject):
         button_layout.addWidget(no_button)
         layout.addLayout(message_layout)
         layout.addLayout(button_layout)
-
 
         dlg.setLayout(layout)
         dlg.setWindowTitle("Reset Database")
@@ -458,7 +473,6 @@ class Ui_MainWindow(QObject):
             layout.addLayout(message_layout)
             layout.addLayout(button_layout)
 
-
             dlg.setLayout(layout)
             dlg.setWindowTitle("Change Port")
             result = dlg.exec()
@@ -501,7 +515,6 @@ class Ui_MainWindow(QObject):
             layout.addLayout(message_layout)
             layout.addLayout(button_layout)
 
-
             dlg.setLayout(layout)
             dlg.setWindowTitle("Invalid Input")
             result = dlg.exec()
@@ -520,7 +533,6 @@ class Ui_MainWindow(QObject):
         self.Send.setText(_translate("MainWindow", "Send"))
         self.Paste.setText(_translate("MainWindow", "Paste"))
         self.label.setText(_translate("MainWindow", "ClipWarp"))
-        self.pushButton.setText(_translate("MainWindow", ""))
 
     def get_ip_address(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

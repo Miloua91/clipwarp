@@ -1,15 +1,12 @@
 colorama==0.4.6
 loguru==0.6.0
 notify-py==0.3.42
-pillow==10.2.0
 PyQt5==5.15.10
 PyQt5-Qt5==5.15.2
 PyQt5-sip==12.13.0
 six==1.16.0
 websockets==12.0
 win32-setctime==1.1.0
-blacksheep==2.0.7
-uvicorn==0.29.0
 flask==3.0.3
 requests==2.32.2
 socketio==0.2.1

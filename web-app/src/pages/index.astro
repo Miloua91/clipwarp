@@ -38,11 +38,6 @@ import Collection from "../components/collection.tsx";
       console.log("WebSocket connection closed");
       setTimeout(connectWebSocket, 10000);
     });
-
-    websocket.addEventListener("error", (error) => {
-      console.error("WebSocket error:", error);
-      setTimeout(connectWebSocket, 10000);
-    });
   }
 
   connectWebSocket();
@@ -60,8 +55,8 @@ import Collection from "../components/collection.tsx";
 
   function pasteFromClipboard() {
     navigator.clipboard
-      .readText()
-      .then((text) => {
+      ?.readText()
+      ?.then((text) => {
         const textarea = document.querySelector(
           "#textarea",
         ) as HTMLTextAreaElement | null;

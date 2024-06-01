@@ -1,5 +1,6 @@
 import os
 import socket
+import time
 
 import requests
 import socketio
@@ -17,31 +18,42 @@ class Chat(QObject):
         self.ui = ui
 
         http_session = requests.Session()
-        http_session.verify = False        
+        http_session.verify = False
 
         self.socketio = socketio.Client()
 
+        retries = 0
+        while True:
+            try:
+                url = f"http://{self.get_ip_address()}:{self.load_port()}"
+                self.socketio.connect(url)
+                break  # Connection successful
+            except socketio.exceptions.ConnectionError:
+                retries += 1
+                delay = 2**retries  # Exponential backoff
+                print(f"Connection failed. Retrying in {delay} seconds...")
+                time.sleep(delay)
+
         self.socketio.on("delete", self.on_delete)
         self.socketio.on("reset", self.on_delete)
-        self.socketio.connect(f"http://{self.get_ip_address()}:{self.load_port()}")
 
         self.fetch_clips()
 
         self.ui.Send.clicked.connect(self.on_button_click)
         self.ui.Paste.clicked.connect(self.paste_text)
-        
 
     def load_port(self):
         if os.path.exists("settings.txt"):
             with open("settings.txt", "r") as f:
                 port = f.read()
-                return (int(port) + 1)
-        else: 
+                return int(port) + 1
+        else:
             return 42070
 
-
     def fetch_clips(self):
-        response = requests.get(f"http://{self.get_ip_address()}:{self.load_port()}", verify=False)
+        response = requests.get(
+            f"http://{self.get_ip_address()}:{self.load_port()}", verify=False
+        )
         if response.status_code == 200:
             clips = response.json()
             self.clips_fetched.emit(clips)
@@ -51,7 +63,8 @@ class Chat(QObject):
 
     def delete_clip(self, clip_id):
         response = requests.delete(
-            f"http://{self.get_ip_address()}:{self.load_port()}/delete/{clip_id}", verify=False
+            f"http://{self.get_ip_address()}:{self.load_port()}/delete/{clip_id}",
+            verify=False,
         )
         if response.status_code == 200:
             clips = response.json()
@@ -59,7 +72,9 @@ class Chat(QObject):
             print("Failed to delete clip from server")
 
     def on_delete(self):
-        response = requests.get(f"http://{self.get_ip_address()}:{self.load_port()}", verify=False)
+        response = requests.get(
+            f"http://{self.get_ip_address()}:{self.load_port()}", verify=False
+        )
         if response.status_code == 200:
             clips = response.json()
             self.clips_fetched.emit(clips)
@@ -67,7 +82,9 @@ class Chat(QObject):
             print("Failed to fetch clips from server")
 
     def reset_db(self):
-        response = requests.post(f"http://{self.get_ip_address()}:{self.load_port()}/reset", verify=False)
+        response = requests.post(
+            f"http://{self.get_ip_address()}:{self.load_port()}/reset", verify=False
+        )
         if response.status_code == 200:
             self.fetch_clips
         else:

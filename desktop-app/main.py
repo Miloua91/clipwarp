@@ -22,10 +22,11 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.init_ui()
+        self.start_api()
         self.setup_connections()
         self.setStyleSheet(self.stylesheet())
         self.setFixedSize(612, 392)
-        self.set_window_icon("./assets/cw.ico")
+        self.set_window_icon("assets/cw.ico")
         self.setup_system_tray()
 
     def init_ui(self):
@@ -33,7 +34,6 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
     def setup_connections(self):
-        self.start_api()
         self.serve_function()
         self.server_function()
         self.db_function()
@@ -46,19 +46,6 @@ class MainWindow(QMainWindow):
         self.api.moveToThread(self.thread)
         self.thread.started.connect(self.api.start)
         self.thread.start()
-
-    def client_function(self):
-        self.client_thread = QThread()
-        self.client = Client()
-        self.Chat.message_signal.connect(self.client.bridge)
-        self.Chat.clips_fetched.connect(self.ui.load_clips)
-        self.ui.itemDeleted.connect(self.Chat.delete_clip)
-        self.ui.resetDB.connect(self.Chat.reset_db)
-        self.client.recv_signal.connect(self.Chat.show_msg)
-        self.client.moveToThread(self.client_thread)
-        self.client_thread.started.connect(self.client.run)
-        self.client_thread.finished.connect(self.client_thread.deleteLater)
-        self.client_thread.start()
 
     def server_function(self):
         self.server_thread = QThread()
@@ -85,6 +72,19 @@ class MainWindow(QMainWindow):
         self.serve.moveToThread(self.serve_thread)
         self.serve_thread.started.connect(self.serve.start)
         self.serve_thread.start()
+
+    def client_function(self):
+        self.client_thread = QThread()
+        self.client = Client()
+        self.Chat.message_signal.connect(self.client.bridge)
+        self.Chat.clips_fetched.connect(self.ui.load_clips)
+        self.ui.itemDeleted.connect(self.Chat.delete_clip)
+        self.ui.resetDB.connect(self.Chat.reset_db)
+        self.client.recv_signal.connect(self.Chat.show_msg)
+        self.client.moveToThread(self.client_thread)
+        self.client_thread.started.connect(self.client.run)
+        self.client_thread.finished.connect(self.client_thread.deleteLater)
+        self.client_thread.start()
 
     def setup_system_tray(self):
         self.tray = QSystemTrayIcon(self)

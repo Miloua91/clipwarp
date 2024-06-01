@@ -5,6 +5,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from PyQt5.QtCore import QObject
+from engineio.async_drivers import gevent
 
 
 class FlaskAPI(QObject):
@@ -31,10 +32,9 @@ class FlaskAPI(QObject):
         if os.path.exists("settings.txt"):
             with open("settings.txt", "r") as f:
                 port = f.read()
-                return (int(port) + 1)
-        else: 
+                return int(port) + 1
+        else:
             return 42070
-
 
     def start(self):
         self.socketio.run(self.app, host="0.0.0.0", port=self.load_port())
@@ -44,15 +44,16 @@ class FlaskAPI(QObject):
         conn.row_factory = sqlite3.Row
         return conn
 
-
     def get_clips(self):
         conn = self.get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT clips.id, clips.clips_text, clips.user_id, users.name
             FROM clips
             JOIN users ON clips.user_id = users.id
-        """)
+        """
+        )
         clips = cursor.fetchall()
         conn.close()
 
@@ -61,7 +62,7 @@ class FlaskAPI(QObject):
                 "id": clip["id"],
                 "clips_text": clip["clips_text"],
                 "user_id": clip["user_id"],
-                "user_name": clip["name"]
+                "user_name": clip["name"],
             }
             for clip in clips
         ]
@@ -69,7 +70,6 @@ class FlaskAPI(QObject):
         self.socketio.emit("refresh")
 
         return jsonify(clip_data)
-
 
     def delete_clip(self, clip_id):
         conn = self.get_db_connection()

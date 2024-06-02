@@ -8,6 +8,10 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
 
+setting_path = os.path.join(
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"
+)
+
 
 class Chat(QObject):
     message_signal = pyqtSignal(str)
@@ -43,8 +47,8 @@ class Chat(QObject):
         self.ui.Paste.clicked.connect(self.paste_text)
 
     def load_port(self):
-        if os.path.exists("settings.txt"):
-            with open("settings.txt", "r") as f:
+        if os.path.exists(setting_path):
+            with open(setting_path, "r") as f:
                 port = f.read()
                 return int(port) + 1
         else:

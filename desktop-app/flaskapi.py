@@ -8,6 +8,15 @@ from PyQt5.QtCore import QObject
 from engineio.async_drivers import gevent
 
 
+setting_path = os.path.join(
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"
+)
+
+db_path = os.path.join(
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "clipwarp.db"
+)
+
+
 class FlaskAPI(QObject):
     def __init__(self):
         super(FlaskAPI, self).__init__()
@@ -29,8 +38,8 @@ class FlaskAPI(QObject):
         )
 
     def load_port(self):
-        if os.path.exists("settings.txt"):
-            with open("settings.txt", "r") as f:
+        if os.path.exists(setting_path):
+            with open(setting_path, "r") as f:
                 port = f.read()
                 return int(port) + 1
         else:
@@ -40,7 +49,7 @@ class FlaskAPI(QObject):
         self.socketio.run(self.app, host="0.0.0.0", port=self.load_port())
 
     def get_db_connection(self):
-        conn = sqlite3.connect("./assets/clipwarp.db")
+        conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row
         return conn
 

@@ -10,6 +10,27 @@ from PyQt5.QtGui import QIcon, QFontMetrics
 from PyQt5.QtWidgets import *
 
 
+def resource_path(relative_path):
+    if getattr(sys, "frozen", False):
+        application_path = sys._MEIPASS
+    else:
+        application_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(application_path, relative_path)
+
+
+def load_svg(file_name):
+    file_path = resource_path(os.path.join("assets", file_name))
+    if not os.path.isfile(file_path):
+        print(f"Cannot open file '{file_path}', because: No such file or directory")
+    else:
+        return file_path
+
+
+setting_path = os.path.join(
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"
+)
+
+
 class TabBar(QTabBar):
     def tabSizeHint(self, index):
         s = QTabBar.tabSizeHint(self, index)
@@ -86,14 +107,14 @@ class Ui_MainWindow(QObject):
         self.setting.setObjectName("pushButton")
         self.setting.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setting.clicked.connect(self.open_new_window)
-        setting_icon = QIcon("./assets/setting.svg")
+        setting_icon = QIcon(load_svg("setting.svg"))
         self.setting.setIcon(setting_icon)
         self.openapp = QtWidgets.QPushButton(self.centralwidget)
         self.openapp.setGeometry(QtCore.QRect(80, 25, 24, 24))
         self.openapp.setObjectName("openApp")
         self.openapp.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.openapp.clicked.connect(self.open_app)
-        webapp_icon = QIcon("./assets/webapp.svg")
+        webapp_icon = QIcon(load_svg("webapp.svg"))
         self.openapp.setIcon(webapp_icon)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -172,7 +193,7 @@ class Ui_MainWindow(QObject):
                     """
                 )
                 delete_button.setFixedSize(24, 24)
-                delete_icon = QIcon("./assets/delete.svg")
+                delete_icon = QIcon(load_svg("delete.svg"))
                 delete_button.setIcon(delete_icon)
                 delete_button.clicked.connect(
                     lambda _, item=item, list_widget=list_widget: self.delete_item(
@@ -197,7 +218,7 @@ class Ui_MainWindow(QObject):
                     """
                 )
                 copy_button.setFixedSize(24, 24)
-                copy_icon = QIcon("./assets/copy.svg")
+                copy_icon = QIcon(load_svg("copy.svg"))
                 copy_button.setIcon(copy_icon)
                 copy_button.clicked.connect(
                     lambda _, text=clip["clips_text"]: self.copy_clip(text)
@@ -220,7 +241,7 @@ class Ui_MainWindow(QObject):
                     """
                 )
                 url_button.setFixedSize(24, 24)
-                url_icon = QIcon("./assets/open.svg")
+                url_icon = QIcon(load_svg("open.svg"))
                 url_button.setIcon(url_icon)
                 url_button.clicked.connect(
                     lambda _, text=clip["clips_text"]: self.open_url(text)
@@ -477,7 +498,7 @@ class Ui_MainWindow(QObject):
             dlg.setWindowTitle("Change Port")
             result = dlg.exec()
             if result == QDialog.Accepted:
-                with open("settings.txt", "w") as f:
+                with open(setting_path, "w") as f:
                     f.write(port)
                 os._exit(1)
             print("Port saved successfully.")
@@ -522,8 +543,8 @@ class Ui_MainWindow(QObject):
                 print("Database reset confirmed")
 
     def load_settings(self):
-        if os.path.exists("settings.txt"):
-            with open("settings.txt", "r") as f:
+        if os.path.exists(setting_path):
+            with open(setting_path, "r") as f:
                 port = f.read()
                 self.port_edit.setPlainText(port)
 

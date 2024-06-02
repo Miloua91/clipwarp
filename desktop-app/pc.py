@@ -6,19 +6,21 @@ import ssl
 import websockets
 from PyQt5.QtCore import QObject, pyqtSignal
 
+setting_path = os.path.join(
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"
+)
+
 
 class Client(QObject):
     recv_signal = pyqtSignal(str)
 
     def load_port(self):
-        if os.path.exists("settings.txt"):
-            with open("settings.txt", "r") as f:
+        if os.path.exists(setting_path):
+            with open(setting_path, "r") as f:
                 port = f.read()
                 return port
-        else: 
+        else:
             return 42069
-
-
 
     def run(self):
         asyncio.run(self.client())
@@ -31,9 +33,9 @@ class Client(QObject):
         return ip
 
     async def client(self):
-        #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        #ssl_context.check_hostname = False
-        #ssl_context.verify_mode = ssl.CERT_NONE
+        # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        # ssl_context.check_hostname = False
+        # ssl_context.verify_mode = ssl.CERT_NONE
         uri = f"ws://{self.get_ip_address()}:{self.load_port()}/Server"
         async with websockets.connect(uri) as self.websocket:
             async for message in self.websocket:

@@ -7,6 +7,14 @@ import websockets
 from db import Database
 from PyQt5.QtCore import QObject, pyqtSignal
 
+setting_path = os.path.join(
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"
+)
+
+db_path = os.path.join(
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "clipwarp.db"
+)
+
 
 class Server(QObject):
     message_signal = pyqtSignal(tuple)
@@ -17,11 +25,11 @@ class Server(QObject):
         self.db = Database()
 
     def load_port(self):
-        if os.path.exists("settings.txt"):
-            with open("settings.txt", "r") as f:
+        if os.path.exists(setting_path):
+            with open(setting_path, "r") as f:
                 port = f.read()
                 return port
-        else: 
+        else:
             return 42069
 
     def run(self):
@@ -36,9 +44,11 @@ class Server(QObject):
         return ip
 
     async def start_server(self):
-        #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        #ssl_context.load_cert_chain(certfile='./assets/cert.pem', keyfile='./assets/key.pem')
-        async with websockets.serve(self.register, self.get_ip_address(), self.load_port()):
+        # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        # ssl_context.load_cert_chain(certfile='./assets/cert.pem', keyfile='./assets/key.pem')
+        async with websockets.serve(
+            self.register, self.get_ip_address(), self.load_port()
+        ):
             await asyncio.Future()
 
     async def register(self, websocket, path):
@@ -46,7 +56,7 @@ class Server(QObject):
         self.CONNECTIONS[name] = websocket
         print(f"{name} connected")
 
-        connection = self.db.create_connection("./assets/clipwarp.db")
+        connection = self.db.create_connection(db_path)
 
         # Check if the user exists, if not, insert the user and get the user_id
         select_user = "SELECT id FROM users WHERE name = ?"

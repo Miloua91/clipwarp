@@ -6,6 +6,23 @@ from PyQt5.QtCore import QObject, QThread
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
 
+
+def resource_path(relative_path):
+    if getattr(sys, "frozen", False):
+        application_path = sys._MEIPASS
+    else:
+        application_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(application_path, relative_path)
+
+
+def load_ico(file_name):
+    file_path = resource_path(os.path.join("assets", file_name))
+    if not os.path.isfile(file_path):
+        print(f"Cannot open file '{file_path}', because: No such file or directory")
+    else:
+        return file_path
+
+
 from chat import Chat
 from db import Database
 from flaskapi import FlaskAPI
@@ -26,7 +43,7 @@ class MainWindow(QMainWindow):
         self.setup_connections()
         self.setStyleSheet(self.stylesheet())
         self.setFixedSize(612, 392)
-        self.set_window_icon("assets/cw.ico")
+        self.set_window_icon(load_ico("cw.ico"))
         self.setup_system_tray()
 
     def init_ui(self):
@@ -60,7 +77,7 @@ class MainWindow(QMainWindow):
         notification = Notify()
         notification.title = msg[0]
         notification.message = msg[1]
-        notification.icon = "./assets/cw.svg"
+        notification.icon = load_ico("cw.svg")
         notification.send()
 
     def db_function(self):

@@ -1,7 +1,12 @@
+import os
 import sqlite3
 from sqlite3 import Error
 
 from PyQt5.QtCore import QObject
+
+db_path = os.path.join(
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "clipwarp.db"
+)
 
 
 class Database(QObject):
@@ -25,7 +30,6 @@ class Database(QObject):
         except Error as e:
             print(f"The error '{e}' occurred")
 
-
     def execute_read_query(self, connection, query, params=None):
         cursor = connection.cursor()
         result = None
@@ -41,7 +45,7 @@ class Database(QObject):
             return result
 
     def create_db(self):
-        connection = self.create_connection("./assets/clipwarp.db")
+        connection = self.create_connection(db_path)
 
         create_users_table = """
         CREATE TABLE IF NOT EXISTS users(

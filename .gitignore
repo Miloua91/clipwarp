@@ -1,5 +1,13 @@
 # dependencies
 node_modules/
+__pycache__/
+bin/
+build/
+dist/
+env/
+lib/
+lib64
+pyvenv.cfg
 
 # Expo
 .expo/

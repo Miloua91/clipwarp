@@ -127,7 +127,7 @@ export default function App() {
 
       websocket.onclose = () => {
         setConnection(false);
-        Alert.alert("WebSocket Status", "Websocket closed", [
+        Alert.alert("WebSocket Status", "Websocket connection closed", [
           {
             text: "OK",
           },
@@ -345,7 +345,7 @@ export default function App() {
               onPress={() => clip.id !== undefined && deleteClip(clip.id)}
               className="active:bg-red-500 w-15 h-9 p-1 rounded"
             >
-              <FontAwesome6 name="delete-left" size={26} color="white" />
+              <FontAwesome6 name="delete-left" size={28} color="white" />
             </Pressable>
           </View>
         </View>
@@ -392,7 +392,7 @@ export default function App() {
               onPress={() => clip.id !== undefined && deleteClipsDb(clip.id)}
               className="active:bg-red-500 w-15 h-9 p-1 rounded"
             >
-              <FontAwesome6 name="delete-left" size={26} color="white" />
+              <FontAwesome6 name="delete-left" size={28} color="white" />
             </Pressable>
           </View>
         </View>

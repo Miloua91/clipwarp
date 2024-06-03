@@ -25,7 +25,7 @@ Ever get frustrated trying to share links or text between your desktop and phone
 
 ### Android
 
-1. Download the APK file
+1. Download the [APK file](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-0.1.0.apk)
 2. Install it on your device
 3. Profit
 

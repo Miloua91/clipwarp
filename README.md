@@ -1,4 +1,13 @@
+<div align="center">
+<a href="https://clipwarp.vercel.app" >
+   <img src="./desktop-app/assets/cw.ico" alt="Logo" width="100" height="100">
+</a>
+
 # ClipWarp
+
+[![Product Name Screen Shot][product-screenshot]](https://clipwarp.vercel.app)
+
+</div>
 
 ## Elevator pitch
 
@@ -20,8 +29,6 @@ Ever get frustrated trying to share links or text between your desktop and phone
 1. Download [PKGBUILD](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/PKGBUILD)
 2. Install the app ```makepkg -si```
 3. Launch the app ```clipwarp```
-
-
 
 ### Android
 
@@ -69,6 +76,20 @@ Lunch the app
 python main.py
 ```
 
+##### Build the desktop app
+
+With PyInstaller build the app on desktop
+
+```
+pyinstaller main.spec
+```
+
+Launch the app
+
+```
+./dist/ClipWarp
+```
+
 ### Mobile app
 
 Go to mobile-app directory
@@ -87,6 +108,20 @@ Start the development server
 
 ``` sh 
 yarn expo start
+```
+
+##### Build the mobile app
+
+With Expo and EAS build the APK, Install EAS CLI if you don't have it
+
+``` 
+npm install --global eas-cli
+```
+
+Build the app 
+
+```
+eas build -p android --profile preview
 ```
 
 ### Web app
@@ -108,3 +143,13 @@ Start the server
 ``` sh 
 npm run dev
 ```
+
+##### Build the web app
+
+Build this command
+
+```
+npm run build
+```
+
+[product-screenshot]: ./presentation.png

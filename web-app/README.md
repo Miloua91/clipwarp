@@ -26,7 +26,7 @@ npm run dev
 
 ##### Build the web app
 
-Build this command
+Build with this command
 
 ```
 npm run build

@@ -5,13 +5,22 @@
 
 # ClipWarp
 
-[![Product Name Screen Shot][product-screenshot]](https://clipwarp.vercel.app)
+[![product-screenshot]](https://clipwarp.vercel.app)
 
 </div>
 
 ## Elevator pitch
 
 Ever get frustrated trying to share links or text between your desktop and phone? ClipWarp makes it super easy. Just install it on both devices, and you’ll have a simple way to manage links and text across platforms without any hassle.
+
+<div align="center">
+
+![example-screenshot]
+
+An instance where you need to send a link to your device, screenshot from Expo documentation. If it's up to me than I will definitely use ClipWarp.
+
+</div>
+
 
 ## Installation
 
@@ -153,3 +162,4 @@ npm run build
 ```
 
 [product-screenshot]: ./presentation.png
+[example-screenshot]: ./example.png

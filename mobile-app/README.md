@@ -23,3 +23,17 @@ Start the development server
 ``` sh 
 yarn expo start
 ```
+
+##### Build the mobile app
+
+With Expo and EAS build the APK, Install EAS CLI if you don't have it
+
+``` 
+npm install --global eas-cli
+```
+
+Build the app 
+
+```
+eas build -p android --profile preview
+```

@@ -44,8 +44,6 @@ class Server(QObject):
         return ip
 
     async def start_server(self):
-        # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        # ssl_context.load_cert_chain(certfile='./assets/cert.pem', keyfile='./assets/key.pem')
         async with websockets.serve(
             self.register, self.get_ip_address(), self.load_port()
         ):

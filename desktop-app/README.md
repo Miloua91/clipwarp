@@ -23,3 +23,17 @@ Lunch the app
 ``` python
 python main.py
 ```
+
+##### Build the desktop app
+
+With PyInstaller build the app on desktop
+
+```
+pyinstaller main.spec
+```
+
+Launch the app
+
+```
+./dist/ClipWarp
+```

@@ -23,3 +23,11 @@ Start the server
 ``` sh 
 npm run dev
 ```
+
+##### Build the web app
+
+Build this command
+
+```
+npm run build
+```

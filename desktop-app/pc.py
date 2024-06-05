@@ -33,9 +33,6 @@ class Client(QObject):
         return ip
 
     async def client(self):
-        # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        # ssl_context.check_hostname = False
-        # ssl_context.verify_mode = ssl.CERT_NONE
         uri = f"ws://{self.get_ip_address()}:{self.load_port()}/Server"
         async with websockets.connect(uri) as self.websocket:
             async for message in self.websocket:

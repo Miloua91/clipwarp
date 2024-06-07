@@ -24,6 +24,12 @@ An instance where you need to send a link to your device, screenshot from Expo d
 
 ## Installation
 
+### Windows 10/11
+
+1. Download [clipwarp-0.1.0.exe](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-0.1.0.exe)
+2. Install the app
+3. Launch it
+
 ### Linux (x64)
 
 #### Tarball

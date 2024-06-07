@@ -43,6 +43,7 @@ class MainWindow(QMainWindow):
         self.setup_connections()
         self.setStyleSheet(self.stylesheet())
         self.setFixedSize(612, 392)
+        self.setGeometry(500, 250, 0, 0)
         self.set_window_icon(load_ico("cw.ico"))
         self.setup_system_tray()
 

@@ -2,11 +2,11 @@ import os
 import re
 import socket
 import sys
-
 import webbrowser
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
-from PyQt5.QtGui import QIcon, QFontMetrics
+from PyQt5.QtGui import QFontMetrics, QIcon
 from PyQt5.QtWidgets import *
 
 

@@ -1,8 +1,7 @@
 import socket
 
-from PyQt5.QtCore import QObject
-
 from flask import Flask, render_template
+from PyQt5.QtCore import QObject
 
 app = Flask(__name__)
 

@@ -1166,17 +1166,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bam.tech/react-native-app-security@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "@bam.tech/react-native-app-security@npm:0.4.0"
-  peerDependencies:
-    expo: "*"
-    react: "*"
-    react-native: "*"
-  checksum: 10c0/413965d8e3d9873810b71127578e65c79b3fd50fe8113555fabadc3a5e2a43c831423d479924b8dbfc0aa4daf750637a73d76b9e75d9929f1bf0443268f8f1b5
-  languageName: node
-  linkType: hard
-
 "@callstack/react-theme-provider@npm:^3.0.9":
   version: 3.0.9
   resolution: "@callstack/react-theme-provider@npm:3.0.9"
@@ -1534,6 +1523,27 @@ __metadata:
   peerDependencies:
     expo-modules-autolinking: ">=0.8.1"
   checksum: 10c0/253f9f9d92ebb7120c47b6d8610f8c5c65c577eed1901cfaad7e9b60af0cff2ea8f0dcd42ea28bc136d77ef57c8fd2bc0f008b1cff7668dbd63241cc88f31ef6
+  languageName: node
+  linkType: hard
+
+"@expo/prebuild-config@npm:7.0.6":
+  version: 7.0.6
+  resolution: "@expo/prebuild-config@npm:7.0.6"
+  dependencies:
+    "@expo/config": "npm:~9.0.0-beta.0"
+    "@expo/config-plugins": "npm:~8.0.0-beta.0"
+    "@expo/config-types": "npm:^51.0.0-unreleased"
+    "@expo/image-utils": "npm:^0.5.0"
+    "@expo/json-file": "npm:^8.3.0"
+    "@react-native/normalize-colors": "npm:0.74.84"
+    debug: "npm:^4.3.1"
+    fs-extra: "npm:^9.0.0"
+    resolve-from: "npm:^5.0.0"
+    semver: "npm:^7.6.0"
+    xml2js: "npm:0.6.0"
+  peerDependencies:
+    expo-modules-autolinking: ">=0.8.1"
+  checksum: 10c0/a76cc895f532640767d3063a2e657469c879c6b3cef1dfb982499fe0b3a40ecad333daf7ff98e98adae8f015ee030eb625634fec046b5c01f0f3a09ce53dd57f
   languageName: node
   linkType: hard
 
@@ -2547,6 +2557,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native/normalize-colors@npm:0.74.84":
+  version: 0.74.84
+  resolution: "@react-native/normalize-colors@npm:0.74.84"
+  checksum: 10c0/9046b848db5ba0001cb4817faebba18366c5fc7c86a72836685867868e0019d40477d0dd6a7cdddf305a2156b5bda0b569116d2446d873e6e0d79c3c85a6517e
+  languageName: node
+  linkType: hard
+
 "@react-native/virtualized-lists@npm:0.74.83":
   version: 0.74.83
   resolution: "@react-native/virtualized-lists@npm:0.74.83"
@@ -2999,7 +3016,6 @@ __metadata:
     "@babel/plugin-transform-shorthand-properties": "npm:^7.24.1"
     "@babel/plugin-transform-template-literals": "npm:^7.24.1"
     "@babel/runtime": "npm:^7.24.1"
-    "@bam.tech/react-native-app-security": "npm:^0.4.0"
     "@expo/metro-runtime": "npm:~3.2.1"
     "@expo/vector-icons": "npm:^14.0.0"
     "@gorhom/bottom-sheet": "npm:4"
@@ -3022,6 +3038,7 @@ __metadata:
     expo-device: "npm:~6.0.2"
     expo-file-system: "npm:~17.0.1"
     expo-font: "npm:^12.0.5"
+    expo-splash-screen: "npm:^0.27.5"
     expo-sqlite: "npm:~14.0.3"
     expo-status-bar: "npm:~1.12.1"
     expo-system-ui: "npm:~3.0.4"
@@ -3039,7 +3056,6 @@ __metadata:
     metro-transform-plugins: "npm:^0.80.7"
     metro-transform-worker: "npm:^0.80.7"
     nativewind: "npm:^2.0.11"
-    pocketbase: "npm:^0.21.1"
     react: "npm:18.2.0"
     react-dom: "npm:18.2.0"
     react-native: "npm:0.74.1"
@@ -5200,6 +5216,17 @@ __metadata:
   dependencies:
     invariant: "npm:^2.2.4"
   checksum: 10c0/e31465c902825692c11725a1ce38660ff6ea7fdb1875c5f6e87b0cc9df84816061947c6678e894b914702320df605c975ba329e28f5edff26455b24deeb34bae
+  languageName: node
+  linkType: hard
+
+"expo-splash-screen@npm:^0.27.5":
+  version: 0.27.5
+  resolution: "expo-splash-screen@npm:0.27.5"
+  dependencies:
+    "@expo/prebuild-config": "npm:7.0.6"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/25ec881ca5cc15154c56320a094e885c90806faca5bad069550159681296c3d3fa2b405140a843b735bdd9a32628fb6d818dc6f5233f35f0bbb549682b4cc6a6
   languageName: node
   linkType: hard
 
@@ -8498,13 +8525,6 @@ __metadata:
   version: 3.4.0
   resolution: "pngjs@npm:3.4.0"
   checksum: 10c0/88ee73e2ad3f736e0b2573722309eb80bd2aa28916f0862379b4fd0f904751b4f61bb6bd1ecd7d4242d331f2b5c28c13309dd4b7d89a9b78306e35122fdc5011
-  languageName: node
-  linkType: hard
-
-"pocketbase@npm:^0.21.1":
-  version: 0.21.2
-  resolution: "pocketbase@npm:0.21.2"
-  checksum: 10c0/7420dea0b7333c10294b83f182ff3b61c4d4fb9a238f4c3072908b4bccca69d4bc556ab022dc7490954de6f1b7eec36c965ec5d0ee0dc119752289c3ea024538
   languageName: node
   linkType: hard
 

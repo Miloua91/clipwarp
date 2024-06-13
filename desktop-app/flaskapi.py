@@ -1,12 +1,11 @@
 import os
 import sqlite3
 
+from engineio.async_drivers import gevent
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from PyQt5.QtCore import QObject
-from engineio.async_drivers import gevent
-
 
 setting_path = os.path.join(
     os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"

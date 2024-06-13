@@ -1,11 +1,12 @@
-import os
 import asyncio
+import os
 import socket
 import ssl
 
 import websockets
-from db import Database
 from PyQt5.QtCore import QObject, pyqtSignal
+
+from db import Database
 
 setting_path = os.path.join(
     os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"

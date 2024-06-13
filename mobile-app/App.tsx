@@ -25,6 +25,8 @@ import React, { useEffect, useState } from "react";
 import { webSocket, WS } from "./ws";
 import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SplashScreen from "expo-splash-screen";
+SplashScreen.preventAutoHideAsync();
 
 type Clip = {
   id: number | undefined;
@@ -57,6 +59,7 @@ export default function App() {
       const port = await AsyncStorage.getItem("port");
       setWsAddress(address ?? "192.168.1");
       setWsPort(Number(port) ?? 42069);
+      await SplashScreen.hideAsync();
     }
     getAddress();
   }, [wsPort]);

@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 from notifypy import Notify
 from PyQt5.QtCore import QObject, QThread
@@ -30,7 +30,6 @@ from pc import Client
 from serve import Serve
 from server import Server
 from ui import Ui_MainWindow
-
 
 os.environ["QT_QPA_PLATFORM"] = "xcb"
 

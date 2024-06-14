@@ -68,6 +68,7 @@ export function WS() {
     if (wsAddress !== null) {
       try {
         await AsyncStorage.setItem("address", wsAddress);
+        await Updates.reloadAsync();
       } catch (error) {
         console.error("Error saving WebSocket address:", error);
       }

@@ -30,16 +30,17 @@
     "eas": {},
     "plugins": [
       [
-      "expo-asset" 
+        "expo-asset"
       ],
       [
-      "expo-build-properties",
+        "expo-build-properties",
         {
           "android": {
-          "usesCleartextTraffic": true
+            "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
       "eas": {

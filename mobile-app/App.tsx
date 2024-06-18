@@ -28,6 +28,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
 SplashScreen.preventAutoHideAsync();
 
+//TODO: Sync db between dektop and mobile
+
 type Clip = {
   id: number | undefined;
   clip: string;

@@ -29,6 +29,7 @@ import * as SplashScreen from "expo-splash-screen";
 SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
+//TODO: Make the app function on IOS
 
 type Clip = {
   id: number | undefined;

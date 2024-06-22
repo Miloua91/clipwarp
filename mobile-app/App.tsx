@@ -31,7 +31,8 @@ SplashScreen.preventAutoHideAsync();
 //TODO: Sync db between dektop and mobile
 //TODO: Make the app function on IOS
 //TODO: Add notification, open links with browserj
-//TODO:  Add pull to refresh clips
+//TODO: Add pull to refresh clips
+//TODO: Add time
 
 type Clip = {
   id: number | undefined;

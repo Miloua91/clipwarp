@@ -9,7 +9,8 @@ from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QFontMetrics, QIcon
 from PyQt5.QtWidgets import *
 
-# TODO: try to change the maximize button behavior and icon
+# TODO: Try to change the maximize button behavior and icon
+# TODO: Add time
 
 
 def resource_path(relative_path):

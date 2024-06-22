@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "./ui/input";
 
+//TODO: Add time
+
 interface Clip {
   clips_text: string;
   id: number;

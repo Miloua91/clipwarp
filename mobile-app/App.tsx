@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   StatusBar,
   Share,
+  RefreshControl,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite/legacy";
@@ -58,6 +59,7 @@ export default function App() {
   const [wsAddress, setWsAddress] = useState<string>();
   const [wsPort, setWsPort] = useState<number>();
   const [seconds, setSeconds] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     async function getAddress() {

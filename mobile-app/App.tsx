@@ -22,7 +22,7 @@ import {
   Ionicons,
   FontAwesome,
 } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { webSocket, WS } from "./ws";
 import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -83,6 +83,11 @@ export default function App() {
   useEffect(() => {
     getClips();
   }, [wsPort]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    getClips().then(() => setRefreshing(false));
+  }, []);
 
   useEffect(() => {
     const socket = io(`http://${wsAddress}:${(wsPort ?? 42069) + 1}/`);
@@ -470,7 +475,13 @@ export default function App() {
       <SafeAreaView>
         <StatusBar backgroundColor={`${bgColor}`} />
       </SafeAreaView>
-      <ScrollView className={`flex justfiy-center `} style={styles.background}>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        className={`flex justfiy-center `}
+        style={styles.background}
+      >
         <View className="flex flex-row justify-between items-center">
           <View
             className={`w-3 h-3 m-5 rounded-full ${connection ? "bg-green-500" : "bg-red-500"}`}

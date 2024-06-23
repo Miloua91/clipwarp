@@ -70,27 +70,30 @@ export default function App() {
       await SplashScreen.hideAsync();
     }
     getAddress();
-  }, [wsPort]);
-
-  async function getClips() {
-    const response = await fetch(
-      `http://${wsAddress}:${(wsPort ?? 42069) + 1}/`,
-    );
-    const data = await response.json();
-    setClipsDb(data);
-  }
+  }, []);
 
   useEffect(() => {
-    getClips();
-  }, [wsPort, refreshing]);
+    if (wsAddress && wsPort) {
+      getClips();
+    }
+  }, [wsAddress, wsPort]);
+
+  const getClips = async () => {
+    try {
+      const response = await fetch(
+        `http://${wsAddress}:${(wsPort ?? 42069) + 1}/`,
+      );
+      const data = await response.json();
+      setClipsDb(data);
+    } catch (error) {
+      console.error("Failed to fetch clips:", error);
+    }
+  };
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      getClips();
-    }, 1000);
-  }, []);
+    getClips().then(() => setRefreshing(false));
+  }, [wsAddress, wsPort]);
 
   useEffect(() => {
     const socket = io(`http://${wsAddress}:${(wsPort ?? 42069) + 1}/`);

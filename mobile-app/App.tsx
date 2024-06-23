@@ -86,7 +86,10 @@ export default function App() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    getClips().then(() => setRefreshing(false));
+    setTimeout(() => {
+      setRefreshing(false);
+      getClips();
+    }, 1000);
   }, []);
 
   useEffect(() => {

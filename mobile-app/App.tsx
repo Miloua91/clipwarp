@@ -82,7 +82,7 @@ export default function App() {
 
   useEffect(() => {
     getClips();
-  }, [wsPort]);
+  }, [wsPort, refreshing]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);

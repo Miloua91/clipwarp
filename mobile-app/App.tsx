@@ -32,7 +32,8 @@ SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
 //TODO: Make the app function on IOS
-//TODO: Add notification, open links with browser
+//TODO: open links with browser in notification
+//PERF: Add notification
 //PERF: Add time
 //PERF: Add pull to refresh clips
 
@@ -132,10 +133,6 @@ export default function App() {
       setSeconds(0);
     }
   }, [connection]);
-
-  useEffect(() => {
-    //console.log(lastClip);
-  }, [clipsDb]);
 
   useEffect(() => {
     // Send data when `db` changes

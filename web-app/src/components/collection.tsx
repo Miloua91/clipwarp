@@ -16,12 +16,13 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "./ui/input";
 
-//TODO: Add time
+//PERF: Add time
 
 interface Clip {
   clips_text: string;
   id: number;
   user_name: string;
+  date: string;
 }
 
 export default function Collection() {
@@ -126,7 +127,12 @@ export default function Collection() {
 
   const categorizeClips = () => {
     const categorized: {
-      [key: string]: { id: number; content: string; user: string }[];
+      [key: string]: {
+        id: number;
+        content: string;
+        user: string;
+        createdAt: string;
+      }[];
     } = {
       Text: [],
     };
@@ -144,12 +150,14 @@ export default function Collection() {
           id: clip.id,
           content: match[0],
           user: clip.user_name,
+          createdAt: clip.date,
         });
       } else {
         categorized.Text.push({
           id: clip.id,
           content: clip.clips_text,
           user: clip.user_name,
+          createdAt: clip.date,
         });
       }
     });
@@ -183,7 +191,7 @@ export default function Collection() {
                     <div className="w-full flex flex-col gap-1">
                       <div className="break-words">{clip.content}</div>
                       <div className="text-end w-full text-sm pr-4">
-                        {clip.user}
+                        {clip.createdAt} | {clip.user}
                       </div>
                     </div>
                     <div className="flex gap-2 justify-end">
@@ -214,7 +222,7 @@ export default function Collection() {
                         {clip.content}
                       </a>
                       <div className="text-end w-full text-sm pr-4">
-                        {clip.user}
+                        {clip.createdAt} | {clip.user}
                       </div>
                     </div>
                     <div className="flex gap-2 justify-end">

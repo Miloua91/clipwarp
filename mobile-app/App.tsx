@@ -32,8 +32,8 @@ SplashScreen.preventAutoHideAsync();
 //TODO: Sync db between dektop and mobile
 //TODO: Make the app function on IOS
 //TODO: Add notification, open links with browser
+//PERF: Add time
 //PERF: Add pull to refresh clips
-//TODO: Add time
 
 type Clip = {
   id: number | undefined;
@@ -44,6 +44,7 @@ interface ClipDb {
   id: number;
   clips_text: string;
   user_name: string;
+  date: string;
 }
 
 const bgColor = "#252422";
@@ -388,12 +389,12 @@ export default function App() {
             <TextInput multiline className="text-gray-100 text-[16px]">
               {clip.clips_text}
             </TextInput>
-            <Text
-              style={styles.text}
-              className="w-full text-gray-100 text-[14px]"
-            >
-              {clip.user_name}
-            </Text>
+            <View className="w-fit flex flex-row justify-between">
+              <Text className="text-gray-100 text-[14px]">{clip.date}</Text>
+              <Text className="text-gray-100 text-[14px]">
+                {clip.user_name}
+              </Text>
+            </View>
           </View>
           <View className="flex flex-row justify-between py-2 px-3">
             <Pressable

@@ -33,6 +33,7 @@ SplashScreen.preventAutoHideAsync();
 //TODO: Sync db between dektop and mobile
 //TODO: Make the app function on IOS
 //TODO: open links with browser in notification
+//TODO: add icon to notification
 //PERF: Add notification
 //PERF: Add time
 //PERF: Add pull to refresh clips
@@ -151,7 +152,6 @@ export default function App() {
         const newClips = await getClips(); // Wait for getClips to complete and get the new clips directly
         const lastClip = newClips?.at(-1)?.clips_text;
         const username = newClips?.at(-1)?.user_name;
-        console.log(newClips);
         if (lastClip && username) {
           await Notifications.scheduleNotificationAsync({
             content: {

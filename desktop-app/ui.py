@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import *
 
 # TODO: Try to change the maximize button behavior and icon
 # TODO: Add time
+# TODO: Display link metadata
 
 
 def resource_path(relative_path):

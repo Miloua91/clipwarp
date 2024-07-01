@@ -10,8 +10,8 @@ from PyQt5.QtGui import QFontMetrics, QIcon
 from PyQt5.QtWidgets import *
 
 # TODO: Try to change the maximize button behavior and icon
-# TODO: Add time
 # TODO: Display link metadata
+# PERF: Add time
 
 
 def resource_path(relative_path):
@@ -172,6 +172,7 @@ class Ui_MainWindow(QObject):
             for clip in reversed_clips:
                 clip_text = clip["clips_text"]
                 username = clip["user_name"]
+                date = clip["date"]
                 max_pixel_width = 340
                 font = list_widget.font()
                 clip_text = self.truncate_text_to_width(
@@ -263,10 +264,23 @@ class Ui_MainWindow(QObject):
                 )
                 user_label.setText(username)
 
+                date_label = QLabel()
+                date_label.setStyleSheet(
+                    """
+                        QLabel {
+                            font: 10px;
+                            background-color: transparent; 
+                            padding-top: 28px;
+                        }
+                        """
+                )
+                date_label.setText(date)
+
                 list_widget.addItem(item)
 
                 button_layout = QHBoxLayout()
                 button_layout.addWidget(user_label)
+                button_layout.addWidget(date_label)
                 if self.tabWidget.count() > 0:
                     button_layout.addWidget(url_button)
                 button_layout.addWidget(copy_button)

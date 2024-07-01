@@ -57,7 +57,7 @@ class FlaskAPI(QObject):
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT clips.id, clips.clips_text, clips.user_id, users.name
+            SELECT clips.id, clips.clips_text, clips.user_id, users.name, createdAt
             FROM clips
             JOIN users ON clips.user_id = users.id
         """
@@ -71,6 +71,7 @@ class FlaskAPI(QObject):
                 "clips_text": clip["clips_text"],
                 "user_id": clip["user_id"],
                 "user_name": clip["name"],
+                "date": clip["createdAt"],
             }
             for clip in clips
         ]

@@ -27,6 +27,7 @@ import { webSocket, WS } from "./ws";
 import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
+import * as Notifications from "expo-notifications";
 SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
@@ -49,6 +50,14 @@ interface ClipDb {
 
 const bgColor = "#252422";
 const cardColor = "#403d39";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 export default function App() {
   const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
@@ -86,6 +95,7 @@ export default function App() {
       );
       const data = await response.json();
       setClipsDb(data);
+      return data;
     } catch (error) {
       console.error("Failed to fetch clips:", error);
     }
@@ -124,6 +134,10 @@ export default function App() {
   }, [connection]);
 
   useEffect(() => {
+    //console.log(lastClip);
+  }, [clipsDb]);
+
+  useEffect(() => {
     // Send data when `db` changes
     const ws = async () => {
       const websocket = await webSocket();
@@ -136,13 +150,25 @@ export default function App() {
         setConnection(true);
       };
 
-      websocket.onmessage = () => {
-        getClips();
+      websocket.onmessage = async () => {
+        const newClips = await getClips(); // Wait for getClips to complete and get the new clips directly
+        const lastClip = newClips?.at(-1)?.clips_text;
+        const username = newClips?.at(-1)?.user_name;
+        console.log(newClips);
+        if (lastClip && username) {
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: username,
+              body: lastClip,
+            },
+            trigger: null,
+          });
+        }
       };
     };
 
     ws();
-  }, [db, val, seconds]);
+  }, [db, val, seconds, clipsDb]);
 
   useEffect(() => {
     const ws = async () => {

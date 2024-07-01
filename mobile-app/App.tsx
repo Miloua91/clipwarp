@@ -33,7 +33,7 @@ SplashScreen.preventAutoHideAsync();
 //TODO: Sync db between dektop and mobile
 //TODO: Make the app function on IOS
 //TODO: open links with browser in notification
-//TODO: add icon to notification
+//TODO: add icon to notification, and make appear only when app is in background
 //PERF: Add notification
 //PERF: Add time
 //PERF: Add pull to refresh clips
@@ -412,12 +412,9 @@ export default function App() {
             <TextInput multiline className="text-gray-100 text-[16px]">
               {clip.clips_text}
             </TextInput>
-            <View className="w-fit flex flex-row justify-between">
-              <Text className="text-gray-100 text-[14px]">{clip.date}</Text>
-              <Text className="text-gray-100 text-[14px]">
-                {clip.user_name}
-              </Text>
-            </View>
+            <Text style={styles.text} className="text-gray-100 text-[14px]">
+              {clip.date} | {clip.user_name}
+            </Text>
           </View>
           <View className="flex flex-row justify-between py-2 px-3">
             <Pressable

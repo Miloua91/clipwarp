@@ -12,6 +12,8 @@ import {
   StatusBar,
   Share,
   RefreshControl,
+  AppState,
+  Linking,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite/legacy";
@@ -22,7 +24,7 @@ import {
   Ionicons,
   FontAwesome,
 } from "@expo/vector-icons";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { webSocket, WS } from "./ws";
 import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -72,6 +74,9 @@ export default function App() {
   const [wsPort, setWsPort] = useState<number>();
   const [seconds, setSeconds] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const appState = useRef(AppState.currentState);
+  const responseListener = useRef<Notifications.Subscription>();
+  const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
   useEffect(() => {
     async function getAddress() {
@@ -82,6 +87,35 @@ export default function App() {
       await SplashScreen.hideAsync();
     }
     getAddress();
+
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      appState.current = nextAppState;
+      setAppStateVisible(appState.current);
+    });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener(
+        async (response) => {
+          const notificationId = response.notification.request.identifier;
+          const clip = response?.notification?.request?.content.body;
+          const userAction = response.actionIdentifier;
+
+          if (!clip) return null;
+
+          if (userAction === "copy") {
+            Clipboard.setStringAsync(clip);
+          } else if (await Linking.canOpenURL(clip)) {
+            Linking.openURL(clip);
+          }
+          await Notifications.dismissNotificationAsync(notificationId);
+        },
+      );
+
+    return () => {
+      subscription.remove();
+      responseListener.current &&
+        Notifications.removeNotificationSubscription(responseListener.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -149,14 +183,41 @@ export default function App() {
       };
 
       websocket.onmessage = async () => {
-        const newClips = await getClips(); // Wait for getClips to complete and get the new clips directly
+        const newClips = await getClips();
         const lastClip = newClips?.at(-1)?.clips_text;
         const username = newClips?.at(-1)?.user_name;
-        if (lastClip && username) {
+        if (await Linking.canOpenURL(lastClip)) {
+          Notifications.setNotificationCategoryAsync("action", [
+            {
+              identifier: "copy",
+              buttonTitle: "Copy Clip",
+              // options: { opensAppToForeground: false },
+              options: { isDestructive: true },
+            },
+            {
+              identifier: "open",
+              buttonTitle: "Open Link",
+              options: { isDestructive: true },
+              //options: { opensAppToForeground: false },
+            },
+          ]);
+        } else {
+          Notifications.setNotificationCategoryAsync("action", [
+            {
+              identifier: "copy",
+              buttonTitle: "Copy Clip",
+              options: { isDestructive: true },
+              //options: { opensAppToForeground: false },
+            },
+          ]);
+        }
+
+        if (lastClip && username && appStateVisible === "background") {
           await Notifications.scheduleNotificationAsync({
             content: {
               title: username,
               body: lastClip,
+              categoryIdentifier: "action",
             },
             trigger: null,
           });

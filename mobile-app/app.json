@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "ClipWarp",
-    "slug": "expo-template-blank-typescript",
-    "version": "1.0.0",
+    "slug": "clipwarp",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/splash.png",
     "userInterfaceStyle": "automatic",

@@ -30,6 +30,13 @@
     "eas": {},
     "plugins": [
       [
+        "expo-notifications",
+        {
+          "icon": "./assets/noti-icon.png",
+          "color": "#ffffff"
+        }
+      ],
+      [
         "expo-asset"
       ],
       [

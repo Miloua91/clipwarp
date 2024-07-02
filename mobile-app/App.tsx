@@ -34,8 +34,8 @@ SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
 //TODO: Make the app function on IOS
-//TODO: open links with browser in notification
-//TODO: add icon to notification, and make appear only when app is in background
+//PERF: add icon to notification, and make appear only when app is in background
+//PERF: open links with browser in notification
 //PERF: Add notification
 //PERF: Add time
 //PERF: Add pull to refresh clips

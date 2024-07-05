@@ -133,7 +133,7 @@ export default function App() {
       setClipsDb(data);
       return data;
     } catch (error) {
-      console.error("Failed to fetch clips:", error);
+      console.log("Failed to fetch clips:", error);
     }
   };
 
@@ -144,7 +144,6 @@ export default function App() {
 
   useEffect(() => {
     const socket = io(`http://${wsAddress}:${(wsPort ?? 42069) + 1}/`);
-
     socket.onAny((event) => {
       getClips();
     });

@@ -27,7 +27,6 @@
     "web": {
       "favicon": "./assets/icon.png"
     },
-    "eas": {},
     "plugins": [
       [
         "expo-notifications",
@@ -51,8 +50,14 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "ffea7838-506a-44fa-8d17-9ead3a93c317"
+        "projectId": "e1f8c8e3-5c2f-406c-8b49-949789ab16e6"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e1f8c8e3-5c2f-406c-8b49-949789ab16e6"
     }
   }
 }

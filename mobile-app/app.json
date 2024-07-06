@@ -2,6 +2,7 @@
   "expo": {
     "name": "ClipWarp",
     "slug": "clipwarp",
+    "scheme": "clipwarp",
     "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/splash.png",
@@ -11,11 +12,16 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
+    "notifications": {
+          "icon": "./assets/noti-icon.png",
+          "color": "#ffffff"
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mokhincode.ClipWarp"
     },
     "android": {
       "adaptiveIcon": {
@@ -46,12 +52,13 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-share-intent"
     ],
     "extra": {
       "eas": {
         "projectId": "e1f8c8e3-5c2f-406c-8b49-949789ab16e6"
-      }
+          }
     },
     "runtimeVersion": {
       "policy": "appVersion"

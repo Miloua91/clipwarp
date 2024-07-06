@@ -35,6 +35,7 @@ SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
 //TODO: Make the app function on IOS
+//PERF: Added share intent to the app
 //PERF: add icon to notification, and make appear only when app is in background
 //PERF: open links with browser in notification
 //PERF: Add notification
@@ -65,11 +66,15 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
+  /*
   const { hasShareIntent, shareIntent, resetShareIntent, error } =
     useShareIntent({
       debug: true,
       resetOnBackground: true,
     });
+
+  console.log(shareIntent.text);
+  */
 
   const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
@@ -85,7 +90,9 @@ export default function App() {
   const responseListener = useRef<Notifications.Subscription>();
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
-  useEffect(() => {
+  useEffect(
+    () => {
+      /*
     if (hasShareIntent) {
       if (shareIntent.text === undefined) {
         return ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
@@ -119,45 +126,55 @@ export default function App() {
       }
       resetShareIntent();
     }
+   */
 
-    async function getAddress() {
-      const address = await AsyncStorage.getItem("address");
-      const port = await AsyncStorage.getItem("port");
-      setWsAddress(address ?? "192.168.1");
-      setWsPort(Number(port) ?? 42069);
-      await SplashScreen.hideAsync();
-    }
-    getAddress();
+      async function getAddress() {
+        const address = await AsyncStorage.getItem("address");
+        const port = await AsyncStorage.getItem("port");
+        setWsAddress(address ?? "192.168.1");
+        setWsPort(Number(port) ?? 42069);
+        await SplashScreen.hideAsync();
+      }
+      getAddress();
 
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      appState.current = nextAppState;
-      setAppStateVisible(appState.current);
-    });
-
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener(
-        async (response) => {
-          const notificationId = response.notification.request.identifier;
-          const clip = response?.notification?.request?.content.body;
-          const userAction = response.actionIdentifier;
-
-          if (!clip) return null;
-
-          if (userAction === "copy") {
-            Clipboard.setStringAsync(clip);
-          } else if (await Linking.canOpenURL(clip)) {
-            Linking.openURL(clip);
-          }
-          await Notifications.dismissNotificationAsync(notificationId);
+      const subscription = AppState.addEventListener(
+        "change",
+        (nextAppState) => {
+          appState.current = nextAppState;
+          setAppStateVisible(appState.current);
         },
       );
 
-    return () => {
-      subscription.remove();
-      responseListener.current &&
-        Notifications.removeNotificationSubscription(responseListener.current);
-    };
-  }, [shareIntent]);
+      responseListener.current =
+        Notifications.addNotificationResponseReceivedListener(
+          async (response) => {
+            const notificationId = response.notification.request.identifier;
+            const clip = response?.notification?.request?.content.body;
+            const userAction = response.actionIdentifier;
+
+            if (!clip) return null;
+
+            if (userAction === "copy") {
+              Clipboard.setStringAsync(clip);
+            } else if (await Linking.canOpenURL(clip)) {
+              Linking.openURL(clip);
+            }
+            await Notifications.dismissNotificationAsync(notificationId);
+          },
+        );
+
+      return () => {
+        subscription.remove();
+        responseListener.current &&
+          Notifications.removeNotificationSubscription(
+            responseListener.current,
+          );
+      };
+    },
+    [
+      /*shareIntent*/
+    ],
+  );
 
   useEffect(() => {
     if (wsAddress && wsPort) {

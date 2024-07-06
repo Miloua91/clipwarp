@@ -30,6 +30,7 @@ import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
+import { useShareIntent } from "expo-share-intent";
 SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
@@ -64,6 +65,12 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
+  const { hasShareIntent, shareIntent, resetShareIntent, error } =
+    useShareIntent({
+      debug: true,
+      resetOnBackground: true,
+    });
+
   const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
@@ -79,6 +86,40 @@ export default function App() {
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
   useEffect(() => {
+    if (hasShareIntent) {
+      if (shareIntent.text === undefined) {
+        return ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
+      }
+      if (connection) {
+        const ws = async () => {
+          const websocket = await webSocket();
+          websocket.onopen = () => {
+            if (shareIntent.text !== undefined) {
+              websocket.send(`${shareIntent.text}`);
+              getClips();
+            }
+          };
+        };
+        ws();
+      } else {
+        db.transaction((tx) => {
+          tx.executeSql(
+            "INSERT INTO clips (clip) values (?)",
+            [`${shareIntent.text}`],
+            (txObj, resultSet) => {
+              let existingClips = [...val];
+              existingClips.push({
+                id: resultSet.insertId,
+                clip: `${shareIntent.text}`,
+              });
+              setVal(existingClips);
+            },
+          );
+        });
+      }
+      resetShareIntent();
+    }
+
     async function getAddress() {
       const address = await AsyncStorage.getItem("address");
       const port = await AsyncStorage.getItem("port");
@@ -116,7 +157,7 @@ export default function App() {
       responseListener.current &&
         Notifications.removeNotificationSubscription(responseListener.current);
     };
-  }, []);
+  }, [shareIntent]);
 
   useEffect(() => {
     if (wsAddress && wsPort) {

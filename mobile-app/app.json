@@ -12,7 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
-    "notifications": {
+    "notification": {
           "icon": "./assets/noti-icon.png",
           "color": "#ffffff"
     },
@@ -34,13 +34,6 @@
       "favicon": "./assets/icon.png"
     },
     "plugins": [
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/noti-icon.png",
-          "color": "#ffffff"
-        }
-      ],
       [
         "expo-asset"
       ],

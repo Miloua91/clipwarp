@@ -3042,6 +3042,7 @@ __metadata:
     expo-asset: "npm:~10.0.10"
     expo-build-properties: "npm:~0.12.3"
     expo-clipboard: "npm:~6.0.3"
+    expo-constants: "npm:^16.0.2"
     expo-dev-client: "npm:~4.0.19"
     expo-device: "npm:~6.0.2"
     expo-file-system: "npm:~17.0.1"

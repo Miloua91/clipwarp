@@ -283,7 +283,7 @@ export default function App() {
     };
 
     ws();
-  }, [db, val, seconds, clipsDb]);
+  }, [db, val, seconds, clipsDb, appStateVisible]);
 
   useEffect(() => {
     const ws = async () => {

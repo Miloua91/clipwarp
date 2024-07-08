@@ -70,7 +70,7 @@ export const i18n = new I18n({
     serverIP: "Inserisci l'IP del server",
     serverPort: "Inserisci la porta del server",
     deviceName: "Inserisci il nome del dispositivo",
-    resetDb: "Reimposta il database degli \n appunti",
+    resetDb: "Reimposta il database degli appunti",
     settings: "Impostazioni",
     wsStatus: "Stato WebSocket",
     wsMessage: "Connessione WebSocket chiusa",

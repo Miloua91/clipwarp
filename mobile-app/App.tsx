@@ -31,6 +31,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
 import { useShareIntent } from "expo-share-intent";
+import { i18n } from "./i18n";
+import { getLocales } from "expo-localization";
 SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
@@ -64,6 +66,8 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
+
+const deviceLanguage = getLocales()?.[0]?.languageCode;
 
 export default function App() {
   /*
@@ -157,7 +161,7 @@ export default function App() {
             if (userAction === "copy") {
               Clipboard.setStringAsync(clip);
             } else if (await Linking.canOpenURL(clip)) {
-              Linking.openURL(clip);
+              await Linking.openURL(clip);
             }
             await Notifications.dismissNotificationAsync(notificationId);
           },
@@ -248,14 +252,12 @@ export default function App() {
             {
               identifier: "copy",
               buttonTitle: "Copy Clip",
-              // options: { opensAppToForeground: false },
               options: { isDestructive: true },
             },
             {
               identifier: "open",
               buttonTitle: "Open Link",
               options: { isDestructive: true },
-              //options: { opensAppToForeground: false },
             },
           ]);
         } else {
@@ -264,10 +266,10 @@ export default function App() {
               identifier: "copy",
               buttonTitle: "Copy Clip",
               options: { isDestructive: true },
-              //options: { opensAppToForeground: false },
             },
           ]);
         }
+        console.log(await Linking.canOpenURL(lastClip));
 
         if (lastClip && username && appStateVisible === "background") {
           await Notifications.scheduleNotificationAsync({
@@ -291,7 +293,7 @@ export default function App() {
 
       websocket.onclose = () => {
         setConnection(false);
-        Alert.alert("WebSocket Status", "Websocket connection closed", [
+        Alert.alert(i18n.t("wsStatus"), i18n.t("wsMessage"), [
           {
             text: "OK",
           },
@@ -584,7 +586,7 @@ export default function App() {
               <FontAwesome name="angle-left" size={32} color="white" />
             </Pressable>
             <Text className="m-auto text-xl font-semibold pb-10 text-white">
-              Settings
+              {i18n.t("settings")}
             </Text>
           </View>
           <View
@@ -596,11 +598,9 @@ export default function App() {
             </View>
             <View
               style={styles.card}
-              className="border rounded-xl w-full h-20 p-2 flex flex-row justify-between items-center m-auto"
+              className={`border rounded-xl w-full h-20 p-2 flex ${deviceLanguage === "ar" ? "flex-row-reverse" : "flex-row"} justify-between items-center m-auto`}
             >
-              <Text className="text-lg text-white ">
-                Reset clipboard database
-              </Text>
+              <Text className="text-lg text-white ">{i18n.t("resetDb")}</Text>
               <ThemedButton
                 width={75}
                 name="bruce"
@@ -655,7 +655,7 @@ export default function App() {
               type="primary"
               onPressIn={fetchCopiedText}
             >
-              Paste
+              {i18n.t("Paste")}
             </ThemedButton>
             <ThemedButton
               width={160}
@@ -663,7 +663,7 @@ export default function App() {
               type="secondary"
               onPressIn={addClip}
             >
-              Send
+              {i18n.t("Send")}
             </ThemedButton>
           </View>
           <View className="border-b border-stone-500 w-[97%] my-2" />

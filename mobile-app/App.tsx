@@ -598,9 +598,11 @@ export default function App() {
             </View>
             <View
               style={styles.card}
-              className={`border rounded-xl w-full h-20 p-2 flex ${deviceLanguage === "ar" ? "flex-row-reverse" : "flex-row"} justify-between items-center m-auto`}
+              className={`border rounded-xl h-20 w-full p-2 flex ${deviceLanguage === "ar" ? "flex-row-reverse" : "flex-row"} justify-between items-center m-auto`}
             >
-              <Text className="text-lg text-white ">{i18n.t("resetDb")}</Text>
+              <Text className="text-lg text-white  w-[70%]">
+                {i18n.t("resetDb")}
+              </Text>
               <ThemedButton
                 width={75}
                 name="bruce"

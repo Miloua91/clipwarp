@@ -5,6 +5,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Device from "expo-device";
 import * as Updates from "expo-updates";
+import { i18n } from "./i18n";
+import { getLocales } from "expo-localization";
+
+const deviceLanguage = getLocales()?.[0]?.languageCode;
 
 const bgColor = "#252422";
 const cardColor = "#403d39";
@@ -104,15 +108,17 @@ export function WS() {
     <View className="w-full m-auto mt-6">
       <View className="space-x-1 mb-4  border rounded-xl" style={styles.card}>
         <Text className="mx-2 text-lg font-semibold py-1 text-white">
-          Enter server's IP
+          {i18n.t("serverIP")}
         </Text>
         <TextInput
-          className="w-full pl-4 text-lg m-1 bottom-2 text-white"
+          className={`${deviceLanguage === "ar" ? "pr-4 text-right" : "pl-4"} w-full text-lg m-1 bottom-2 text-white`}
           placeholder="IP address"
           onChangeText={(text) => setWsAddress(text)}
           value={wsAddress}
         />
-        <View className="absolute right-0 mx-2 my-1">
+        <View
+          className={`absolute ${deviceLanguage === "ar" ? "left-2" : "right-0"} mx-2 my-1`}
+        >
           <AwesomeButton
             backgroundColor="#403d39"
             width={60}
@@ -125,15 +131,17 @@ export function WS() {
 
       <View className="space-x-1 mb-4 border rounded-xl" style={styles.card}>
         <Text className="mx-2 text-lg font-semibold py-1 text-white">
-          Enter server's port
+          {i18n.t("serverPort")}
         </Text>
         <TextInput
-          className="w-full pl-4 text-lg m-1 bottom-2 text-white"
+          className={`${deviceLanguage === "ar" ? "pr-4 text-right" : "pl-4"} w-full text-lg m-1 bottom-2 text-white`}
           placeholder="IP address"
           onChangeText={(text) => setWsPort(text)}
           value={wsPort}
         />
-        <View className="absolute right-0 mx-2 my-1">
+        <View
+          className={`absolute ${deviceLanguage === "ar" ? "left-2" : "right-0"} mx-2 my-1`}
+        >
           <AwesomeButton
             backgroundColor="#403d39"
             width={60}
@@ -146,18 +154,20 @@ export function WS() {
 
       <View className="space-x-1 mb-4 border rounded-xl" style={styles.card}>
         <Text className="mx-2 text-lg font-semibold py-1 text-white">
-          Enter device's name
+          {i18n.t("deviceName")}
         </Text>
         <TextInput
-          className="w-full pl-4 text-lg m-1 bottom-2 text-white"
+          className={`${deviceLanguage === "ar" ? "pr-4 text-right" : "pl-4"} w-full text-lg m-1 bottom-2 text-white`}
           placeholder={getDevice}
           onChangeText={(text) => setDeviceName(text)}
           value={deviceName.replace(/-/g, " ")}
         />
         {!deviceName.trim() && (
-          <Text className="text-red-500 p-1">Please enter a device name</Text>
+          <Text className="text-red-500 p-1">{i18n.t("msgDeviceName")}</Text>
         )}
-        <View className="absolute right-0 mx-2 my-1">
+        <View
+          className={`absolute ${deviceLanguage === "ar" ? "left-2" : "right-0"} mx-2 my-1`}
+        >
           <AwesomeButton
             backgroundColor="#403d39"
             width={60}

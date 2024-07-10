@@ -152,7 +152,7 @@ export default function App() {
 
           if (userAction === "copy") {
             Clipboard.setStringAsync(clip);
-          } else if (await Linking.canOpenURL(clip)) {
+          } else if (canOpenLink(clip)) {
             Linking.openURL(clip);
           }
           await Notifications.dismissNotificationAsync(notificationId);

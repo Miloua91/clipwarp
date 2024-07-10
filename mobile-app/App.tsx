@@ -30,7 +30,7 @@ import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
-import { useShareIntent } from "expo-share-intent";
+import { ShareIntentProvider, useShareIntent } from "expo-share-intent";
 import { i18n } from "./i18n";
 import { getLocales } from "expo-localization";
 import * as Linking from "expo-linking";
@@ -124,7 +124,7 @@ export default function App() {
           );
         });
       }
-      resetShareIntent();
+      resetShareIntent;
     }
 
     async function getAddress() {
@@ -164,7 +164,7 @@ export default function App() {
       responseListener.current &&
         Notifications.removeNotificationSubscription(responseListener.current);
     };
-  }, [shareIntent, resetShareIntent]);
+  }, [shareIntent]);
 
   useEffect(() => {
     if (wsAddress && wsPort) {
@@ -233,7 +233,7 @@ export default function App() {
         const newClips = await getClips();
         const lastClip = newClips?.at(-1)?.clips_text;
         const username = newClips?.at(-1)?.user_name;
-        if (await Linking.canOpenURL(lastClip)) {
+        if (canOpenLink(lastClip)) {
           Notifications.setNotificationCategoryAsync("action", [
             {
               identifier: "copy",
@@ -255,7 +255,6 @@ export default function App() {
             },
           ]);
         }
-        console.log(await Linking.canOpenURL(lastClip));
 
         if (lastClip && username && appStateVisible === "background") {
           await Notifications.scheduleNotificationAsync({

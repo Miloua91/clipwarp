@@ -2,9 +2,20 @@ import { I18n } from "i18n-js";
 import { getLocales } from "expo-localization";
 
 export const deviceLanguage = getLocales()?.[0]?.languageCode ?? "en";
+const supportedLanguages = [
+  "en",
+  "fr",
+  "ar",
+  "es",
+  "pr",
+  "it",
+  "ru",
+  "zh",
+  "jp",
+];
 
 export const i18n = new I18n({
-  it: {
+  en: {
     Send: "Send",
     Paste: "Paste",
     serverIP: "Enter server's IP",
@@ -22,7 +33,7 @@ export const i18n = new I18n({
     serverIP: "Entrez l'adresse IP du serveur",
     serverPort: "Entrez le port du serveur",
     deviceName: "Entrez le nom de l'appareil",
-    resetDb: "Réinitialiser la base de \n données du presse-papiers",
+    resetDb: "Réinitialiser la base de données du presse-papiers",
     settings: "Paramètres",
     wsStatus: "Statut WebSocket",
     wsMessage: "Connexion WebSocket fermée",
@@ -45,8 +56,8 @@ export const i18n = new I18n({
     Paste: "Pegar",
     serverIP: "Ingrese la IP del servidor",
     serverPort: "Ingrese el puerto del servidor",
-    deviceName: "Ingrese el nombre del \n dispositivo",
-    resetDb: "Restablecer la base de \n datos del portapapeles",
+    deviceName: "Ingrese el nombre del dispositivo",
+    resetDb: "Restablecer la base de datos del portapapeles",
     settings: "Configuraciones",
     wsStatus: "Estado de WebSocket",
     wsMessage: "Conexión WebSocket cerrada",
@@ -58,13 +69,13 @@ export const i18n = new I18n({
     serverIP: "Digite o IP do servidor",
     serverPort: "Digite a porta do servidor",
     deviceName: "Digite o nome do dispositivo",
-    resetDb: "Redefinir banco de dados da \n área de transferência",
+    resetDb: "Redefinir banco de dados da área de transferência",
     settings: "Configurações",
     wsStatus: "Status do WebSocket",
     wsMessage: "Conexão WebSocket fechada",
     msgDeviceName: "Por favor, insira um nome de dispositivo",
   },
-  en: {
+  it: {
     Send: "Invia",
     Paste: "Incolla",
     serverIP: "Inserisci l'IP del server",
@@ -76,8 +87,46 @@ export const i18n = new I18n({
     wsMessage: "Connessione WebSocket chiusa",
     msgDeviceName: "Per favore, inserisci un nome del dispositivo",
   },
+  ru: {
+    Send: "Отправить",
+    Paste: "Вставить",
+    serverIP: "Введите IP-адрес сервера",
+    serverPort: "Введите порт сервера",
+    deviceName: "Введите имя устройства",
+    resetDb: "Сбросить базу данных буфера обмена",
+    settings: "Настройки",
+    wsStatus: "Статус WebSocket",
+    wsMessage: "Соединение WebSocket закрыто",
+    msgDeviceName: "Пожалуйста, введите имя устройства",
+  },
+  zh: {
+    Send: "发送",
+    Paste: "粘贴",
+    serverIP: "输入服务器的IP",
+    serverPort: "输入服务器的端口",
+    deviceName: "输入设备名称",
+    resetDb: "重置剪贴板数据库",
+    settings: "设置",
+    wsStatus: "WebSocket状态",
+    wsMessage: "WebSocket连接已关闭",
+    msgDeviceName: "请输入设备名称",
+  },
+  jp: {
+    Send: "送信",
+    Paste: "貼り付け",
+    serverIP: "サーバーのIPを入力",
+    serverPort: "サーバーのポートを入力",
+    deviceName: "デバイス名を入力",
+    resetDb: "クリップボードデータベースをリセット",
+    settings: "設定",
+    wsStatus: "WebSocketステータス",
+    wsMessage: "WebSocket接続が閉じました",
+    msgDeviceName: "デバイス名を入力してください",
+  },
 });
 
 i18n.defaultLocale = deviceLanguage;
 
-i18n.locale = deviceLanguage;
+i18n.locale = supportedLanguages.includes(deviceLanguage)
+  ? deviceLanguage
+  : "en";

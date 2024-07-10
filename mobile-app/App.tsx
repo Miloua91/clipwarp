@@ -13,7 +13,6 @@ import {
   Share,
   RefreshControl,
   AppState,
-  Linking,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite/legacy";
@@ -34,6 +33,7 @@ import * as Notifications from "expo-notifications";
 import { useShareIntent } from "expo-share-intent";
 import { i18n } from "./i18n";
 import { getLocales } from "expo-localization";
+import * as Linking from "expo-linking";
 SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
@@ -78,9 +78,7 @@ export default function App() {
       debug: true,
       resetOnBackground: true,
     });
-
-  console.log(shareIntent.text);
-  */
+    */
 
   const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
@@ -136,7 +134,7 @@ export default function App() {
       }
       resetShareIntent();
     }
-   */
+    */
 
       async function getAddress() {
         const address = await AsyncStorage.getItem("address");
@@ -167,7 +165,7 @@ export default function App() {
             if (userAction === "copy") {
               Clipboard.setStringAsync(clip);
             } else if (await Linking.canOpenURL(clip)) {
-              await Linking.openURL(clip);
+              Linking.openURL(clip);
             }
             await Notifications.dismissNotificationAsync(notificationId);
           },
@@ -487,7 +485,7 @@ export default function App() {
 
   const openLink = async (clip: string) => {
     try {
-      await Linking.openURL(clip);
+      Linking.openURL(clip);
     } catch (error) {
       console.error("Can't open link:", error);
     }

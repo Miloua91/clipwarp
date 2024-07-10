@@ -72,13 +72,11 @@ Notifications.setNotificationHandler({
 const deviceLanguage = getLocales()?.[0]?.languageCode;
 
 export default function App() {
-  /*
   const { hasShareIntent, shareIntent, resetShareIntent, error } =
     useShareIntent({
       debug: true,
       resetOnBackground: true,
     });
-    */
 
   const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
@@ -93,14 +91,8 @@ export default function App() {
   const appState = useRef(AppState.currentState);
   const responseListener = useRef<Notifications.Subscription>();
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
-  const [clipDbStates, setClipDbStates] = useState<{ [key: string]: boolean }>(
-    {},
-  );
-  const [clipStates, setClipStates] = useState<{ [key: string]: boolean }>({});
 
-  useEffect(
-    () => {
-      /*
+  useEffect(() => {
     if (hasShareIntent) {
       if (shareIntent.text === undefined) {
         return ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
@@ -134,55 +126,45 @@ export default function App() {
       }
       resetShareIntent();
     }
-    */
 
-      async function getAddress() {
-        const address = await AsyncStorage.getItem("address");
-        const port = await AsyncStorage.getItem("port");
-        setWsAddress(address ?? "192.168.1");
-        setWsPort(Number(port) ?? 42069);
-        await SplashScreen.hideAsync();
-      }
-      getAddress();
+    async function getAddress() {
+      const address = await AsyncStorage.getItem("address");
+      const port = await AsyncStorage.getItem("port");
+      setWsAddress(address ?? "192.168.1");
+      setWsPort(Number(port) ?? 42069);
+      await SplashScreen.hideAsync();
+    }
+    getAddress();
 
-      const subscription = AppState.addEventListener(
-        "change",
-        (nextAppState) => {
-          appState.current = nextAppState;
-          setAppStateVisible(appState.current);
+    const subscription = AppState.addEventListener("change", (nextAppState) => {
+      appState.current = nextAppState;
+      setAppStateVisible(appState.current);
+    });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener(
+        async (response) => {
+          const notificationId = response.notification.request.identifier;
+          const clip = response?.notification?.request?.content.body;
+          const userAction = response.actionIdentifier;
+
+          if (!clip) return null;
+
+          if (userAction === "copy") {
+            Clipboard.setStringAsync(clip);
+          } else if (await Linking.canOpenURL(clip)) {
+            Linking.openURL(clip);
+          }
+          await Notifications.dismissNotificationAsync(notificationId);
         },
       );
 
-      responseListener.current =
-        Notifications.addNotificationResponseReceivedListener(
-          async (response) => {
-            const notificationId = response.notification.request.identifier;
-            const clip = response?.notification?.request?.content.body;
-            const userAction = response.actionIdentifier;
-
-            if (!clip) return null;
-
-            if (userAction === "copy") {
-              Clipboard.setStringAsync(clip);
-            } else if (await Linking.canOpenURL(clip)) {
-              Linking.openURL(clip);
-            }
-            await Notifications.dismissNotificationAsync(notificationId);
-          },
-        );
-
-      return () => {
-        subscription.remove();
-        responseListener.current &&
-          Notifications.removeNotificationSubscription(
-            responseListener.current,
-          );
-      };
-    },
-    [
-      /*shareIntent*/
-    ],
-  );
+    return () => {
+      subscription.remove();
+      responseListener.current &&
+        Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, [shareIntent, resetShareIntent]);
 
   useEffect(() => {
     if (wsAddress && wsPort) {
@@ -319,7 +301,7 @@ export default function App() {
       if (!response.ok) {
         throw new Error("Failed to delete clip");
       }
-      getClips();
+      await getClips();
     } catch (error) {
       console.error(error);
     }
@@ -336,7 +318,7 @@ export default function App() {
       if (!response.ok) {
         throw new Error("Failed to delete clips");
       }
-      getClips();
+      await getClips();
     } catch (error) {
       console.error(error);
     }
@@ -491,38 +473,14 @@ export default function App() {
     }
   };
 
-  const canOpenLink = async (clip: string): Promise<boolean> => {
+  function canOpenLink(url: string): boolean {
     try {
-      return await Linking.canOpenURL(clip);
+      const parsedUrl = new URL(url);
+      return ["http:", "https:"].includes(parsedUrl.protocol);
     } catch (error) {
-      console.error("Can't open link:", error);
       return false;
     }
-  };
-
-  useEffect(() => {
-    const checkLinksDb = async () => {
-      const states: { [key: string]: boolean } = {};
-      for (const clip of clipsDb) {
-        if (clip.clips_text) {
-          states[clip.id] = await canOpenLink(clip.clips_text);
-        }
-      }
-      setClipDbStates(states);
-    };
-    checkLinksDb();
-    const checkLinks = async () => {
-      const states: { [key: string]: boolean } = {};
-      for (const clip of val) {
-        if (clip.clip && clip.id) {
-          states[clip.id] = await canOpenLink(clip.clip);
-        }
-      }
-      setClipStates(states);
-    };
-    checkLinksDb();
-    checkLinks();
-  }, [val, clipsDb]);
+  }
 
   const showClips = () => {
     const reversedVal = [...val].reverse();
@@ -552,19 +510,17 @@ export default function App() {
             >
               <Entypo name="share" size={26} color="white" />
             </Pressable>
-            {clip.id && (
-              <Pressable
-                disabled={clipStates[clip.id] ? false : true}
-                onPress={() => clip.clip !== undefined && openLink(clip.clip)}
-                className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded"
-              >
-                <MaterialIcons
-                  name="open-in-browser"
-                  size={32}
-                  color={clipStates[clip.id] ? "white" : "gray"}
-                />
-              </Pressable>
-            )}
+            <Pressable
+              disabled={canOpenLink(clip.clip) ? false : true}
+              onPress={() => clip.clip !== undefined && openLink(clip.clip)}
+              className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded"
+            >
+              <MaterialIcons
+                name="open-in-browser"
+                size={32}
+                color={canOpenLink(clip.clip) ? "white" : "gray"}
+              />
+            </Pressable>
             <Pressable
               onPress={() => clip.id !== undefined && deleteClip(clip.id)}
               className="active:bg-red-500 w-15 h-9 p-1 rounded"
@@ -610,7 +566,7 @@ export default function App() {
               <Entypo name="share" size={26} color="white" />
             </Pressable>
             <Pressable
-              disabled={clipDbStates[clip.id] ? false : true}
+              disabled={canOpenLink(clip.clips_text) ? false : true}
               onPress={() =>
                 clip.clips_text !== undefined && openLink(clip.clips_text)
               }
@@ -619,7 +575,7 @@ export default function App() {
               <MaterialIcons
                 name="open-in-browser"
                 size={32}
-                color={clipDbStates[clip.id] ? "white" : "gray"}
+                color={canOpenLink(clip.clips_text) ? "white" : "gray"}
               />
             </Pressable>
             <Pressable

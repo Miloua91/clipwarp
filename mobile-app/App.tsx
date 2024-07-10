@@ -23,6 +23,7 @@ import {
   FontAwesome6,
   Ionicons,
   FontAwesome,
+  MaterialIcons,
 } from "@expo/vector-icons";
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { webSocket, WS } from "./ws";
@@ -37,7 +38,7 @@ SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
 //TODO: Make the app function on IOS
-//TODO: Add button to open link form app
+//PERF: Add button to open link form app
 //PERF: Added share intent to the app
 //PERF: add icon to notification, and make appear only when app is in background
 //PERF: open links with browser in notification
@@ -94,6 +95,10 @@ export default function App() {
   const appState = useRef(AppState.currentState);
   const responseListener = useRef<Notifications.Subscription>();
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
+  const [clipDbStates, setClipDbStates] = useState<{ [key: string]: boolean }>(
+    {},
+  );
+  const [clipStates, setClipStates] = useState<{ [key: string]: boolean }>({});
 
   useEffect(
     () => {
@@ -480,6 +485,47 @@ export default function App() {
     }
   };
 
+  const openLink = async (clip: string) => {
+    try {
+      await Linking.openURL(clip);
+    } catch (error) {
+      console.error("Can't open link:", error);
+    }
+  };
+
+  const canOpenLink = async (clip: string): Promise<boolean> => {
+    try {
+      return await Linking.canOpenURL(clip);
+    } catch (error) {
+      console.error("Can't open link:", error);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const checkLinksDb = async () => {
+      const states: { [key: string]: boolean } = {};
+      for (const clip of clipsDb) {
+        if (clip.clips_text) {
+          states[clip.id] = await canOpenLink(clip.clips_text);
+        }
+      }
+      setClipDbStates(states);
+    };
+    checkLinksDb();
+    const checkLinks = async () => {
+      const states: { [key: string]: boolean } = {};
+      for (const clip of val) {
+        if (clip.clip && clip.id) {
+          states[clip.id] = await canOpenLink(clip.clip);
+        }
+      }
+      setClipStates(states);
+    };
+    checkLinksDb();
+    checkLinks();
+  }, [val, clipsDb]);
+
   const showClips = () => {
     const reversedVal = [...val].reverse();
     return reversedVal.map((clip, index) => {
@@ -508,6 +554,19 @@ export default function App() {
             >
               <Entypo name="share" size={26} color="white" />
             </Pressable>
+            {clip.id && (
+              <Pressable
+                disabled={clipStates[clip.id] ? false : true}
+                onPress={() => clip.clip !== undefined && openLink(clip.clip)}
+                className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded"
+              >
+                <MaterialIcons
+                  name="open-in-browser"
+                  size={32}
+                  color={clipStates[clip.id] ? "white" : "gray"}
+                />
+              </Pressable>
+            )}
             <Pressable
               onPress={() => clip.id !== undefined && deleteClip(clip.id)}
               className="active:bg-red-500 w-15 h-9 p-1 rounded"
@@ -551,6 +610,19 @@ export default function App() {
               className="active:bg-stone-600 w-15 h-9 p-1 rounded"
             >
               <Entypo name="share" size={26} color="white" />
+            </Pressable>
+            <Pressable
+              disabled={clipDbStates[clip.id] ? false : true}
+              onPress={() =>
+                clip.clips_text !== undefined && openLink(clip.clips_text)
+              }
+              className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded"
+            >
+              <MaterialIcons
+                name="open-in-browser"
+                size={32}
+                color={clipDbStates[clip.id] ? "white" : "gray"}
+              />
             </Pressable>
             <Pressable
               onPress={() => clip.id !== undefined && deleteClipsDb(clip.id)}

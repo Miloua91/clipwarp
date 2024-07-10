@@ -107,7 +107,7 @@ export function WS() {
   return (
     <View className="w-full m-auto mt-6">
       <View className="space-x-1 mb-4  border rounded-xl" style={styles.card}>
-        <Text className="mx-2 text-lg font-semibold py-1 text-white">
+        <Text className="mx-2 text-[16px] font-semibold py-1 text-white">
           {i18n.t("serverIP")}
         </Text>
         <TextInput
@@ -130,7 +130,7 @@ export function WS() {
       </View>
 
       <View className="space-x-1 mb-4 border rounded-xl" style={styles.card}>
-        <Text className="mx-2 text-lg font-semibold py-1 text-white">
+        <Text className="mx-2 text-[16px] font-semibold py-1 text-white">
           {i18n.t("serverPort")}
         </Text>
         <TextInput
@@ -153,7 +153,7 @@ export function WS() {
       </View>
 
       <View className="space-x-1 mb-4 border rounded-xl" style={styles.card}>
-        <Text className="mx-2 text-lg font-semibold py-1 text-white">
+        <Text className="mx-2 text-[16px] font-semibold py-1 text-white">
           {i18n.t("deviceName")}
         </Text>
         <TextInput

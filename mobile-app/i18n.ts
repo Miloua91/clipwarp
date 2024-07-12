@@ -15,7 +15,7 @@ const supportedLanguages = [
 ];
 
 export const i18n = new I18n({
-  jp: {
+  en: {
     Send: "Send",
     Paste: "Paste",
     serverIP: "Enter server's IP",
@@ -127,7 +127,7 @@ export const i18n = new I18n({
     copyClip: "复制剪辑",
     openLink: "打开链接",
   },
-  en: {
+  jp: {
     Send: "送信",
     Paste: "貼り付け",
     serverIP: "サーバーのIPを入力",

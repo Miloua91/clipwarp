@@ -237,12 +237,12 @@ export default function App() {
           Notifications.setNotificationCategoryAsync("action", [
             {
               identifier: "copy",
-              buttonTitle: "Copy Clip",
+              buttonTitle: i18n.t("copyClip"),
               options: { isDestructive: true },
             },
             {
               identifier: "open",
-              buttonTitle: "Open Link",
+              buttonTitle: i18n.t("openLink"),
               options: { isDestructive: true },
             },
           ]);
@@ -250,7 +250,7 @@ export default function App() {
           Notifications.setNotificationCategoryAsync("action", [
             {
               identifier: "copy",
-              buttonTitle: "Copy Clip",
+              buttonTitle: i18n.t("copyClip"),
               options: { isDestructive: true },
             },
           ]);

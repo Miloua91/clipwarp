@@ -15,7 +15,7 @@ const supportedLanguages = [
 ];
 
 export const i18n = new I18n({
-  en: {
+  jp: {
     Send: "Send",
     Paste: "Paste",
     serverIP: "Enter server's IP",
@@ -26,6 +26,8 @@ export const i18n = new I18n({
     wsStatus: "WebSocket Status",
     wsMessage: "Websocket connection closed",
     msgDeviceName: "Please enter a device name",
+    copyClip: "Copy Clip",
+    openLink: "Open Link",
   },
   fr: {
     Send: "Envoyer",
@@ -38,6 +40,8 @@ export const i18n = new I18n({
     wsStatus: "Statut WebSocket",
     wsMessage: "Connexion WebSocket fermée",
     msgDeviceName: "Veuillez entrer un nom d'appareil",
+    copyClip: "Copier le clip",
+    openLink: "Ouvrir le lien",
   },
   ar: {
     Send: "إرسال",
@@ -50,6 +54,8 @@ export const i18n = new I18n({
     wsStatus: "حالة WebSocket",
     wsMessage: "تم إغلاق اتصال WebSocket",
     msgDeviceName: "يرجى إدخال اسم الجهاز",
+    copyClip: "نسخ المقطع",
+    openLink: "فتح الرابط",
   },
   es: {
     Send: "Enviar",
@@ -62,6 +68,8 @@ export const i18n = new I18n({
     wsStatus: "Estado de WebSocket",
     wsMessage: "Conexión WebSocket cerrada",
     msgDeviceName: "Por favor, ingrese un nombre de dispositivo",
+    copyClip: "Copiar clip",
+    openLink: "Abrir enlace",
   },
   pr: {
     Send: "Enviar",
@@ -74,6 +82,8 @@ export const i18n = new I18n({
     wsStatus: "Status do WebSocket",
     wsMessage: "Conexão WebSocket fechada",
     msgDeviceName: "Por favor, insira um nome de dispositivo",
+    copyClip: "Copiar clipe",
+    openLink: "Abrir link",
   },
   it: {
     Send: "Invia",
@@ -86,6 +96,8 @@ export const i18n = new I18n({
     wsStatus: "Stato WebSocket",
     wsMessage: "Connessione WebSocket chiusa",
     msgDeviceName: "Per favore, inserisci un nome del dispositivo",
+    copyClip: "Copia il clip",
+    openLink: "Apri il link",
   },
   ru: {
     Send: "Отправить",
@@ -98,6 +110,8 @@ export const i18n = new I18n({
     wsStatus: "Статус WebSocket",
     wsMessage: "Соединение WebSocket закрыто",
     msgDeviceName: "Пожалуйста, введите имя устройства",
+    copyClip: "Копировать клип",
+    openLink: "Открыть ссылку",
   },
   zh: {
     Send: "发送",
@@ -110,8 +124,10 @@ export const i18n = new I18n({
     wsStatus: "WebSocket状态",
     wsMessage: "WebSocket连接已关闭",
     msgDeviceName: "请输入设备名称",
+    copyClip: "复制剪辑",
+    openLink: "打开链接",
   },
-  jp: {
+  en: {
     Send: "送信",
     Paste: "貼り付け",
     serverIP: "サーバーのIPを入力",
@@ -122,6 +138,8 @@ export const i18n = new I18n({
     wsStatus: "WebSocketステータス",
     wsMessage: "WebSocket接続が閉じました",
     msgDeviceName: "デバイス名を入力してください",
+    copyClip: "クリップをコピー",
+    openLink: "リンクを開く",
   },
 });
 

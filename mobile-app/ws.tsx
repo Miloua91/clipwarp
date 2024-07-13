@@ -117,7 +117,7 @@ export function WS() {
           value={wsAddress}
         />
         <View
-          className={`absolute ${deviceLanguage === "ar" ? "left-2" : "right-0"} mx-2 my-1`}
+          className={`absolute ${deviceLanguage === "ar" ? "right-2" : "right-0"} mx-2`}
         >
           <AwesomeButton
             backgroundColor="#403d39"
@@ -140,7 +140,7 @@ export function WS() {
           value={wsPort}
         />
         <View
-          className={`absolute ${deviceLanguage === "ar" ? "left-2" : "right-0"} mx-2 my-1`}
+          className={`absolute ${deviceLanguage === "ar" ? "right-2" : "right-0"} mx-2`}
         >
           <AwesomeButton
             backgroundColor="#403d39"
@@ -166,7 +166,7 @@ export function WS() {
           <Text className="text-red-500 p-1">{i18n.t("msgDeviceName")}</Text>
         )}
         <View
-          className={`absolute ${deviceLanguage === "ar" ? "left-2" : "right-0"} mx-2 my-1`}
+          className={`absolute ${deviceLanguage === "ar" ? "right-2" : "right-0"} mx-2`}
         >
           <AwesomeButton
             backgroundColor="#403d39"

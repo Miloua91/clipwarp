@@ -30,10 +30,11 @@ import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
-import { ShareIntentProvider, useShareIntent } from "expo-share-intent";
+import { useShareIntent } from "expo-share-intent";
 import { i18n } from "./i18n";
 import { getLocales } from "expo-localization";
 import * as Linking from "expo-linking";
+
 SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
@@ -164,7 +165,7 @@ export default function App() {
       responseListener.current &&
         Notifications.removeNotificationSubscription(responseListener.current);
     };
-  }, [shareIntent]);
+  }, [hasShareIntent, shareIntent, connection]);
 
   useEffect(() => {
     if (wsAddress && wsPort) {
@@ -187,8 +188,13 @@ export default function App() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    getClips().then(() => setRefreshing(false));
-  }, [wsAddress, wsPort]);
+    if (connection) {
+      getClips().then(() => setRefreshing(false));
+    } else if (!connection) {
+      showClips();
+      setRefreshing(false);
+    }
+  }, [wsAddress, wsPort, val, connection]);
 
   useEffect(() => {
     const socket = io(`http://${wsAddress}:${(wsPort ?? 42069) + 1}/`);
@@ -579,7 +585,7 @@ export default function App() {
             </Pressable>
             <Pressable
               onPress={() => clip.id !== undefined && deleteClipsDb(clip.id)}
-              className="active:bg-red-500 w-15 h-9 p-1 rounded"
+              className={`active:bg-red-500 w-15 h-9 p-1 rounded ${deviceLanguage === "ar" ? "rotate-180" : ""}`}
             >
               <FontAwesome6 name="delete-left" size={28} color="white" />
             </Pressable>
@@ -609,7 +615,11 @@ export default function App() {
               onPress={() => setSetting(false)}
               className="active:bg-stone-600 w-10 h-10 px-3 py-[2px] rounded absolute"
             >
-              <FontAwesome name="angle-left" size={32} color="white" />
+              <FontAwesome
+                name={deviceLanguage === "ar" ? "angle-right" : "angle-left"}
+                size={32}
+                color="white"
+              />
             </Pressable>
             <Text className="m-auto text-xl font-semibold pb-10 text-white">
               {i18n.t("settings")}
@@ -624,7 +634,7 @@ export default function App() {
             </View>
             <View
               style={styles.card}
-              className={`border rounded-xl h-20 w-full p-2 flex ${deviceLanguage === "ar" ? "flex-row-reverse" : "flex-row"} justify-between items-center m-auto`}
+              className={`border rounded-xl h-20 w-full p-2 flex flex-row justify-between items-center m-auto`}
             >
               <Text className="text-lg text-white  w-[70%]">
                 {i18n.t("resetDb")}

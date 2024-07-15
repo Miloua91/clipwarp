@@ -211,12 +211,10 @@ export default function App() {
   }, [getClips, wsPort]);
 
   useEffect(() => {
-    if (!connection) {
     if (!connection || appStateVisible === "background") {
       const timer = setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds + 1);
       }, 1000);
-
       getClips();
       return () => clearInterval(timer);
     } else if (connection) {

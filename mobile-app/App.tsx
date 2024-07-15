@@ -219,10 +219,10 @@ export default function App() {
 
       getClips();
       return () => clearInterval(timer);
-    } else {
+    } else if (connection) {
       setSeconds(0);
     }
-  }, [connection]);
+  }, [connection, appStateVisible]);
 
   useEffect(() => {
     // Send data when `db` changes

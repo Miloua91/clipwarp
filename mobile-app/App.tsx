@@ -212,6 +212,7 @@ export default function App() {
 
   useEffect(() => {
     if (!connection) {
+    if (!connection || appStateVisible === "background") {
       const timer = setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds + 1);
       }, 1000);

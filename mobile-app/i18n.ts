@@ -12,6 +12,7 @@ const supportedLanguages = [
   "ru",
   "zh",
   "jp",
+  "de",
 ];
 
 export const i18n = new I18n({
@@ -28,6 +29,9 @@ export const i18n = new I18n({
     msgDeviceName: "Please enter a device name",
     copyClip: "Copy Clip",
     openLink: "Open Link",
+    resetDatabase: "Reset Database",
+    resetMessage:
+      "Resetting the Clips database is irreversible. Are you sure want to proceed?",
   },
   fr: {
     Send: "Envoyer",
@@ -42,6 +46,9 @@ export const i18n = new I18n({
     msgDeviceName: "Veuillez entrer un nom d'appareil",
     copyClip: "Copier le clip",
     openLink: "Ouvrir le lien",
+    resetDatabase: "Réinitialiser la base de données",
+    resetMessage:
+      "La réinitialisation de la base de données Clips est irréversible. Êtes-vous sûr de vouloir continuer ?",
   },
   ar: {
     Send: "إرسال",
@@ -56,6 +63,9 @@ export const i18n = new I18n({
     msgDeviceName: "يرجى إدخال اسم الجهاز",
     copyClip: "نسخ المقطع",
     openLink: "فتح الرابط",
+    resetDatabase: "إعادة تعيين قاعدة البيانات",
+    resetMessage:
+      "إعادة تعيين قاعدة بيانات Clips غير قابلة للاسترجاع. هل أنت متأكد من أنك تريد المتابعة؟",
   },
   es: {
     Send: "Enviar",
@@ -70,6 +80,9 @@ export const i18n = new I18n({
     msgDeviceName: "Por favor, ingrese un nombre de dispositivo",
     copyClip: "Copiar clip",
     openLink: "Abrir enlace",
+    resetDatabase: "Restablecer la base de datos",
+    resetMessage:
+      "Restablecer la base de datos de Clips es irreversible. ¿Está seguro de que desea continuar?",
   },
   pr: {
     Send: "Enviar",
@@ -84,6 +97,9 @@ export const i18n = new I18n({
     msgDeviceName: "Por favor, insira um nome de dispositivo",
     copyClip: "Copiar clipe",
     openLink: "Abrir link",
+    resetDatabase: "Redefinir banco de dados",
+    resetMessage:
+      "Redefinir o banco de dados do Clips é irreversível. Tem certeza de que deseja continuar?",
   },
   it: {
     Send: "Invia",
@@ -98,6 +114,9 @@ export const i18n = new I18n({
     msgDeviceName: "Per favore, inserisci un nome del dispositivo",
     copyClip: "Copia il clip",
     openLink: "Apri il link",
+    resetDatabase: "Reimposta database",
+    resetMessage:
+      "Reimpostare il database dei Clips è irreversibile. Sei sicuro di voler procedere?",
   },
   ru: {
     Send: "Отправить",
@@ -112,6 +131,9 @@ export const i18n = new I18n({
     msgDeviceName: "Пожалуйста, введите имя устройства",
     copyClip: "Копировать клип",
     openLink: "Открыть ссылку",
+    resetDatabase: "Сбросить базу данных",
+    resetMessage:
+      "Сброс базы данных Clips необратим. Вы уверены, что хотите продолжить?",
   },
   zh: {
     Send: "发送",
@@ -126,6 +148,8 @@ export const i18n = new I18n({
     msgDeviceName: "请输入设备名称",
     copyClip: "复制剪辑",
     openLink: "打开链接",
+    resetDatabase: "重置数据库",
+    resetMessage: "重置Clips数据库是不可逆的。你确定要继续吗？",
   },
   jp: {
     Send: "送信",
@@ -140,6 +164,26 @@ export const i18n = new I18n({
     msgDeviceName: "デバイス名を入力してください",
     copyClip: "クリップをコピー",
     openLink: "リンクを開く",
+    resetDatabase: "データベースをリセット",
+    resetMessage:
+      "Clipsデータベースのリセットは取り消しできません。本当に続行しますか？",
+  },
+  de: {
+    Send: "Senden",
+    Paste: "Einfügen",
+    serverIP: "Geben Sie die IP-Adresse des Servers ein",
+    serverPort: "Geben Sie den Port des Servers ein",
+    deviceName: "Geben Sie den Namen des Geräts ein",
+    resetDb: "Zwischenspeicher-Datenbank zurücksetzen",
+    settings: "Einstellungen",
+    wsStatus: "WebSocket-Status",
+    wsMessage: "WebSocket-Verbindung geschlossen",
+    msgDeviceName: "Bitte geben Sie einen Gerätenamen ein",
+    copyClip: "Clip kopieren",
+    openLink: "Link öffnen",
+    resetDatabase: "Datenbank zurücksetzen",
+    resetMessage:
+      "Das Zurücksetzen der Clips-Datenbank ist irreversibel. Sind Sie sicher, dass Sie fortfahren möchten?",
   },
 });
 

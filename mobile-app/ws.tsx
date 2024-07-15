@@ -106,7 +106,7 @@ export function WS() {
 
   return (
     <View className="w-full m-auto mt-6">
-      <View className="space-x-1 mb-4  border rounded-xl" style={styles.card}>
+      <View className="space-x-1 mb-4 border rounded-xl" style={styles.card}>
         <Text className="mx-2 text-[16px] font-semibold py-1 text-white">
           {i18n.t("serverIP")}
         </Text>
@@ -135,7 +135,7 @@ export function WS() {
         </Text>
         <TextInput
           className={`${deviceLanguage === "ar" ? "pr-4 text-right" : "pl-4"} w-full text-lg m-1 bottom-2 text-white`}
-          placeholder="IP address"
+          placeholder="42069"
           onChangeText={(text) => setWsPort(text)}
           value={wsPort}
         />

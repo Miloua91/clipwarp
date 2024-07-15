@@ -353,21 +353,17 @@ export default function App() {
   };
 
   function resetAlert() {
-    Alert.alert(
-      "Reset Database",
-      "Resetting the Clips database is irreversible. Are you sure want to proceed?",
-      [
-        {
-          text: "Yes",
-          onPress: resetDatabase,
-          style: "destructive",
-        },
-        {
-          text: "No",
-          style: "cancel",
-        },
-      ],
-    );
+    Alert.alert(i18n.t("resetDatabase"), i18n.t("resetMessage"), [
+      {
+        text: "Yes",
+        onPress: resetDatabase,
+        style: "destructive",
+      },
+      {
+        text: "No",
+        style: "cancel",
+      },
+    ]);
   }
 
   const resetDatabase = () => {

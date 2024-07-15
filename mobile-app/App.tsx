@@ -215,10 +215,10 @@ export default function App() {
       const timer = setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds + 1);
       }, 1000);
-      getClips();
       return () => clearInterval(timer);
     } else if (connection) {
       setSeconds(0);
+      getClips();
     }
   }, [connection, appStateVisible]);
 

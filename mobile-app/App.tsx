@@ -217,6 +217,7 @@ export default function App() {
         setSeconds((prevSeconds) => prevSeconds + 1);
       }, 1000);
 
+      getClips();
       return () => clearInterval(timer);
     } else {
       setSeconds(0);

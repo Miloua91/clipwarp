@@ -17,6 +17,7 @@ import {
 import { Input } from "./ui/input";
 
 //PERF: Add time
+//FIX: show text with link
 
 interface Clip {
   clips_text: string;

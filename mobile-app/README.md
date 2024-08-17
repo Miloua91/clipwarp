@@ -1,5 +1,9 @@
 ## Mobile app
 
+<div align='center'>
+   <img alt='ClipWarp' src='http://mokhincode.com/clipwarpMobile.png' width='300'/>
+</div>
+
 Clone the repo to your machine
 
 ``` git

@@ -38,6 +38,7 @@ import * as Linking from "expo-linking";
 SplashScreen.preventAutoHideAsync();
 
 //TODO: Sync db between dektop and mobile
+//TODO: Add note to links
 //TODO: Make the app function on IOS
 //PERF: Add button to open link form app
 //PERF: Added share intent to the app

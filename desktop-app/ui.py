@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import *
 
 # TODO: Try to change the maximize button behavior and icon
 # TODO: Display link metadata
+# TODO: Add note to links
 # PERF: Add time
 # TODO: Add a dot to links tab to notify for new links in that tab
 

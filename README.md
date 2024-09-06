@@ -47,7 +47,7 @@ An instance where you need to send a link to your device, screenshot from Expo d
 
 ### Android
 
-1. Download the [APK file](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-0.1.0.apk)
+1. Download the [APK file](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-1.0.0.apk)
 2. Install it on your device
 3. Profit
 

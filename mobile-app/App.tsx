@@ -37,6 +37,7 @@ import * as Linking from "expo-linking";
 
 SplashScreen.preventAutoHideAsync();
 
+//FIX: Sending empty text when app is offline.
 //TODO: Sync db between dektop and mobile
 //TODO: Add note to links
 //TODO: Make the app function on IOS

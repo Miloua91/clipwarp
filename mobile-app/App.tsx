@@ -412,7 +412,8 @@ export default function App() {
   };
 
   const addClip = () => {
-    if (currentVal === undefined) {
+    console.log(currentVal);
+    if (currentVal === undefined || currentVal === "") {
       return ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
     }
     if (connection) {

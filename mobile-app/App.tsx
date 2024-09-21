@@ -76,11 +76,10 @@ Notifications.setNotificationHandler({
 const deviceLanguage = getLocales()?.[0]?.languageCode;
 
 export default function App() {
-  const { hasShareIntent, shareIntent, resetShareIntent, error } =
-    useShareIntent({
-      debug: true,
-      resetOnBackground: true,
-    });
+  const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent({
+    debug: true,
+    resetOnBackground: true,
+  });
 
   const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
@@ -97,40 +96,6 @@ export default function App() {
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
   useEffect(() => {
-    if (hasShareIntent) {
-      if (shareIntent.text === undefined) {
-        return ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
-      }
-      if (connection) {
-        const ws = async () => {
-          const websocket = await webSocket();
-          websocket.onopen = () => {
-            if (shareIntent.text !== undefined) {
-              websocket.send(`${shareIntent.text}`);
-              getClips();
-            }
-          };
-        };
-        ws();
-      } else {
-        db.transaction((tx) => {
-          tx.executeSql(
-            "INSERT INTO clips (clip) values (?)",
-            [`${shareIntent.text}`],
-            (txObj, resultSet) => {
-              let existingClips = [...val];
-              existingClips.push({
-                id: resultSet.insertId,
-                clip: `${shareIntent.text}`,
-              });
-              setVal(existingClips);
-            },
-          );
-        });
-      }
-      resetShareIntent;
-    }
-
     async function getAddress() {
       const address = await AsyncStorage.getItem("address");
       const port = await AsyncStorage.getItem("port");
@@ -230,6 +195,19 @@ export default function App() {
     const ws = async () => {
       const websocket = await webSocket();
       websocket.onopen = () => {
+        if (hasShareIntent) {
+          if (shareIntent.text === undefined || shareIntent.text === null) {
+            return ToastAndroid.show(
+              "Your input is empty",
+              ToastAndroid.CENTER,
+            );
+          }
+          if (shareIntent.text !== undefined && shareIntent.text !== null) {
+            resetShareIntent();
+            websocket.send(shareIntent.text);
+            getClips();
+          }
+        }
         val.forEach((vals) => {
           websocket.send(vals.clip);
           deleteDatabase();
@@ -279,6 +257,26 @@ export default function App() {
     };
 
     ws();
+
+    if (!connection && hasShareIntent) {
+      db.transaction((tx) => {
+        if (shareIntent.text !== undefined && shareIntent.text !== null) {
+          tx.executeSql(
+            "INSERT INTO clips (clip) values (?)",
+            [shareIntent.text],
+            (txObj, resultSet) => {
+              let existingClips = [...val];
+              resetShareIntent();
+              existingClips.push({
+                id: resultSet.insertId,
+                clip: shareIntent.text ?? "",
+              });
+              setVal(existingClips);
+            },
+          );
+        }
+      });
+    }
   }, [db, val, seconds, clipsDb, appStateVisible]);
 
   useEffect(() => {

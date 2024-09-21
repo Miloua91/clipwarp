@@ -13,6 +13,7 @@ import {
   Share,
   RefreshControl,
   AppState,
+  BackHandler,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite/legacy";
@@ -119,6 +120,7 @@ export default function App() {
 
           if (userAction === "copy") {
             Clipboard.setStringAsync(clip);
+            BackHandler.exitApp();
           } else if (canOpenLink(clip)) {
             Linking.openURL(clip);
           }

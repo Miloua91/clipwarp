@@ -37,7 +37,6 @@ import * as Linking from "expo-linking";
 
 SplashScreen.preventAutoHideAsync();
 
-//FIX: Sending empty text when app is offline.
 //TODO: Sync db between dektop and mobile
 //TODO: Add note to links
 //TODO: Make the app function on IOS
@@ -48,6 +47,7 @@ SplashScreen.preventAutoHideAsync();
 //PERF: Add notification
 //PERF: Add time
 //PERF: Add pull to refresh clips
+//PERF: Fix:Sending empty text when app is offline.
 
 type Clip = {
   id: number | undefined;

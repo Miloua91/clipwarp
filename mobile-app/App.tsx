@@ -40,7 +40,6 @@ SplashScreen.preventAutoHideAsync();
 //TODO: Sync db between dektop and mobile
 //TODO: Add note to links
 //TODO: Make the app function on IOS
-//FIX: Fix share intent
 //PERF: Add button to open link form app
 //PERF: Added share intent to the app
 //PERF: add icon to notification, and make appear only when app is in background
@@ -48,7 +47,6 @@ SplashScreen.preventAutoHideAsync();
 //PERF: Add notification
 //PERF: Add time
 //PERF: Add pull to refresh clips
-//PERF: Fix:Sending empty text when app is offline.
 
 type Clip = {
   id: number | undefined;

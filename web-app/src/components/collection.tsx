@@ -16,8 +16,9 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "./ui/input";
 
-//PERF: Add time
 //FIX: show text with link
+//TODO: Show link metadata
+//PERF: Add time
 
 interface Clip {
   clips_text: string;

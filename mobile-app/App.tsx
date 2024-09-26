@@ -38,17 +38,19 @@ import * as Linking from "expo-linking";
 
 SplashScreen.preventAutoHideAsync();
 
+//TODO: Select multiple text items
+//TODO: Add Skelton
 //TODO: Add animation
 //TODO: Sync db between dektop and mobile
 //TODO: Add note to links
 //TODO: Make the app function on IOS
-//PERF: Add button to open link form app
-//PERF: Added share intent to the app
-//PERF: add icon to notification, and make appear only when app is in background
-//PERF: open links with browser in notification
-//PERF: Add notification
-//PERF: Add time
 //PERF: Add pull to refresh clips
+//PERF: Add time
+//PERF: Add notification
+//PERF: open links with browser in notification
+//PERF: Add button to open link from app
+//PERF: add icon to notification, and make it appear only when app is in background
+//PERF: Added share intent to the app
 
 type Clip = {
   id: number | undefined;

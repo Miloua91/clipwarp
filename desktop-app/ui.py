@@ -9,6 +9,7 @@ from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QFontMetrics, QIcon
 from PyQt5.QtWidgets import *
 
+# TODO: Minimize the app to the system tray instead of quitting
 # TODO: Try to change the maximize button behavior and icon
 # TODO: Display link metadata
 # TODO: Add note to links

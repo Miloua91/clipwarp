@@ -31,7 +31,7 @@ import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
-import { useShareIntent } from "expo-share-intent";
+//import { useShareIntent } from "expo-share-intent";
 import { i18n } from "./i18n";
 import { getLocales } from "expo-localization";
 import * as Linking from "expo-linking";
@@ -78,10 +78,12 @@ Notifications.setNotificationHandler({
 const deviceLanguage = getLocales()?.[0]?.languageCode;
 
 export default function App() {
+  /*
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent({
     debug: true,
     resetOnBackground: true,
   });
+  */
 
   const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
@@ -136,7 +138,7 @@ export default function App() {
       responseListener.current &&
         Notifications.removeNotificationSubscription(responseListener.current);
     };
-  }, [hasShareIntent, shareIntent, connection]);
+  }, [connection]);
 
   useEffect(() => {
     if (wsAddress && wsPort) {
@@ -198,6 +200,7 @@ export default function App() {
     const ws = async () => {
       const websocket = await webSocket();
       websocket.onopen = () => {
+        /*
         if (hasShareIntent) {
           if (shareIntent.text === undefined || shareIntent.text === null) {
             return ToastAndroid.show(
@@ -211,6 +214,7 @@ export default function App() {
             getClips();
           }
         }
+        */
         val.forEach((vals) => {
           websocket.send(vals.clip);
           deleteDatabase();
@@ -260,7 +264,7 @@ export default function App() {
     };
 
     ws();
-
+    /*
     if (!connection && hasShareIntent) {
       db.transaction((tx) => {
         if (shareIntent.text !== undefined && shareIntent.text !== null) {
@@ -280,6 +284,7 @@ export default function App() {
         }
       });
     }
+    */
   }, [db, val, seconds, clipsDb, appStateVisible]);
 
   useEffect(() => {

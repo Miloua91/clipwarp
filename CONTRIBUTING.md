@@ -1,6 +1,6 @@
-# Contributing to Community Standards
+# Contributing to ClipWarp 
 
-Thank you for your interest in contributing to Community Standards! We welcome any contributions, including bug fixes, feature enhancements, documentation improvements, and other general improvements.
+Thank you for your interest in contributing to ClipWarp! We welcome any contributions, including bug fixes, feature enhancements, documentation improvements, and other general improvements.
 
 ## Getting Started
 

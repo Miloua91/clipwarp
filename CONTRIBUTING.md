@@ -43,7 +43,7 @@ Thank you for your interest in contributing to ClipWarp! We welcome any contribu
      1. Go to your forked repository.
      2. Click the **Compare & pull request** button next to your `your-branch-name` branch.
      3. Add a title and description for your pull request.
-     4. Click **Create pull request** and remember to add the relevant labels with using the [pull request template](https://github.com/miloua91/clipwarp/blob/templates/.github/PULL_REQUEST_TEMPLATE.md).
+     4. Click **Create pull request** and remember to add the relevant labels with using the [pull request template](https://github.com/miloua91/clipwarp/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
 
 ## Guidelines
 

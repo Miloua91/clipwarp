@@ -17,7 +17,7 @@ Ever get frustrated trying to share links or text between your desktop and phone
 
 ![example-screenshot]
 
-An instance where you need to send a link to your device, screenshot from Expo documentation. If it's up to me than I will definitely use ClipWarp.
+An instance where you need to send a link to your device, screenshot from Expo documentation. If it's up to me then I will definitely use ClipWarp.
 
 </div>
 
@@ -35,8 +35,8 @@ An instance where you need to send a link to your device, screenshot from Expo d
 #### Tarball
 
 1. Download [clipwarp-0.1.0.tar.gz](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-0.1.0.tar.gz)
-2. Extract: ```tar xzvf clipwarp-0.1.0.tar.gz```
-3. Create an assets directory: ```mkdir ~/.config/clipwarp/assets```
+2. Extract ```tar xzvf clipwarp-0.1.0.tar.gz```
+3. Create an assets directory ```mkdir ~/.config/clipwarp/assets```
 4. Run ```./clipwarp/ClipWarp```
 
 #### Arch Linux
@@ -70,7 +70,7 @@ cd clipwarp/desktop-app
 Create a virtual environment
 
 ```
-python -m venv env .
+python -m venv env 
 ```
 
 Activate the virtual environment
@@ -85,7 +85,7 @@ Install the python packages
 pip install -r requirements.txt
 ```
 
-Lunch the app
+Launch the app
 
 ``` python
 python main.py

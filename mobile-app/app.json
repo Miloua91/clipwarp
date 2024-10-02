@@ -13,8 +13,8 @@
       "backgroundColor": "#000000"
     },
     "notification": {
-          "icon": "./assets/noti-icon.png",
-          "color": "#ffffff"
+          "icon": "./assets/notifIcon.png",
+          "color": "#000000"
     },
     "assetBundlePatterns": [
       "**/*"

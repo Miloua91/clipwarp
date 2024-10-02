@@ -140,7 +140,7 @@ export default function App() {
       responseListener.current &&
         Notifications.removeNotificationSubscription(responseListener.current);
     };
-  }, [connection]);
+  }, [connection, appStateVisible, seconds]);
 
   useEffect(() => {
     if (wsAddress && wsPort) {
@@ -197,7 +197,7 @@ export default function App() {
     } else if (connection) {
       getClips();
     }
-  }, [connection, appStateVisible]);
+  }, [connection, appStateVisible, seconds]);
 
   useEffect(() => {
     // Send data when `db` changes
@@ -236,7 +236,15 @@ export default function App() {
 
         setConnection(true);
       };
+    };
 
+    ws();
+  }, [seconds]);
+
+  useEffect(() => {
+    // Send data when `db` changes
+    const ws = async () => {
+      const websocket = await webSocket();
       websocket.onmessage = async () => {
         const newClips = await getClips();
         const lastClip = newClips?.at(-1)?.clips_text;

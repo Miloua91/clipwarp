@@ -11,161 +11,161 @@
 
 ## Elevator pitch
 
-Ever get frustrated trying to share links or text between your desktop and phone? ClipWarp makes it super easy. Just install it on both devices, and you’ll have a simple way to manage links and text across platforms without any hassle.
+Ever get frustrated trying to share links or text between your desktop and phone? It's a common inconvenience we all face. You have a link on your desktop, therefore you'd think it would be easy to get it on your phone, but it's always more complicated than it should be.
+
+That's where ClipWarp comes in. Install it on both devices, and you’ll have a simple way to manage links and text across platforms without the extra steps.
 
 <div align="center">
 
 ![example-screenshot]
 
-An instance where you need to send a link to your device, screenshot from Expo documentation. If it's up to me then I will definitely use ClipWarp.
+An instance where you need to send a link to your device, screenshot from Expo documentation. If it's up to me, then I will definitely use ClipWarp.
 
 </div>
-
 
 ## Installation
 
 ### Windows 10/11
 
-1. Download [clipwarp-0.1.0.exe](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-0.1.0.exe)
-2. Install the app
-3. Launch it
+1. Download [clipwarp-0.1.0.exe](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-0.1.0.exe).
+2. Install the app.
+3. Launch it.
 
 ### Linux (x64)
 
 #### Tarball
 
-1. Download [clipwarp-0.1.0.tar.gz](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-0.1.0.tar.gz)
-2. Extract ```tar xzvf clipwarp-0.1.0.tar.gz```
-3. Create an assets directory ```mkdir ~/.config/clipwarp/assets```
-4. Run ```./clipwarp/ClipWarp```
+1. Download [clipwarp-0.1.0.tar.gz](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-0.1.0.tar.gz).
+2. Extract it: 
+   ```sh
+   tar xzvf clipwarp-0.1.0.tar.gz
+   ```
+3. Create an assets directory: 
+   ```sh
+   mkdir ~/.config/clipwarp/assets
+   ```
+4. Run the app: 
+   ```sh
+   ./clipwarp/ClipWarp
+   ```
 
 #### Arch Linux
 
-1. Download [PKGBUILD](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/PKGBUILD)
-2. Install the app ```makepkg -si```
-3. Launch the app ```clipwarp```
+1. Download the [PKGBUILD](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/PKGBUILD).
+2. Install the app: 
+   ```sh
+   makepkg -si
+   ```
+3. Launch the app: 
+   ```sh
+   clipwarp
+   ```
 
 ### Android
 
-1. Download the [APK file](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-1.0.0.apk)
-2. Install it on your device
-3. Profit
+1. Download the [APK file](https://github.com/Miloua91/clipwarp/releases/download/v0.1.0/clipwarp-1.0.0.apk).
+2. Install it on your device.
+3. Launch the app.
 
 ## Get the source code
 
-Clone the repo to your machine
+Clone the repository:
 
-``` git
+```sh
 git clone https://github.com/Miloua91/clipwarp.git
 ```
 
 ### Desktop App
 
-Go to desktop-app directory
+1. Go to the `desktop-app` directory:
+   ```sh
+   cd clipwarp/desktop-app
+   ```
 
-``` sh
-cd clipwarp/desktop-app
-```
+2. Create a virtual environment:
+   ```sh
+   python -m venv env .
+   ```
 
-Create a virtual environment
+3. Activate the virtual environment:
+   ```sh
+   source env/bin/activate
+   ```
 
-```
-python -m venv env 
-```
+4. Install the required Python packages:
+   ```sh
+   pip install -r requirements.txt
+   ```
 
-Activate the virtual environment
+5. Launch the app:
+   ```sh
+   python main.py
+   ```
 
-```
-source env/bin/activate
-```
+#### Build the Desktop App with PyInstaller
 
-Install the python packages
+1. Build the app:
+   ```sh
+   pyinstaller main.spec
+   ```
 
-``` python
-pip install -r requirements.txt
-```
+2. Launch the app:
+   ```sh
+   ./dist/ClipWarp
+   ```
 
-Launch the app
+### Mobile App
 
-``` python
-python main.py
-```
+1. Go to the `mobile-app` directory:
+   ```sh
+   cd clipwarp/mobile-app
+   ```
 
-##### Build the desktop app
+2. Install the packages:
+   ```sh
+   yarn install
+   ```
 
-With PyInstaller build the app on desktop
+3. Start the development server:
+   ```sh
+   yarn expo start
+   ```
 
-```
-pyinstaller main.spec
-```
+#### Build the Mobile App
 
-Launch the app
+1. Install EAS CLI if you don't have it:
+   ```sh
+   npm install --global eas-cli
+   ```
 
-```
-./dist/ClipWarp
-```
+2. Build the app:
+   ```sh
+   eas build -p android --profile preview
+   ```
 
-### Mobile app
+### Web App
 
-Go to mobile-app directory
+1. Go to the `web-app` directory:
+   ```sh
+   cd clipwarp/web-app
+   ```
 
-``` sh
-cd clipwarp/mobile-app
-```
+2. Install the packages:
+   ```sh
+   npm install
+   ```
 
-Install the packages with yarn
+3. Start the server:
+   ```sh
+   npm run dev
+   ```
 
-``` sh 
-yarn install
-```
+#### Build the Web App
 
-Start the development server 
-
-``` sh 
-yarn expo start
-```
-
-##### Build the mobile app
-
-With Expo and EAS build the APK, Install EAS CLI if you don't have it
-
-``` 
-npm install --global eas-cli
-```
-
-Build the app 
-
-```
-eas build -p android --profile preview
-```
-
-### Web app
-
-Go to web-app directory
-
-``` sh
-cd clipwarp/web-app
-```
-
-Install the packages with npm 
-
-``` sh 
-npm install
-```
-
-Start the server 
-
-``` sh 
-npm run dev
-```
-
-##### Build the web app
-
-Build with this command
-
-```
-npm run build
-```
+1. Build the app:
+   ```sh
+   npm run build
+   ```
 
 [product-screenshot]: ./presentation.png
 [example-screenshot]: ./example.png

@@ -188,11 +188,13 @@ export default function App() {
   useEffect(() => {
     if (!connection || appStateVisible === "background") {
       const timer = setInterval(() => {
-        setSeconds((prevSeconds) => prevSeconds + 1);
+        setSeconds((prevSeconds) => {
+          // Increment the seconds, and reset to 0 if it exceeds 9
+          return prevSeconds < 9 ? prevSeconds + 1 : 0;
+        });
       }, 1000);
       return () => clearInterval(timer);
     } else if (connection) {
-      setSeconds(0);
       getClips();
     }
   }, [connection, appStateVisible]);

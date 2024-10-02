@@ -35,6 +35,7 @@ import * as Notifications from "expo-notifications";
 import { i18n } from "./i18n";
 import { getLocales } from "expo-localization";
 import * as Linking from "expo-linking";
+import { Skeleton } from "./skeleton";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -98,6 +99,7 @@ export default function App() {
   const appState = useRef(AppState.currentState);
   const responseListener = useRef<Notifications.Subscription>();
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     async function getAddress() {
@@ -195,31 +197,43 @@ export default function App() {
     }
   }, [connection, appStateVisible]);
 
+  console.log(seconds);
+
   useEffect(() => {
     // Send data when `db` changes
     const ws = async () => {
       const websocket = await webSocket();
-      websocket.onopen = () => {
+      websocket.onopen = async () => {
+        setLoading(true);
         /*
-        if (hasShareIntent) {
-          if (shareIntent.text === undefined || shareIntent.text === null) {
-            return ToastAndroid.show(
-              "Your input is empty",
-              ToastAndroid.CENTER,
-            );
+  if (hasShareIntent) {
+    if (shareIntent.text === undefined || shareIntent.text === null) {
+      return ToastAndroid.show(
+        "Your input is empty",
+        ToastAndroid.CENTER,
+      );
+    }
+    if (shareIntent.text !== undefined && shareIntent.text !== null) {
+      resetShareIntent();
+      websocket.send(shareIntent.text);
+      await getClips(); // Await getClips if called here
+    }
+  }
+  */
+
+        try {
+          // Send each clip
+          for (const vals of val) {
+            websocket.send(vals.clip);
           }
-          if (shareIntent.text !== undefined && shareIntent.text !== null) {
-            resetShareIntent();
-            websocket.send(shareIntent.text);
-            getClips();
-          }
-        }
-        */
-        val.forEach((vals) => {
-          websocket.send(vals.clip);
           deleteDatabase();
-          getClips();
-        });
+          await getClips();
+        } catch (error) {
+          console.error("Error:", error);
+        } finally {
+          setLoading(false);
+        }
+
         setConnection(true);
       };
 
@@ -285,7 +299,7 @@ export default function App() {
       });
     }
     */
-  }, [db, val, seconds, clipsDb, appStateVisible]);
+  }, [seconds, appStateVisible]);
 
   useEffect(() => {
     const ws = async () => {
@@ -293,11 +307,13 @@ export default function App() {
 
       websocket.onclose = () => {
         setConnection(false);
+        /*
         Alert.alert(i18n.t("wsStatus"), i18n.t("wsMessage"), [
           {
             text: "OK",
           },
         ]);
+        */
       };
     };
 
@@ -711,7 +727,17 @@ export default function App() {
             </ThemedButton>
           </View>
           <View className="border-b border-stone-500 w-[97%] my-2" />
-          {connection ? showClipsBd() : showClips()}
+          {loading ? (
+            <>
+              <Skeleton />
+              <Skeleton />
+              <Skeleton />
+            </>
+          ) : connection ? (
+            showClipsBd()
+          ) : (
+            showClips()
+          )}
           {settingModal()}
         </View>
       </ScrollView>

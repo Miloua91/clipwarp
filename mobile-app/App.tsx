@@ -197,8 +197,6 @@ export default function App() {
     }
   }, [connection, appStateVisible]);
 
-  console.log(seconds);
-
   useEffect(() => {
     // Send data when `db` changes
     const ws = async () => {

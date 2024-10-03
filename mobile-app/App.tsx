@@ -1,11 +1,11 @@
 import {
+  FlatList,
   StyleSheet,
   Alert,
   View,
   Text,
   TextInput,
   ScrollView,
-  Modal,
   ToastAndroid,
   Pressable,
   SafeAreaView,
@@ -25,7 +25,13 @@ import {
   FontAwesome,
   MaterialIcons,
 } from "@expo/vector-icons";
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import { webSocket, WS } from "./ws";
 import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -36,11 +42,19 @@ import { i18n } from "./i18n";
 import { getLocales } from "expo-localization";
 import * as Linking from "expo-linking";
 import { Skeleton } from "./skeleton";
+import * as NavigationBar from "expo-navigation-bar";
+import {
+  BottomSheetModal,
+  BottomSheetView,
+  BottomSheetModalProvider,
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
+} from "@gorhom/bottom-sheet";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
 //TODO: Select multiple text items
-//TODO: Add Skelton
 //TODO: Add animation
 //TODO: Sync db between dektop and mobile
 //TODO: Add note to links
@@ -52,6 +66,7 @@ SplashScreen.preventAutoHideAsync();
 //PERF: Add button to open link from app
 //PERF: add icon to notification, and make it appear only when app is in background
 //PERF: Added share intent to the app
+//PERF: Add Skelton
 
 type Clip = {
   id: number | undefined;
@@ -77,6 +92,8 @@ Notifications.setNotificationHandler({
 });
 
 const deviceLanguage = getLocales()?.[0]?.languageCode;
+
+NavigationBar.setBackgroundColorAsync("#000");
 
 export default function App() {
   /*
@@ -163,12 +180,7 @@ export default function App() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    if (connection) {
-      getClips().then(() => setRefreshing(false));
-    } else if (!connection) {
-      showClips();
-      setRefreshing(false);
-    }
+    getClips().then(() => setRefreshing(false));
   }, [wsAddress, wsPort, val, connection]);
 
   useEffect(() => {
@@ -517,245 +529,304 @@ export default function App() {
     }
   }
 
-  const showClips = () => {
-    const reversedVal = [...val].reverse();
-    return reversedVal.map((clip, index) => {
-      return (
-        <View
-          key={index}
-          className={`mb-2 w-[97%] py-2 rounded-xl`}
-          style={styles.card}
+  const reversedVal = [...val].reverse();
+  const showClips = ({ item: clip }: { item: Clip }) => {
+    return (
+      <View
+        key={clip.id}
+        className={`mb-2 min-w-full py-2 rounded-xl`}
+        style={styles.card}
+      >
+        <TextInput
+          multiline
+          className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-600 my-1 pb-4"
         >
-          <TextInput
-            multiline
-            className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-600 my-1 pb-4"
+          {clip.clip}
+        </TextInput>
+        <View className="flex flex-row justify-between py-2 px-3">
+          <Pressable
+            onPress={() => Clipboard.setStringAsync(clip.clip)}
+            className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
           >
-            {clip.clip}
-          </TextInput>
-          <View className="flex flex-row justify-between py-2 px-3">
-            <Pressable
-              onPress={() => Clipboard.setStringAsync(clip.clip)}
-              className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
-            >
-              <FontAwesome name="clipboard" size={26} color="white" />
-            </Pressable>
-            <Pressable
-              onPress={() => clip.clip !== undefined && shareClip(clip.clip)}
-              className="active:bg-stone-600 w-15 h-9 p-1 rounded"
-            >
-              <Entypo name="share" size={26} color="white" />
-            </Pressable>
-            <Pressable
-              disabled={canOpenLink(clip.clip) ? false : true}
-              onPress={() => clip.clip !== undefined && openLink(clip.clip)}
-              className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded"
-            >
-              <MaterialIcons
-                name="open-in-browser"
-                size={32}
-                color={canOpenLink(clip.clip) ? "white" : "gray"}
-              />
-            </Pressable>
-            <Pressable
-              onPress={() => clip.id !== undefined && deleteClip(clip.id)}
-              className="active:bg-red-500 w-15 h-9 p-1 rounded"
-            >
-              <FontAwesome6 name="delete-left" size={28} color="white" />
-            </Pressable>
-          </View>
+            <FontAwesome name="clipboard" size={26} color="white" />
+          </Pressable>
+          <Pressable
+            onPress={() => clip.clip !== undefined && shareClip(clip.clip)}
+            className="active:bg-stone-600 w-15 h-9 p-1 rounded"
+          >
+            <Entypo name="share" size={26} color="white" />
+          </Pressable>
+          <Pressable
+            disabled={canOpenLink(clip.clip) ? false : true}
+            onPress={() => clip.clip !== undefined && openLink(clip.clip)}
+            className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded"
+          >
+            <MaterialIcons
+              name="open-in-browser"
+              size={32}
+              color={canOpenLink(clip.clip) ? "white" : "gray"}
+            />
+          </Pressable>
+          <Pressable
+            onPress={() => clip.id !== undefined && deleteClip(clip.id)}
+            className="active:bg-red-500 w-15 h-9 p-1 rounded"
+          >
+            <FontAwesome6 name="delete-left" size={28} color="white" />
+          </Pressable>
         </View>
-      );
-    });
+      </View>
+    );
   };
 
-  const showClipsBd = () => {
-    const reversedClipsDb = [...clipsDb].reverse();
-    return reversedClipsDb.map((clip, index) => {
-      return (
-        <View
-          key={index}
-          className={`mb-2 w-[97%] py-2 rounded-xl`}
-          style={styles.card}
-        >
-          <View className="px-2 w-full border-b border-stone-600 my-1 pb-4 flex flex-col">
-            <TextInput multiline className="text-gray-100 text-[16px]">
-              {clip.clips_text}
-            </TextInput>
-            <Text style={styles.text} className="text-gray-100 text-[14px]">
-              {clip.date} | {clip.user_name}
-            </Text>
-          </View>
-          <View className="flex flex-row justify-between py-2 px-3">
-            <Pressable
-              onPress={() => Clipboard.setStringAsync(clip.clips_text)}
-              className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
-            >
-              <FontAwesome name="clipboard" size={26} color="white" />
-            </Pressable>
-            <Pressable
-              onPress={() =>
-                clip.clips_text !== undefined && shareClip(clip.clips_text)
-              }
-              className="active:bg-stone-600 w-15 h-9 p-1 rounded"
-            >
-              <Entypo name="share" size={26} color="white" />
-            </Pressable>
-            <Pressable
-              disabled={canOpenLink(clip.clips_text) ? false : true}
-              onPress={() =>
-                clip.clips_text !== undefined && openLink(clip.clips_text)
-              }
-              className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded"
-            >
-              <MaterialIcons
-                name="open-in-browser"
-                size={32}
-                color={canOpenLink(clip.clips_text) ? "white" : "gray"}
-              />
-            </Pressable>
-            <Pressable
-              onPress={() => clip.id !== undefined && deleteClipsDb(clip.id)}
-              className={`active:bg-red-500 w-15 h-9 p-1 rounded ${deviceLanguage === "ar" ? "rotate-180" : ""}`}
-            >
-              <FontAwesome6 name="delete-left" size={28} color="white" />
-            </Pressable>
-          </View>
+  const reversedClipsDb = [...clipsDb].reverse();
+  const showClipsBd = ({ item: clip }: { item: ClipDb }) => {
+    return (
+      <View
+        key={clip.id}
+        className={`mb-2 py-2 rounded-xl min-w-full`}
+        style={styles.card}
+      >
+        <View className="px-2 w-full border-b border-stone-600 my-1 pb-4 flex flex-col">
+          <TextInput multiline className="text-gray-100 text-[16px]">
+            {clip.clips_text}
+          </TextInput>
+          <Text style={styles.text} className="text-gray-100 text-[14px]">
+            {clip.date} | {clip.user_name}
+          </Text>
         </View>
-      );
-    });
+        <View className="flex flex-row justify-between py-2 px-3">
+          <Pressable
+            onPress={() => Clipboard.setStringAsync(clip.clips_text)}
+            className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
+          >
+            <FontAwesome name="clipboard" size={26} color="white" />
+          </Pressable>
+          <Pressable
+            onPress={() =>
+              clip.clips_text !== undefined && shareClip(clip.clips_text)
+            }
+            className="active:bg-stone-600 w-15 h-9 p-1 rounded"
+          >
+            <Entypo name="share" size={26} color="white" />
+          </Pressable>
+          <Pressable
+            disabled={canOpenLink(clip.clips_text) ? false : true}
+            onPress={() =>
+              clip.clips_text !== undefined && openLink(clip.clips_text)
+            }
+            className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded"
+          >
+            <MaterialIcons
+              name="open-in-browser"
+              size={32}
+              color={canOpenLink(clip.clips_text) ? "white" : "gray"}
+            />
+          </Pressable>
+          <Pressable
+            onPress={() => clip.id !== undefined && deleteClipsDb(clip.id)}
+            className={`active:bg-red-500 w-15 h-9 p-1 rounded ${deviceLanguage === "ar" ? "rotate-180" : ""}`}
+          >
+            <FontAwesome6 name="delete-left" size={28} color="white" />
+          </Pressable>
+        </View>
+      </View>
+    );
   };
+
+  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+
+  const snapPoints = useMemo(() => ["73%"], []);
 
   const handleSettingPress = () => {
-    setSetting(true);
+    if (setting) {
+      bottomSheetModalRef.current?.close();
+    } else {
+      bottomSheetModalRef.current?.present();
+    }
+    setSetting(!setting);
   };
 
+  const handleCloseModalPress = useCallback(() => {
+    bottomSheetModalRef.current?.close();
+    setSetting(false);
+  }, []);
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        onPress={handleCloseModalPress}
+      />
+    ),
+    [],
+  );
+
   const settingModal = () => {
-    if (setting === true)
-      return (
-        <Modal
-          onRequestClose={() => {
-            setSetting(false);
-          }}
-        >
-          <View
-            className="flex flex-row justify-start px-2 py-2"
-            style={styles.background}
+    return (
+      <BottomSheetModalProvider>
+        <View>
+          <BottomSheetModal
+            ref={bottomSheetModalRef}
+            snapPoints={snapPoints}
+            enablePanDownToClose={true}
+            backgroundStyle={{
+              backgroundColor: bgColor,
+            }}
+            handleStyle={{
+              backgroundColor: bgColor,
+              borderRadius: 10,
+            }}
+            handleIndicatorStyle={{ backgroundColor: "white" }}
+            onDismiss={() => setSetting(false)}
+            backdropComponent={renderBackdrop}
           >
-            <Pressable
-              onPress={() => setSetting(false)}
-              className="active:bg-stone-600 w-10 h-10 px-3 py-[2px] rounded absolute"
-            >
-              <FontAwesome
-                name={deviceLanguage === "ar" ? "angle-right" : "angle-left"}
-                size={32}
-                color="white"
-              />
-            </Pressable>
-            <Text className="m-auto text-xl font-semibold pb-10 text-white">
-              {i18n.t("settings")}
-            </Text>
-          </View>
-          <View
-            style={styles.background}
-            className="flex items-center space-y-8 h-full px-6"
-          >
-            <View className="w-full">
-              <WS />
-            </View>
-            <View
-              style={styles.card}
-              className={`border rounded-xl h-20 w-full p-2 flex flex-row justify-between items-center m-auto`}
-            >
-              <Text className="text-lg text-white  w-[70%]">
-                {i18n.t("resetDb")}
-              </Text>
-              <ThemedButton
-                width={75}
-                name="bruce"
-                type="danger"
-                onPress={() => resetAlert()}
+            <BottomSheetView style={styles.contentContainer}>
+              <View
+                className="flex flex-row justify-start px-2 py-[2px] w-full"
+                style={styles.background}
               >
-                Reset
-              </ThemedButton>
-            </View>
-          </View>
-        </Modal>
-      );
+                <Pressable
+                  onPress={handleCloseModalPress}
+                  className="active:bg-stone-600 w-10 h-10 px-[10px] py-[4px] rounded absolute mx-2"
+                >
+                  <FontAwesome name={"angle-down"} size={32} color="white" />
+                </Pressable>
+                <Text className="m-auto text-xl font-semibold pb-6 text-white">
+                  {i18n.t("settings")}
+                </Text>
+              </View>
+              <View
+                style={styles.background}
+                className="w-full flex items-center space-y-8 h-full px-6"
+              >
+                <View className="w-full">
+                  <WS />
+                </View>
+                <View
+                  style={styles.card}
+                  className={`border rounded-xl h-20 w-full p-2 flex flex-row justify-between items-center m-auto`}
+                >
+                  <Text className="text-lg text-white  w-[70%]">
+                    {i18n.t("resetDb")}
+                  </Text>
+                  <ThemedButton
+                    width={75}
+                    name="bruce"
+                    type="danger"
+                    onPress={() => resetAlert()}
+                  >
+                    Reset
+                  </ThemedButton>
+                </View>
+              </View>
+            </BottomSheetView>
+          </BottomSheetModal>
+        </View>
+      </BottomSheetModalProvider>
+    );
   };
 
   return (
     <>
-      <SafeAreaView>
-        <StatusBar backgroundColor={`${bgColor}`} />
-      </SafeAreaView>
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        className={`flex justfiy-center `}
-        style={styles.background}
-      >
-        <View className="flex flex-row justify-between items-center">
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaView>
+          <StatusBar backgroundColor={`${bgColor}`} />
+        </SafeAreaView>
+        <View className="h-full w-full">
           <View
-            className={`w-3 h-3 m-5 rounded-full ${connection ? "bg-green-500" : "bg-red-500"}`}
-          />
-          <Pressable
-            className="h-12 w-12 p-2 mx-1 my-4 active:bg-stone-600 rounded-lg"
-            onPress={handleSettingPress}
+            className="flex flex-row justify-between items-center h-12"
+            style={styles.background}
           >
-            <Ionicons name="settings-sharp" size={32} color="white" />
-          </Pressable>
-        </View>
-        <View style={styles.container}>
-          <TextInput
-            className="w-[97%] rounded-lg h-16 text-center text-[16px] text-white"
-            multiline
-            value={currentVal}
-            placeholder="ClipWarp"
-            onChangeText={setCurrentVal}
-            style={styles.card}
-          />
-          <View className="flex flex-row my-4 w-[96%] justify-between">
-            <ThemedButton
-              width={160}
-              name="bruce"
-              backgroundColor="#403d39"
-              type="primary"
-              onPressIn={fetchCopiedText}
+            <View
+              className={`w-3 h-3 m-5 rounded-full ${connection ? "bg-green-500" : "bg-red-500"}`}
+            />
+            <Pressable
+              className="h-12 w-12 p-2 mx-1 my-4 active:bg-stone-600 rounded-lg"
+              onPress={handleSettingPress}
             >
-              {i18n.t("Paste")}
-            </ThemedButton>
-            <ThemedButton
-              width={160}
-              name="bruce"
-              type="secondary"
-              onPressIn={addClip}
-            >
-              {i18n.t("Send")}
-            </ThemedButton>
+              <Ionicons name="settings-sharp" size={32} color="white" />
+            </Pressable>
           </View>
-          <View className="border-b border-stone-500 w-[97%] my-2" />
-          {loading ? (
-            <>
-              <Skeleton />
-              <Skeleton />
-              <Skeleton />
-            </>
-          ) : connection ? (
-            showClipsBd()
-          ) : (
-            showClips()
-          )}
-          {settingModal()}
+          <View style={styles.container} className="pt-4">
+            <TextInput
+              className="w-[97%] rounded-lg h-16 text-center text-[16px] text-white"
+              multiline
+              value={currentVal}
+              placeholder="ClipWarp"
+              onChangeText={setCurrentVal}
+              style={styles.card}
+            />
+            <View className="flex flex-row my-4 w-[96%] justify-between">
+              <ThemedButton
+                width={160}
+                name="bruce"
+                backgroundColor="#403d39"
+                type="primary"
+                onPressIn={fetchCopiedText}
+              >
+                {i18n.t("Paste")}
+              </ThemedButton>
+              <ThemedButton
+                width={160}
+                name="bruce"
+                type="secondary"
+                onPressIn={addClip}
+              >
+                {i18n.t("Send")}
+              </ThemedButton>
+            </View>
+            <View className="border-b border-stone-500 w-[97%] my-2" />
+          </View>
+          <View style={[styles.contentContainer, styles.background]}>
+            {loading ? (
+              <>
+                <Skeleton />
+                <Skeleton />
+                <Skeleton />
+              </>
+            ) : connection ? (
+              <FlatList
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                  />
+                }
+                data={reversedClipsDb}
+                renderItem={showClipsBd}
+                keyExtractor={(clip) => clip.id.toString()}
+                style={styles.background}
+                contentContainerStyle={{
+                  alignItems: "center",
+                }}
+                className="w-[97%]"
+              />
+            ) : (
+              <FlatList
+                data={reversedVal}
+                renderItem={showClips}
+                keyExtractor={(clip) =>
+                  clip.id ? clip.id.toString() : Math.random().toString()
+                }
+                style={styles.background}
+                contentContainerStyle={{
+                  alignItems: "center",
+                }}
+                className="w-[97%]"
+              />
+            )}
+          </View>
         </View>
-      </ScrollView>
+        {settingModal()}
+      </GestureHandlerRootView>
     </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: `${bgColor}`,
     alignItems: "center",
     justifyContent: "center",

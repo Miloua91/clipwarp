@@ -40,9 +40,7 @@ setting_path = os.path.join(
 
 class TabBar(QTabBar):
     def tabSizeHint(self, index):
-        s = QTabBar.tabSizeHint(self, index)
-        s.transpose()
-        return s
+        return QtCore.QSize(139, 32)
 
     def paintEvent(self, event):
         painter = QStylePainter(self)

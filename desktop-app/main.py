@@ -4,7 +4,13 @@ import sys
 from notifypy import Notify
 from PyQt5.QtCore import QObject, QThread
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
+from PyQt5.QtWidgets import (
+    QApplication,
+    QDesktopWidget,
+    QMainWindow,
+    QMenu,
+    QSystemTrayIcon,
+)
 
 
 def resource_path(relative_path):
@@ -35,14 +41,15 @@ os.environ["QT_QPA_PLATFORM"] = "xcb"
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, app):
         super().__init__()
+        self.app = app
         self.init_ui()
         self.start_api()
         self.setup_connections()
         self.setStyleSheet(self.stylesheet())
         self.setFixedSize(612, 392)
-        self.setGeometry(500, 250, 0, 0)
+        self.show_and_center()
         self.set_window_icon(load_ico("cw.ico"))
         self.setup_system_tray()
 
@@ -110,7 +117,7 @@ class MainWindow(QMainWindow):
             ctmenu = QMenu()
             actionshow = ctmenu.addAction("Show/Hide")
             actionshow.triggered.connect(
-                lambda: self.hide() if self.isVisible() else self.show()
+                lambda: self.hide() if self.isVisible() else self.show_and_center()
             )
             actionquit = ctmenu.addAction("Quit")
             actionquit.triggered.connect(self.close)
@@ -125,7 +132,22 @@ class MainWindow(QMainWindow):
             if self.isVisible():
                 self.hide()
             else:
-                self.show()
+                self.show_and_center()
+
+    def close(self):
+        self.tray.hide()
+        self.app.quit()
+
+    def show_and_center(self):
+        screen = QDesktopWidget().availableGeometry()
+
+        window_size = self.geometry()
+
+        x = (screen.width() - window_size.width()) // 2
+        y = (screen.height() - window_size.height()) // 2
+
+        self.move(x, y)
+        self.show()
 
     def stylesheet(self):
         return """
@@ -141,8 +163,15 @@ class MainWindow(QMainWindow):
                     width: 32px;
                     height: 139px; 
                 }
+                QTabBar::tab::selected {
+                    width: 139px;
+                    height: 32px;
+                    color: #ffffff;
+                    background-color: #c2c2c2;
+                    color: #000
+                }
                 QListWidget::item {
-                    padding: 5px;            
+                    padding: 5px;
                 }
 
             """
@@ -154,7 +183,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(True)
-    window = MainWindow()
+    app.setQuitOnLastWindowClosed(False)
+    window = MainWindow(app)
     window.show()
     sys.exit(app.exec_())

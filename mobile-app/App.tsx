@@ -116,6 +116,7 @@ export default function App() {
   const responseListener = useRef<Notifications.Subscription>();
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
   const [loading, setLoading] = useState<boolean>(false);
+  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     async function getAddress() {
@@ -376,9 +377,7 @@ export default function App() {
   const deleteDatabase = () => {
     db.transaction((tx) => {
       // Drop the clips table if it exists
-      tx.executeSql("DROP TABLE IF EXISTS clips", [], () => {
-        console.log("Table dropped successfully");
-      });
+      tx.executeSql("DROP TABLE IF EXISTS clips", [], () => {});
     });
 
     // Recreate the clips table
@@ -386,9 +385,6 @@ export default function App() {
       tx.executeSql(
         "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
         [],
-        () => {
-          console.log("Table created successfully");
-        },
       );
     });
 
@@ -411,12 +407,12 @@ export default function App() {
   }
 
   const resetDatabase = () => {
-    deleteAllClipsDb();
+    if (connection) {
+      deleteAllClipsDb();
+    }
     db.transaction((tx) => {
       // Drop the clips table if it exists
-      tx.executeSql("DROP TABLE IF EXISTS clips", [], () => {
-        console.log("Table dropped successfully");
-      });
+      tx.executeSql("DROP TABLE IF EXISTS clips", [], () => {});
     });
 
     // Recreate the clips table
@@ -424,9 +420,6 @@ export default function App() {
       tx.executeSql(
         "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
         [],
-        () => {
-          console.log("Table created successfully");
-        },
       );
     });
 
@@ -454,7 +447,6 @@ export default function App() {
   };
 
   const addClip = () => {
-    console.log(currentVal);
     if (currentVal === undefined || !currentVal?.trim()) {
       return ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
     }
@@ -484,6 +476,26 @@ export default function App() {
         );
       });
     }
+  };
+
+  const editClip = (id: number, newText: string) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        "UPDATE clips SET clips_text = ? WHERE id = ?",
+        [newText, id],
+        (txObj, resultSet) => {
+          if (resultSet.rowsAffected > 0) {
+            let updatedClips = [...val].map((clip) => {
+              if (clip.id === id) {
+                return { ...clip, clips_text: newText };
+              }
+              return clip;
+            });
+            setVal(updatedClips);
+          }
+        },
+      );
+    });
   };
 
   const deleteClip = (id: number) => {
@@ -528,6 +540,47 @@ export default function App() {
     }
   }
 
+  const toggleSelection = (id: number) => {
+    setSelectedItems((prev) => {
+      const newSelection = new Set(prev);
+      if (newSelection.has(id)) {
+        newSelection.delete(id);
+      } else {
+        newSelection.add(id);
+      }
+      return newSelection;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === reversedClipsDb.length) {
+      setSelectedItems(new Set());
+    } else {
+      const allClipIds = reversedClipsDb.map((clip) => clip.id);
+      setSelectedItems(new Set(allClipIds));
+    }
+  };
+
+  const copySelectedItems = () => {
+    const selectedClipsText = reversedClipsDb
+      .filter((clip) => selectedItems.has(clip.id))
+      .map((clip) => clip.clips_text)
+      .join("\n");
+
+    Clipboard.setStringAsync(selectedClipsText);
+    ToastAndroid.show("Text copied to clipboard", ToastAndroid.CENTER);
+  };
+
+  const deleteSelectedItems = () => {
+    selectedItems.forEach((id) => {
+      deleteClipsDb(id);
+    });
+    clearSelection();
+  };
+  const clearSelection = () => {
+    setSelectedItems(new Set());
+  };
+
   const reversedVal = [...val].reverse();
   const showClips = ({ item: clip }: { item: Clip }) => {
     return (
@@ -544,7 +597,10 @@ export default function App() {
         </TextInput>
         <View className="flex flex-row justify-between py-2 px-3">
           <Pressable
-            onPress={() => Clipboard.setStringAsync(clip.clip)}
+            onPress={() => {
+              Clipboard.setStringAsync(clip.clip);
+              ToastAndroid.show("Text copied to clipboard", ToastAndroid.SHORT);
+            }}
             className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
           >
             <FontAwesome name="clipboard" size={26} color="white" />
@@ -579,23 +635,38 @@ export default function App() {
 
   const reversedClipsDb = [...clipsDb].reverse();
   const showClipsBd = ({ item: clip }: { item: ClipDb }) => {
+    const isSelected = selectedItems.has(clip.id);
     return (
-      <View
+      <Pressable
         key={clip.id}
         className={`mb-2 py-2 rounded-xl min-w-full`}
-        style={styles.card}
+        style={isSelected ? styles.cardSelected : styles.card}
+        onLongPress={() => toggleSelection(clip.id)}
+        delayLongPress={selectedItems.size >= 1 ? 1 : 500}
       >
-        <View className="px-2 w-full border-b border-stone-600 my-1 pb-4 flex flex-col">
-          <TextInput multiline className="text-gray-100 text-[16px]">
+        <View
+          className={`px-2 w-full ${isSelected ? "border-0" : "border-b pb-4"}  border-stone-600 my-1  flex flex-col`}
+        >
+          <Text
+            className={`${isSelected ? "text-gray-900" : "text-gray-100"}  text-[16px]`}
+          >
             {clip.clips_text}
-          </TextInput>
-          <Text style={styles.text} className="text-gray-100 text-[14px]">
-            {clip.date} | {clip.user_name}
+          </Text>
+          <Text
+            style={styles.text}
+            className={`${isSelected ? "text-gray-900" : "text-gray-100"}  text-[14px]`}
+          >
+            {clip?.date} {clip.date && "|"} {clip.user_name}
           </Text>
         </View>
-        <View className="flex flex-row justify-between py-2 px-3">
+        <View
+          className={`${isSelected ? "hidden" : "flex"} flex-row justify-between py-2 px-3`}
+        >
           <Pressable
-            onPress={() => Clipboard.setStringAsync(clip.clips_text)}
+            onPress={() => {
+              Clipboard.setStringAsync(clip.clips_text);
+              ToastAndroid.show("Text copied to clipboard", ToastAndroid.SHORT);
+            }}
             className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
           >
             <FontAwesome name="clipboard" size={26} color="white" />
@@ -628,7 +699,7 @@ export default function App() {
             <FontAwesome6 name="delete-left" size={28} color="white" />
           </Pressable>
         </View>
-      </View>
+      </Pressable>
     );
   };
 
@@ -786,22 +857,56 @@ export default function App() {
                 <Skeleton />
               </>
             ) : connection ? (
-              <FlatList
-                refreshControl={
-                  <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                  />
-                }
-                data={reversedClipsDb}
-                renderItem={showClipsBd}
-                keyExtractor={(clip) => clip.id.toString()}
-                style={styles.background}
-                contentContainerStyle={{
-                  alignItems: "center",
-                }}
-                className="w-[97%]"
-              />
+              <>
+                {selectedItems.size >= 1 && (
+                  <View className="flex flex-row justify-between w-full px-2 pb-2">
+                    <Pressable
+                      onPress={copySelectedItems}
+                      className="border-2 bg-green-200 py-2 px-4 rounded-lg "
+                    >
+                      <Text className="text-black">Copy</Text>
+                    </Pressable>
+                    <Pressable
+                      disabled={selectedItems.size !== 1}
+                      className={`${selectedItems.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                    >
+                      <Text className="text-black">Edit</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={toggleSelectAll}
+                      className="border-2 bg-zinc-200 py-2 px-4 rounded-lg "
+                    >
+                      <Text className="text-black">
+                        {selectedItems.size === reversedClipsDb.length
+                          ? "Deselect All"
+                          : "Select All"}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={deleteSelectedItems}
+                      className="border-2 bg-red-200 py-2 px-4 rounded-lg "
+                    >
+                      <Text className="text-black">Delete</Text>
+                    </Pressable>
+                  </View>
+                )}
+                <FlatList
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={onRefresh}
+                    />
+                  }
+                  data={reversedClipsDb}
+                  renderItem={showClipsBd}
+                  keyExtractor={(clip) => clip.id.toString()}
+                  style={styles.background}
+                  contentContainerStyle={{
+                    alignItems: "center",
+                  }}
+                  className="w-[97%]"
+                />
+              </>
             ) : (
               <FlatList
                 data={reversedVal}
@@ -844,6 +949,9 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: `${cardColor}`,
+  },
+  cardSelected: {
+    backgroundColor: `#c2c2c2`,
   },
   background: {
     backgroundColor: `${bgColor}`,

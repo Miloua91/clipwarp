@@ -32,6 +32,10 @@ export const i18n = new I18n({
     resetDatabase: "Reset Database",
     resetMessage:
       "Resetting the Clips database is irreversible. Are you sure want to proceed?",
+    deleteItem: "Delete Clip",
+    deleteItemMessage: "Do you want to delete this clip?",
+    deleteItems: "Delete Clips",
+    deleteItemsMessage: "Do you want to delete these clips?",
   },
   fr: {
     Send: "Envoyer",
@@ -49,6 +53,10 @@ export const i18n = new I18n({
     resetDatabase: "Réinitialiser la base de données",
     resetMessage:
       "La réinitialisation de la base de données Clips est irréversible. Êtes-vous sûr de vouloir continuer ?",
+    deleteItem: "Supprimer le clip",
+    deleteItemMessage: "Voulez-vous supprimer ce clip?",
+    deleteItems: "Supprimer les clips",
+    deleteItemsMessage: "Voulez-vous supprimer ces clips?",
   },
   ar: {
     Send: "إرسال",
@@ -66,6 +74,10 @@ export const i18n = new I18n({
     resetDatabase: "إعادة تعيين قاعدة البيانات",
     resetMessage:
       "إعادة تعيين قاعدة بيانات Clips غير قابلة للاسترجاع. هل أنت متأكد من أنك تريد المتابعة؟",
+    deleteItem: "حذف المقطع",
+    deleteItemMessage: "هل تريد حذف هذا المقطع؟",
+    deleteItems: "حذف المقاطع",
+    deleteItemsMessage: "هل تريد حذف هذه المقاطع؟",
   },
   es: {
     Send: "Enviar",
@@ -83,6 +95,10 @@ export const i18n = new I18n({
     resetDatabase: "Restablecer la base de datos",
     resetMessage:
       "Restablecer la base de datos de Clips es irreversible. ¿Está seguro de que desea continuar?",
+    deleteItem: "Eliminar clip",
+    deleteItemMessage: "¿Quieres eliminar este clip?",
+    deleteItems: "Eliminar clips",
+    deleteItemsMessage: "¿Quieres eliminar estos clips?",
   },
   pr: {
     Send: "Enviar",
@@ -100,6 +116,10 @@ export const i18n = new I18n({
     resetDatabase: "Redefinir banco de dados",
     resetMessage:
       "Redefinir o banco de dados do Clips é irreversível. Tem certeza de que deseja continuar?",
+    deleteItem: "Excluir clipe",
+    deleteItemMessage: "Você quer excluir este clipe?",
+    deleteItems: "Excluir clipes",
+    deleteItemsMessage: "Você quer excluir esses clipes?",
   },
   it: {
     Send: "Invia",
@@ -117,6 +137,10 @@ export const i18n = new I18n({
     resetDatabase: "Reimposta database",
     resetMessage:
       "Reimpostare il database dei Clips è irreversibile. Sei sicuro di voler procedere?",
+    deleteItem: "Elimina clip",
+    deleteItemMessage: "Vuoi eliminare questo clip?",
+    deleteItems: "Elimina clip",
+    deleteItemsMessage: "Vuoi eliminare questi clip?",
   },
   ru: {
     Send: "Отправить",
@@ -134,6 +158,10 @@ export const i18n = new I18n({
     resetDatabase: "Сбросить базу данных",
     resetMessage:
       "Сброс базы данных Clips необратим. Вы уверены, что хотите продолжить?",
+    deleteItem: "Удалить клип",
+    deleteItemMessage: "Вы хотите удалить этот клип?",
+    deleteItems: "Удалить клипы",
+    deleteItemsMessage: "Вы хотите удалить эти клипы?",
   },
   zh: {
     Send: "发送",
@@ -150,6 +178,10 @@ export const i18n = new I18n({
     openLink: "打开链接",
     resetDatabase: "重置数据库",
     resetMessage: "重置Clips数据库是不可逆的。你确定要继续吗？",
+    deleteItem: "删除剪辑",
+    deleteItemMessage: "你确定要删除这个剪辑吗？",
+    deleteItems: "删除剪辑",
+    deleteItemsMessage: "你确定要删除这些剪辑吗？",
   },
   jp: {
     Send: "送信",
@@ -167,6 +199,10 @@ export const i18n = new I18n({
     resetDatabase: "データベースをリセット",
     resetMessage:
       "Clipsデータベースのリセットは取り消しできません。本当に続行しますか？",
+    deleteItem: "クリップを削除",
+    deleteItemMessage: "このクリップを削除しますか？",
+    deleteItems: "クリップを削除",
+    deleteItemsMessage: "これらのクリップを削除しますか？",
   },
   de: {
     Send: "Senden",
@@ -184,6 +220,10 @@ export const i18n = new I18n({
     resetDatabase: "Datenbank zurücksetzen",
     resetMessage:
       "Das Zurücksetzen der Clips-Datenbank ist irreversibel. Sind Sie sicher, dass Sie fortfahren möchten?",
+    deleteItem: "Clip löschen",
+    deleteItemMessage: "Möchten Sie diesen Clip löschen?",
+    deleteItems: "Clips löschen",
+    deleteItemsMessage: "Möchten Sie diese Clips löschen?",
   },
 });
 

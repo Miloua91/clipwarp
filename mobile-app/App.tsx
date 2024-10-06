@@ -23,6 +23,9 @@ import {
   Ionicons,
   FontAwesome,
   MaterialIcons,
+  Octicons,
+  Foundation,
+  Feather,
 } from "@expo/vector-icons";
 import React, {
   useEffect,
@@ -571,6 +574,26 @@ export default function App() {
     ToastAndroid.show("Text copied to clipboard", ToastAndroid.CENTER);
   };
 
+  function deleteSelectedItemsAlert() {
+    Alert.alert(
+      selectedItems.size === 1 ? i18n.t("deleteItem") : i18n.t("deleteItems"),
+      selectedItems.size === 1
+        ? i18n.t("deleteItemMessage")
+        : i18n.t("deleteItemsMessage"),
+      [
+        {
+          text: "Yes",
+          onPress: deleteSelectedItems,
+          style: "destructive",
+        },
+        {
+          text: "No",
+          style: "cancel",
+        },
+      ],
+    );
+  }
+
   const deleteSelectedItems = () => {
     selectedItems.forEach((id) => {
       deleteClipsDb(id);
@@ -669,7 +692,7 @@ export default function App() {
             }}
             className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
           >
-            <FontAwesome name="clipboard" size={26} color="white" />
+            <Feather name="copy" size={26} color="white" />
           </Pressable>
           <Pressable
             onPress={() =>
@@ -859,34 +882,39 @@ export default function App() {
             ) : connection ? (
               <>
                 {selectedItems.size >= 1 && (
-                  <View className="flex flex-row justify-between w-full px-2 pb-2">
+                  <View className="flex flex-row justify-between w-full px-1 pb-2">
                     <Pressable
                       onPress={copySelectedItems}
                       className="border-2 bg-green-200 py-2 px-4 rounded-lg "
                     >
-                      <Text className="text-black">Copy</Text>
+                      <Foundation name="page-copy" size={26} color="black" />
                     </Pressable>
                     <Pressable
                       disabled={selectedItems.size !== 1}
                       className={`${selectedItems.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
                     >
-                      <Text className="text-black">Edit</Text>
+                      <Foundation name="page-edit" size={26} color="black" />
+                    </Pressable>
+
+                    <Pressable
+                      onPress={deleteSelectedItemsAlert}
+                      className="border-2 bg-red-200 py-2 px-4 rounded-lg "
+                    >
+                      <Foundation name="page-delete" size={26} color="black" />
                     </Pressable>
                     <Pressable
                       onPress={toggleSelectAll}
-                      className="border-2 bg-zinc-200 py-2 px-4 rounded-lg "
+                      className="border-2 bg-zinc-200 py-2 px-3 rounded-lg "
                     >
-                      <Text className="text-black">
-                        {selectedItems.size === reversedClipsDb.length
-                          ? "Deselect All"
-                          : "Select All"}
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      onPress={deleteSelectedItems}
-                      className="border-2 bg-red-200 py-2 px-4 rounded-lg "
-                    >
-                      <Text className="text-black">Delete</Text>
+                      <MaterialIcons
+                        name={
+                          selectedItems.size === reversedClipsDb.length
+                            ? "deselect"
+                            : "select-all"
+                        }
+                        size={26}
+                        color="black"
+                      />
                     </Pressable>
                   </View>
                 )}

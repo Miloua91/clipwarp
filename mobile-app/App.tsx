@@ -1062,7 +1062,7 @@ export default function App() {
                     {edit ? (
                       <Pressable
                         disabled={selectedItemsDb.size !== 1}
-                        className={`${selectedItemsDb.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        className={`${selectedItemsDb.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-[13.7px] rounded-lg`}
                         onPress={() =>
                           editClip(
                             Array.from(selectedItemsDb)[0] as number,
@@ -1070,7 +1070,7 @@ export default function App() {
                           )
                         }
                       >
-                        <Foundation name="save" size={26} color="black" />
+                        <MaterialIcons name="save" size={26} color="black" />
                       </Pressable>
                     ) : (
                       <Pressable
@@ -1144,7 +1144,7 @@ export default function App() {
                           )
                         }
                       >
-                        <Foundation name="save" size={26} color="black" />
+                        <MaterialIcons name="save" size={26} color="black" />
                       </Pressable>
                     ) : (
                       <Pressable

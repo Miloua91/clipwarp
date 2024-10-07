@@ -24,6 +24,12 @@ class FlaskAPI(QObject):
         self.socketio = SocketIO(self.app, cors_allowed_origins="*")
         self.app.add_url_rule("/", "get_clips", self.get_clips, methods=["GET"])
         self.app.add_url_rule(
+            "/edit/<int:clip_id>",
+            "edit_clip",
+            self.edit_clip,
+            methods=["PUT"],
+        )
+        self.app.add_url_rule(
             "/delete/<int:clip_id>",
             "delete_clip",
             self.delete_clip,
@@ -79,6 +85,32 @@ class FlaskAPI(QObject):
         self.socketio.emit("refresh")
 
         return jsonify(clip_data)
+
+    def edit_clip(self, clip_id):
+        data = request.get_json()
+
+        if "clip" not in data:
+            return jsonify({"error": "Clip data is required"}), 400
+
+        clip = data["clip"]
+
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "UPDATE clips SET clips_text = ? WHERE id = ?",
+            (
+                clip,
+                clip_id,
+            ),
+        )
+        conn.commit()
+
+        conn.close()
+
+        self.socketio.emit("edit")
+
+        return jsonify({"message": "Clip edited successfully"}), 200
 
     def delete_clip(self, clip_id):
         conn = self.get_db_connection()

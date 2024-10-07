@@ -23,7 +23,6 @@ import {
   Ionicons,
   FontAwesome,
   MaterialIcons,
-  Octicons,
   Foundation,
   Feather,
 } from "@expo/vector-icons";
@@ -119,7 +118,13 @@ export default function App() {
   const responseListener = useRef<Notifications.Subscription>();
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
   const [loading, setLoading] = useState<boolean>(false);
-  const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
+  const [selectedItems, setSelectedItems] = useState<Set<number | undefined>>(
+    new Set(),
+  );
+  const [selectedItemsDb, setSelectedItemsDb] = useState<Set<number>>(
+    new Set(),
+  );
+  const [edit, setEdit] = useState<boolean>(false);
 
   useEffect(() => {
     async function getAddress() {
@@ -481,24 +486,60 @@ export default function App() {
     }
   };
 
-  const editClip = (id: number, newText: string) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "UPDATE clips SET clips_text = ? WHERE id = ?",
-        [newText, id],
-        (txObj, resultSet) => {
-          if (resultSet.rowsAffected > 0) {
-            let updatedClips = [...val].map((clip) => {
-              if (clip.id === id) {
-                return { ...clip, clips_text: newText };
+  const editClip = async (id: number, newText: string) => {
+    if (currentVal === undefined || !currentVal?.trim()) {
+      return ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
+    }
+    if (connection) {
+      try {
+        const response = await fetch(
+          `http://${wsAddress}:${(wsPort ?? 42069) + 1}/edit/${id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ clip: newText }),
+          },
+        );
+        const data = await response.json(); // Optionally get the response data
+        console.log(data.message);
+        if (!response.ok) {
+          throw new Error("Failed to edit clip");
+        }
+        await getClips();
+        setEdit(false);
+        if (inputRef.current) {
+          setCurrentVal("");
+          inputRef.current.blur();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      db.transaction((tx) => {
+        tx.executeSql(
+          "UPDATE clips SET clip = ? WHERE id = ?",
+          [newText, id],
+          (txObj, resultSet) => {
+            if (resultSet.rowsAffected > 0) {
+              let updatedClips = [...val].map((clip) => {
+                if (clip.id === id) {
+                  return { ...clip, clip: newText };
+                }
+                return clip;
+              });
+              setVal(updatedClips);
+              setEdit(false);
+              if (inputRef.current) {
+                setCurrentVal("");
+                inputRef.current.blur();
               }
-              return clip;
-            });
-            setVal(updatedClips);
-          }
-        },
-      );
-    });
+            }
+          },
+        );
+      });
+    }
   };
 
   const deleteClip = (id: number) => {
@@ -543,11 +584,33 @@ export default function App() {
     }
   }
 
-  const toggleSelection = (id: number) => {
+  const hasSelectedItemsDb = selectedItemsDb.size > 0;
+  const hasSelectedItems = selectedItems.size > 0;
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (hasSelectedItems || hasSelectedItemsDb) {
+          clearSelection();
+          clearSelectionDb();
+          return true;
+        }
+        return false;
+      },
+    );
+
+    return () => {
+      backHandler.remove();
+    };
+  }, [hasSelectedItems, hasSelectedItemsDb]);
+
+  const toggleSelection = (id: number | undefined) => {
     setSelectedItems((prev) => {
       const newSelection = new Set(prev);
       if (newSelection.has(id)) {
         newSelection.delete(id);
+        setEdit(false);
       } else {
         newSelection.add(id);
       }
@@ -556,18 +619,18 @@ export default function App() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedItems.size === reversedClipsDb.length) {
+    if (selectedItems.size === reversedVal.length) {
       setSelectedItems(new Set());
     } else {
-      const allClipIds = reversedClipsDb.map((clip) => clip.id);
+      const allClipIds = reversedVal.map((clip) => clip.id);
       setSelectedItems(new Set(allClipIds));
     }
   };
 
   const copySelectedItems = () => {
-    const selectedClipsText = reversedClipsDb
+    const selectedClipsText = reversedVal
       .filter((clip) => selectedItems.has(clip.id))
-      .map((clip) => clip.clips_text)
+      .map((clip) => clip.clip)
       .join("\n");
 
     Clipboard.setStringAsync(selectedClipsText);
@@ -594,31 +657,64 @@ export default function App() {
     );
   }
 
-  const deleteSelectedItems = () => {
-    selectedItems.forEach((id) => {
-      deleteClipsDb(id);
+  const deleteClips = (ids: Set<number | undefined>) => {
+    const idArray = Array.from(ids).filter(
+      (id): id is number => id !== undefined,
+    );
+    if (idArray.length === 0) return;
+
+    db.transaction((tx) => {
+      const placeholders = idArray.map(() => "?").join(", ");
+      tx.executeSql(
+        `DELETE FROM clips WHERE id IN (${placeholders})`,
+        idArray,
+        (txObj, resultSet) => {
+          if (resultSet.rowsAffected > 0) {
+            const existingClips = val.filter(
+              (clip) => !idArray.includes(clip.id as number),
+            );
+            setVal(existingClips);
+          }
+        },
+      );
     });
+  };
+
+  const deleteSelectedItems = () => {
+    deleteClips(selectedItems);
     clearSelection();
   };
+
   const clearSelection = () => {
     setSelectedItems(new Set());
   };
 
   const reversedVal = [...val].reverse();
   const showClips = ({ item: clip }: { item: Clip }) => {
+    const isSelected = selectedItems.has(clip.id);
     return (
       <View
         key={clip.id}
-        className={`mb-2 min-w-full py-2 rounded-xl`}
-        style={styles.card}
+        className={`mb-2 py-2 rounded-xl min-w-full`}
+        style={isSelected ? styles.cardSelected : styles.card}
       >
-        <TextInput
-          multiline
-          className="px-2 w-full text-gray-100 text-[16px] border-b border-stone-600 my-1 pb-4"
+        <Pressable
+          onLongPress={() => toggleSelection(clip.id)}
+          delayLongPress={selectedItems.size >= 1 ? 1 : 500}
         >
-          {clip.clip}
-        </TextInput>
-        <View className="flex flex-row justify-between py-2 px-3">
+          <View
+            className={`px-2 w-full ${isSelected ? "border-0" : "border-b pb-4"}  border-stone-600 my-1  flex flex-col`}
+          >
+            <Text
+              className={`${isSelected ? "text-gray-900" : "text-gray-100"}  text-[16px]`}
+            >
+              {clip.clip}
+            </Text>
+          </View>
+        </Pressable>
+        <View
+          className={`${isSelected ? "hidden" : "flex"} flex-row justify-between py-2 px-3`}
+        >
           <Pressable
             onPress={() => {
               Clipboard.setStringAsync(clip.clip);
@@ -626,7 +722,7 @@ export default function App() {
             }}
             className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
           >
-            <FontAwesome name="clipboard" size={26} color="white" />
+            <Feather name="copy" size={26} color="white" />
           </Pressable>
           <Pressable
             onPress={() => clip.clip !== undefined && shareClip(clip.clip)}
@@ -647,7 +743,7 @@ export default function App() {
           </Pressable>
           <Pressable
             onPress={() => clip.id !== undefined && deleteClip(clip.id)}
-            className="active:bg-red-500 w-15 h-9 p-1 rounded"
+            className={`active:bg-red-500 w-15 h-9 p-1 rounded ${deviceLanguage === "ar" ? "rotate-180" : ""}`}
           >
             <FontAwesome6 name="delete-left" size={28} color="white" />
           </Pressable>
@@ -656,32 +752,97 @@ export default function App() {
     );
   };
 
+  const toggleSelectionDb = (id: number) => {
+    setSelectedItemsDb((prev) => {
+      const newSelection = new Set(prev);
+      if (newSelection.has(id)) {
+        newSelection.delete(id);
+        setEdit(false);
+      } else {
+        newSelection.add(id);
+      }
+      return newSelection;
+    });
+  };
+
+  const toggleSelectAllDb = () => {
+    if (selectedItemsDb.size === reversedClipsDb.length) {
+      setSelectedItemsDb(new Set());
+    } else {
+      const allClipIds = reversedClipsDb.map((clip) => clip.id);
+      setSelectedItemsDb(new Set(allClipIds));
+    }
+  };
+
+  const copySelectedItemsDb = () => {
+    const selectedClipsText = reversedClipsDb
+      .filter((clip) => selectedItemsDb.has(clip.id))
+      .map((clip) => clip.clips_text)
+      .join("\n");
+
+    Clipboard.setStringAsync(selectedClipsText);
+    ToastAndroid.show("Text copied to clipboard", ToastAndroid.CENTER);
+  };
+
+  function deleteSelectedItemsAlertDb() {
+    Alert.alert(
+      selectedItemsDb.size === 1 ? i18n.t("deleteItem") : i18n.t("deleteItems"),
+      selectedItemsDb.size === 1
+        ? i18n.t("deleteItemMessage")
+        : i18n.t("deleteItemsMessage"),
+      [
+        {
+          text: "Yes",
+          onPress: deleteSelectedItemsDb,
+          style: "destructive",
+        },
+        {
+          text: "No",
+          style: "cancel",
+        },
+      ],
+    );
+  }
+
+  const deleteSelectedItemsDb = () => {
+    selectedItemsDb.forEach((id) => {
+      deleteClipsDb(id);
+    });
+    clearSelectionDb();
+  };
+  const clearSelectionDb = () => {
+    setSelectedItemsDb(new Set());
+  };
+
   const reversedClipsDb = [...clipsDb].reverse();
   const showClipsBd = ({ item: clip }: { item: ClipDb }) => {
-    const isSelected = selectedItems.has(clip.id);
+    const isSelected = selectedItemsDb.has(clip.id);
     return (
-      <Pressable
+      <View
         key={clip.id}
         className={`mb-2 py-2 rounded-xl min-w-full`}
         style={isSelected ? styles.cardSelected : styles.card}
-        onLongPress={() => toggleSelection(clip.id)}
-        delayLongPress={selectedItems.size >= 1 ? 1 : 500}
       >
-        <View
-          className={`px-2 w-full ${isSelected ? "border-0" : "border-b pb-4"}  border-stone-600 my-1  flex flex-col`}
+        <Pressable
+          onLongPress={() => toggleSelectionDb(clip.id)}
+          delayLongPress={selectedItemsDb.size >= 1 ? 1 : 500}
         >
-          <Text
-            className={`${isSelected ? "text-gray-900" : "text-gray-100"}  text-[16px]`}
+          <View
+            className={`px-2 w-full ${isSelected ? "border-0" : "border-b pb-4"}  border-stone-600 my-1  flex flex-col`}
           >
-            {clip.clips_text}
-          </Text>
-          <Text
-            style={styles.text}
-            className={`${isSelected ? "text-gray-900" : "text-gray-100"}  text-[14px]`}
-          >
-            {clip?.date} {clip.date && "|"} {clip.user_name}
-          </Text>
-        </View>
+            <Text
+              className={`${isSelected ? "text-gray-900" : "text-gray-100"}  text-[16px]`}
+            >
+              {clip.clips_text}
+            </Text>
+            <Text
+              style={styles.text}
+              className={`${isSelected ? "text-gray-900" : "text-gray-100"}  text-[14px]`}
+            >
+              {clip?.date} {clip.date && "|"} {clip.user_name}
+            </Text>
+          </View>
+        </Pressable>
         <View
           className={`${isSelected ? "hidden" : "flex"} flex-row justify-between py-2 px-3`}
         >
@@ -722,7 +883,7 @@ export default function App() {
             <FontAwesome6 name="delete-left" size={28} color="white" />
           </Pressable>
         </View>
-      </Pressable>
+      </View>
     );
   };
 
@@ -821,6 +982,14 @@ export default function App() {
     );
   };
 
+  const inputRef = useRef<TextInput>(null);
+
+  const focusInput = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
   return (
     <>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -844,6 +1013,7 @@ export default function App() {
           </View>
           <View style={styles.container} className="pt-4">
             <TextInput
+              ref={inputRef}
               className="w-[97%] rounded-lg h-16 text-center text-[16px] text-white"
               multiline
               value={currentVal}
@@ -881,34 +1051,52 @@ export default function App() {
               </>
             ) : connection ? (
               <>
-                {selectedItems.size >= 1 && (
+                {selectedItemsDb.size >= 1 && (
                   <View className="flex flex-row justify-between w-full px-1 pb-2">
                     <Pressable
-                      onPress={copySelectedItems}
+                      onPress={copySelectedItemsDb}
                       className="border-2 bg-green-200 py-2 px-4 rounded-lg "
                     >
                       <Foundation name="page-copy" size={26} color="black" />
                     </Pressable>
-                    <Pressable
-                      disabled={selectedItems.size !== 1}
-                      className={`${selectedItems.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
-                    >
-                      <Foundation name="page-edit" size={26} color="black" />
-                    </Pressable>
+                    {edit ? (
+                      <Pressable
+                        disabled={selectedItemsDb.size !== 1}
+                        className={`${selectedItemsDb.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        onPress={() =>
+                          editClip(
+                            Array.from(selectedItemsDb)[0] as number,
+                            currentVal as string,
+                          )
+                        }
+                      >
+                        <Foundation name="save" size={26} color="black" />
+                      </Pressable>
+                    ) : (
+                      <Pressable
+                        disabled={selectedItemsDb.size !== 1}
+                        className={`${selectedItemsDb.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        onPress={() => {
+                          setEdit(true), focusInput();
+                        }}
+                      >
+                        <Foundation name="page-edit" size={26} color="black" />
+                      </Pressable>
+                    )}
 
                     <Pressable
-                      onPress={deleteSelectedItemsAlert}
+                      onPress={deleteSelectedItemsAlertDb}
                       className="border-2 bg-red-200 py-2 px-4 rounded-lg "
                     >
                       <Foundation name="page-delete" size={26} color="black" />
                     </Pressable>
                     <Pressable
-                      onPress={toggleSelectAll}
+                      onPress={toggleSelectAllDb}
                       className="border-2 bg-zinc-200 py-2 px-3 rounded-lg "
                     >
                       <MaterialIcons
                         name={
-                          selectedItems.size === reversedClipsDb.length
+                          selectedItemsDb.size === reversedClipsDb.length
                             ? "deselect"
                             : "select-all"
                         }
@@ -936,18 +1124,76 @@ export default function App() {
                 />
               </>
             ) : (
-              <FlatList
-                data={reversedVal}
-                renderItem={showClips}
-                keyExtractor={(clip) =>
-                  clip.id ? clip.id.toString() : Math.random().toString()
-                }
-                style={styles.background}
-                contentContainerStyle={{
-                  alignItems: "center",
-                }}
-                className="w-[97%]"
-              />
+              <>
+                {selectedItems.size >= 1 && (
+                  <View className="flex flex-row justify-between w-full px-1 pb-2">
+                    <Pressable
+                      onPress={copySelectedItems}
+                      className="border-2 bg-green-200 py-2 px-4 rounded-lg "
+                    >
+                      <Foundation name="page-copy" size={26} color="black" />
+                    </Pressable>
+                    {edit ? (
+                      <Pressable
+                        disabled={selectedItems.size !== 1}
+                        className={`${selectedItems.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        onPress={() =>
+                          editClip(
+                            Array.from(selectedItems)[0] as number,
+                            currentVal as string,
+                          )
+                        }
+                      >
+                        <Foundation name="save" size={26} color="black" />
+                      </Pressable>
+                    ) : (
+                      <Pressable
+                        disabled={selectedItems.size !== 1}
+                        className={`${selectedItems.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        onPress={() => {
+                          setEdit(true), focusInput();
+                        }}
+                      >
+                        <Foundation name="page-edit" size={26} color="black" />
+                      </Pressable>
+                    )}
+
+                    <Pressable
+                      onPress={deleteSelectedItemsAlert}
+                      className="border-2 bg-red-200 py-2 px-4 rounded-lg "
+                    >
+                      <Foundation name="page-delete" size={26} color="black" />
+                    </Pressable>
+                    <Pressable
+                      onPress={toggleSelectAll}
+                      className="border-2 bg-zinc-200 py-2 px-3 rounded-lg "
+                    >
+                      <MaterialIcons
+                        name={
+                          selectedItems.size === reversedVal.length
+                            ? "deselect"
+                            : "select-all"
+                        }
+                        size={26}
+                        color="black"
+                      />
+                    </Pressable>
+                  </View>
+                )}
+
+                <FlatList
+                  data={reversedVal}
+                  renderItem={showClips}
+                  keyExtractor={(clip) =>
+                    clip.id ? clip.id.toString() : Math.random().toString()
+                  }
+                  style={styles.background}
+                  contentContainerStyle={{
+                    alignItems: "center",
+                  }}
+                  className="w-[97%]"
+                />
+              </>
             )}
           </View>
         </View>

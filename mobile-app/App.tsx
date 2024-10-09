@@ -254,6 +254,7 @@ export default function App() {
         }
 
         setConnection(true);
+        clearSelection();
       };
 
       return () => {
@@ -344,6 +345,7 @@ export default function App() {
 
       websocket.onclose = () => {
         setConnection(false);
+        clearSelectionDb();
         /*
         Alert.alert(i18n.t("wsStatus"), i18n.t("wsMessage"), [
           {

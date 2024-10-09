@@ -181,7 +181,7 @@ class Ui_MainWindow(QObject):
                 )
                 item = QListWidgetItem(clip_text)
                 item.setData(Qt.UserRole, clip["id"])
-                item.setSizeHint(QSize(200, 68))
+                item.setSizeHint(QSize(400, 68))
                 delete_button = QPushButton("")
                 delete_button.setStyleSheet(
                     """

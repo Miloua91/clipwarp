@@ -155,7 +155,7 @@ class MainWindow(QMainWindow):
                     background-color: #333;
                     color: #FFF;
                 }
-                QPlainTextEdit,TabBar, QListWidget {
+                QPlainTextEdit, TabBar, QListWidget {
                     background-color: #4d4d4d;
                     color: #FFF;
                 }
@@ -163,18 +163,37 @@ class MainWindow(QMainWindow):
                     width: 32px;
                     height: 139px; 
                 }
-                QTabBar::tab::selected {
+                QTabBar::tab:selected {
                     width: 139px;
                     height: 32px;
-                    color: #ffffff;
                     background-color: #c2c2c2;
-                    color: #000
+                    color: #000;
                 }
                 QListWidget::item {
                     padding: 5px;
                 }
-
-            """
+                QScrollBar:vertical {
+                    border: none;
+                    background: transparent;
+                    width: 6px;
+                    margin: 0px;
+                }
+                QScrollBar::handle:vertical {
+                    background: #c2c2c2;
+                    min-height: 20px;
+                    border-radius: 3px;
+                }
+                QScrollBar::handle:vertical:hover {
+                    background: #aaaaaa;
+                }
+                QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                    background: none;
+                    height: 0px;
+                }
+                QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                    background: none;
+                }
+               """
 
     def set_window_icon(self, icon_path):
         icon = QIcon(icon_path)

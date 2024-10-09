@@ -38,7 +38,7 @@ import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
-//import { useShareIntent } from "expo-share-intent";
+import { useShareIntent } from "expo-share-intent";
 import { i18n } from "./i18n";
 import { getLocales } from "expo-localization";
 import * as Linking from "expo-linking";
@@ -55,7 +55,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
-//TODO: Select multiple text items
+//TODO: Add edited string to currentval
 //TODO: Add animation
 //TODO: Sync db between dektop and mobile
 //TODO: Add note to links
@@ -68,6 +68,7 @@ SplashScreen.preventAutoHideAsync();
 //PERF: add icon to notification, and make it appear only when app is in background
 //PERF: Added share intent to the app
 //PERF: Add Skelton
+//PERF: Select multiple text items
 
 type Clip = {
   id: number | undefined;
@@ -97,12 +98,10 @@ const deviceLanguage = getLocales()?.[0]?.languageCode;
 NavigationBar.setBackgroundColorAsync("#000");
 
 export default function App() {
-  /*
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent({
     debug: true,
     resetOnBackground: true,
   });
-  */
 
   const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
@@ -220,32 +219,33 @@ export default function App() {
   }, [connection, appStateVisible, seconds]);
 
   useEffect(() => {
-    // Send data when `db` changes
     const ws = async () => {
       const websocket = await webSocket();
+
       websocket.onopen = async () => {
         setLoading(true);
-        /*
-  if (hasShareIntent) {
-    if (shareIntent.text === undefined || shareIntent.text === null) {
-      return ToastAndroid.show(
-        "Your input is empty",
-        ToastAndroid.CENTER,
-      );
-    }
-    if (shareIntent.text !== undefined && shareIntent.text !== null) {
-      resetShareIntent();
-      websocket.send(shareIntent.text);
-      await getClips(); // Await getClips if called here
-    }
-  }
-  */
+
+        // Check for share intent
+        if (hasShareIntent) {
+          if (!shareIntent.text) {
+            ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
+            setLoading(false);
+            return;
+          }
+          BackHandler.exitApp();
+          resetShareIntent();
+          websocket.send(shareIntent.text);
+          await getClips();
+        }
 
         try {
           // Send each clip
           for (const vals of val) {
-            websocket.send(vals.clip);
+            if (websocket.readyState === WebSocket.OPEN) {
+              websocket.send(vals.clip);
+            }
           }
+
           deleteDatabase();
           await getClips();
         } catch (error) {
@@ -256,19 +256,22 @@ export default function App() {
 
         setConnection(true);
       };
+
+      return () => {
+        websocket.close();
+      };
     };
 
     ws();
   }, [seconds]);
 
   useEffect(() => {
-    // Send data when `db` changes
-    const ws = async () => {
-      const websocket = await webSocket();
-      websocket.onmessage = async () => {
+    if (appStateVisible === "background") {
+      const handleNotifications = async () => {
         const newClips = await getClips();
         const lastClip = newClips?.at(-1)?.clips_text;
         const username = newClips?.at(-1)?.user_name;
+
         if (canOpenLink(lastClip)) {
           Notifications.setNotificationCategoryAsync("action", [
             {
@@ -292,7 +295,7 @@ export default function App() {
           ]);
         }
 
-        if (lastClip && username && appStateVisible === "background") {
+        if (lastClip && username) {
           await Notifications.scheduleNotificationAsync({
             content: {
               title: username,
@@ -303,13 +306,20 @@ export default function App() {
           });
         }
       };
-    };
+      const ws = async () => {
+        const websocket = await webSocket();
+        websocket.onmessage = async () => {
+          handleNotifications();
+        };
+      };
+      ws();
+    }
+  }, [appStateVisible]);
 
-    ws();
-    /*
+  useEffect(() => {
     if (!connection && hasShareIntent) {
       db.transaction((tx) => {
-        if (shareIntent.text !== undefined && shareIntent.text !== null) {
+        if (shareIntent.text) {
           tx.executeSql(
             "INSERT INTO clips (clip) values (?)",
             [shareIntent.text],
@@ -321,13 +331,13 @@ export default function App() {
                 clip: shareIntent.text ?? "",
               });
               setVal(existingClips);
+              BackHandler.exitApp();
             },
           );
         }
       });
     }
-    */
-  }, [seconds, appStateVisible]);
+  }, [connection, hasShareIntent]); // Trigger based on share intent and connection status
 
   useEffect(() => {
     const ws = async () => {
@@ -502,8 +512,6 @@ export default function App() {
             body: JSON.stringify({ clip: newText }),
           },
         );
-        const data = await response.json(); // Optionally get the response data
-        console.log(data.message);
         if (!response.ok) {
           throw new Error("Failed to edit clip");
         }

@@ -55,7 +55,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
-//TODO: Add edited string to currentval
 //TODO: Add animation
 //TODO: Sync db between dektop and mobile
 //TODO: Add note to links
@@ -493,6 +492,19 @@ export default function App() {
           },
         );
       });
+    }
+  };
+
+  const clipEdit = (id: number) => {
+    setEdit(true);
+    focusInput();
+    if (connection) {
+      console.log(id);
+      const clip = clipsDb.find((clip) => clip.id === id);
+      setCurrentVal(clip?.clips_text);
+    } else {
+      const clip = val.find((clip) => clip.id === id);
+      setCurrentVal(clip?.clip);
     }
   };
 
@@ -1084,9 +1096,9 @@ export default function App() {
                       <Pressable
                         disabled={selectedItemsDb.size !== 1}
                         className={`${selectedItemsDb.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
-                        onPress={() => {
-                          setEdit(true), focusInput();
-                        }}
+                        onPress={() =>
+                          clipEdit(Array.from(selectedItemsDb)[0] as number)
+                        }
                       >
                         <Foundation name="page-edit" size={26} color="black" />
                       </Pressable>
@@ -1158,9 +1170,9 @@ export default function App() {
                       <Pressable
                         disabled={selectedItems.size !== 1}
                         className={`${selectedItems.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
-                        onPress={() => {
-                          setEdit(true), focusInput();
-                        }}
+                        onPress={() =>
+                          clipEdit(Array.from(selectedItems)[0] as number)
+                        }
                       >
                         <Foundation name="page-edit" size={26} color="black" />
                       </Pressable>

@@ -169,6 +169,7 @@ class Ui_MainWindow(QObject):
         self.tabWidget.clear()
         for category, clips in categorized_clips.items():
             list_widget = QListWidget()
+            list_widget.setFixedWidth(466)
             reversed_clips = reversed(clips)
             for clip in reversed_clips:
                 clip_text = clip["clips_text"]

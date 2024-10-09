@@ -169,9 +169,6 @@ class MainWindow(QMainWindow):
                     background-color: #c2c2c2;
                     color: #000;
                 }
-                QListWidget::item {
-                    padding: 5px;
-                }
                 QScrollBar:vertical {
                     border: none;
                     background: transparent;

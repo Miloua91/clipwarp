@@ -3240,12 +3240,15 @@ __metadata:
     react-native-really-awesome-button: "npm:^2.0.4"
     react-native-reanimated: "npm:~3.10.1"
     react-native-safe-area-context: "npm:4.10.5"
+    react-native-screens: "npm:^3.34.0"
     react-native-svg: "npm:15.2.0"
     react-native-svg-transformer: "npm:^1.3.0"
+    react-native-toast-message: "npm:^2.2.1"
     react-native-vector-icons: "npm:^10.1.0"
     react-native-web: "npm:~0.19.6"
     socket.io: "npm:^4.7.5"
     socket.io-client: "npm:^4.7.5"
+    sonner-native: "npm:^0.15.0"
     tailwindcss: "npm:3.3.2"
     typescript: "npm:~5.3.3"
   languageName: unknown
@@ -9265,6 +9268,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-freeze@npm:^1.0.0":
+  version: 1.0.4
+  resolution: "react-freeze@npm:1.0.4"
+  peerDependencies:
+    react: ">=17.0.0"
+  checksum: 10c0/8f51257c261bfefff86f618e958683536248f708019632d309ee5ebdd52f25d3c130660d06fb6f0f4fdef79f00f8ec7177233a872c2321f7d46b7e77ccc522a1
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^16.12.0 || ^17.0.0 || ^18.0.0, react-is@npm:^18.0.0, react-is@npm:^18.1.0":
   version: 18.3.1
   resolution: "react-is@npm:18.3.1"
@@ -9369,6 +9381,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-screens@npm:^3.34.0":
+  version: 3.34.0
+  resolution: "react-native-screens@npm:3.34.0"
+  dependencies:
+    react-freeze: "npm:^1.0.0"
+    warn-once: "npm:^0.1.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/568af49a1d79797ebecf5b8c815d44b651b0affdd82d7a8024b9e5e71250a23e108d73562200ef571b806c6a9ebba0484510e710246165dbdc50ad18e4d77619
+  languageName: node
+  linkType: hard
+
 "react-native-svg-transformer@npm:^1.3.0":
   version: 1.4.0
   resolution: "react-native-svg-transformer@npm:1.4.0"
@@ -9394,6 +9419,16 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/9b979dbf101ee3131c606c7960f1bc8c49b3f0acb42b394e9b89f33b853e20765d93844178ad545747e73b2ffd5654d6e486daf86987865983913c46d31bb2c8
+  languageName: node
+  linkType: hard
+
+"react-native-toast-message@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "react-native-toast-message@npm:2.2.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/03418b03ae345f5fe1c1747a98ae9c420a9ea37402d849920a14bfc6eb01541ad934266ae2656433604448d2fba1266ab6f6be649a49c9b22445e86444c1f6de
   languageName: node
   linkType: hard
 
@@ -10269,6 +10304,25 @@ __metadata:
     ip-address: "npm:^9.0.5"
     smart-buffer: "npm:^4.2.0"
   checksum: 10c0/d54a52bf9325165770b674a67241143a3d8b4e4c8884560c4e0e078aace2a728dffc7f70150660f51b85797c4e1a3b82f9b7aa25e0a0ceae1a243365da5c51a7
+  languageName: node
+  linkType: hard
+
+"sonner-native@npm:^0.15.0":
+  version: 0.15.0
+  resolution: "sonner-native@npm:0.15.0"
+  peerDependencies:
+    nativewind: "*"
+    react: "*"
+    react-native: "*"
+    react-native-gesture-handler: ">=2.16.1"
+    react-native-reanimated: ">=3.10.1"
+    react-native-safe-area-context: ">=4.10.5"
+    react-native-screens: ">=3.31.1"
+    react-native-svg: ">=15.6.0"
+  peerDependenciesMeta:
+    nativewind:
+      optional: true
+  checksum: 10c0/cb9e8bdf3d31e2c89ba9f3adad0db954916a336af764d281f7ca484299477894654d8004385891f340e9a1ecbb4be64f3305da44c98dcb6c122a6678038a4749
   languageName: node
   linkType: hard
 
@@ -11287,6 +11341,13 @@ __metadata:
   dependencies:
     makeerror: "npm:1.0.12"
   checksum: 10c0/a17e037bccd3ca8a25a80cb850903facdfed0de4864bd8728f1782370715d679fa72e0a0f5da7c1c1379365159901e5935f35be531229da53bbfc0efdabdb48e
+  languageName: node
+  linkType: hard
+
+"warn-once@npm:^0.1.0":
+  version: 0.1.1
+  resolution: "warn-once@npm:0.1.1"
+  checksum: 10c0/f531e7b2382124f51e6d8f97b8c865246db8ab6ff4e53257a2d274e0f02b97d7201eb35db481843dc155815e154ad7afb53b01c4d4db15fb5aa073562496aff7
   languageName: node
   linkType: hard
 

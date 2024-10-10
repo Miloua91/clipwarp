@@ -38,7 +38,7 @@ import { io } from "socket.io-client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
-import { useShareIntent } from "expo-share-intent";
+//import { useShareIntent } from "expo-share-intent";
 import { i18n } from "./i18n";
 import { getLocales } from "expo-localization";
 import * as Linking from "expo-linking";
@@ -52,6 +52,8 @@ import {
   BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Snackbar, Button } from "react-native-paper";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -68,6 +70,7 @@ SplashScreen.preventAutoHideAsync();
 //PERF: Added share intent to the app
 //PERF: Add Skelton
 //PERF: Select multiple text items
+//PERF: Undo deleting clip
 
 type Clip = {
   id: number | undefined;
@@ -97,10 +100,12 @@ const deviceLanguage = getLocales()?.[0]?.languageCode;
 NavigationBar.setBackgroundColorAsync("#000");
 
 export default function App() {
+  /*
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent({
     debug: true,
     resetOnBackground: true,
   });
+  */
 
   const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
@@ -123,6 +128,9 @@ export default function App() {
     new Set(),
   );
   const [edit, setEdit] = useState<boolean>(false);
+  const [visibleBar, setVisibleBar] = useState<boolean>(false);
+  const [deletedClip, setDeletedClip] = useState<Clip | null>(null);
+  const [deletedClipDb, setDeletedClipDb] = useState<ClipDb | null>(null);
 
   useEffect(() => {
     async function getAddress() {
@@ -224,7 +232,7 @@ export default function App() {
       websocket.onopen = async () => {
         setLoading(true);
 
-        // Check for share intent
+        /*
         if (hasShareIntent) {
           if (!shareIntent.text) {
             ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
@@ -236,6 +244,7 @@ export default function App() {
           websocket.send(shareIntent.text);
           await getClips();
         }
+        */
 
         try {
           // Send each clip
@@ -316,6 +325,7 @@ export default function App() {
     }
   }, [appStateVisible]);
 
+  /*
   useEffect(() => {
     if (!connection && hasShareIntent) {
       db.transaction((tx) => {
@@ -338,6 +348,7 @@ export default function App() {
       });
     }
   }, [connection, hasShareIntent]); // Trigger based on share intent and connection status
+  */
 
   useEffect(() => {
     const ws = async () => {
@@ -360,19 +371,26 @@ export default function App() {
   }, [connection]);
 
   async function deleteClipsDb(clipId: number) {
-    try {
-      const response = await fetch(
-        `http://${wsAddress}:${(wsPort ?? 42069) + 1}/delete/${clipId}`,
-        {
-          method: "DELETE",
-        },
-      );
-      if (!response.ok) {
-        throw new Error("Failed to delete clip");
+    const clipToDelete = clipsDb.find((clip) => clip.id === clipId);
+
+    if (clipToDelete) {
+      setDeletedClipDb(clipToDelete);
+
+      try {
+        const response = await fetch(
+          `http://${wsAddress}:${(wsPort ?? 42069) + 1}/delete/${clipId}`,
+          {
+            method: "DELETE",
+          },
+        );
+        if (!response.ok) {
+          throw new Error("Failed to delete clip");
+        }
+        await getClips();
+        setVisibleBar(true);
+      } catch (error) {
+        console.error(error);
       }
-      await getClips();
-    } catch (error) {
-      console.error(error);
     }
   }
 
@@ -565,18 +583,63 @@ export default function App() {
   };
 
   const deleteClip = (id: number) => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "DELETE FROM clips WHERE id = ?",
-        [id],
-        (txObj, resultSet) => {
-          if (resultSet.rowsAffected > 0) {
-            let existingCLips = [...val].filter((clip) => clip.id !== id);
-            setVal(existingCLips);
-          }
-        },
-      );
-    });
+    const clipToDelete = val.find((clip) => clip.id === id);
+
+    if (clipToDelete) {
+      setDeletedClip(clipToDelete);
+
+      db.transaction((tx) => {
+        tx.executeSql(
+          "DELETE FROM clips WHERE id = ?",
+          [id],
+          (txObj, resultSet) => {
+            if (resultSet.rowsAffected > 0) {
+              const existingClips = val.filter((clip) => clip.id !== id);
+              setVal(existingClips);
+              setVisibleBar(true);
+            }
+          },
+        );
+      });
+    } else {
+      console.warn(`Clip with id ${id} not found.`);
+    }
+  };
+
+  const undoDelete = () => {
+    if (connection && deletedClipDb) {
+      const ws = async () => {
+        try {
+          const websocket = await webSocket();
+          websocket.onopen = () => {
+            websocket.send(deletedClipDb.clips_text);
+            getClips();
+          };
+        } catch (error) {
+          console.error("Error establishing WebSocket connection:", error);
+        }
+      };
+      ws();
+    } else if (
+      deletedClip &&
+      deletedClip.id !== undefined &&
+      deletedClip.clip
+    ) {
+      db.transaction((tx) => {
+        tx.executeSql(
+          "INSERT INTO clips (id, clip) VALUES (?, ?)",
+          [deletedClip.id as number, deletedClip.clip],
+          (txObj, resultSet) => {
+            setVal((prev) => [...prev, deletedClip]);
+            setDeletedClip(null);
+          },
+        );
+      });
+    } else {
+      console.warn("No connection or deleted clip data available for undo.");
+    }
+
+    setVisibleBar(false);
   };
 
   const shareClip = async (clip: string) => {
@@ -616,6 +679,10 @@ export default function App() {
         if (hasSelectedItems || hasSelectedItemsDb) {
           clearSelection();
           clearSelectionDb();
+          return true;
+        }
+        if (setting) {
+          handleCloseModalPress();
           return true;
         }
         return false;
@@ -911,7 +978,7 @@ export default function App() {
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-  const snapPoints = useMemo(() => ["73%"], []);
+  const snapPoints = useMemo(() => ["73%", "100%"], []);
 
   const handleSettingPress = () => {
     if (setting) {
@@ -1012,8 +1079,10 @@ export default function App() {
     }
   };
 
+  const onDismissSnackBar = () => setVisibleBar(false);
+
   return (
-    <>
+    <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaView>
           <StatusBar backgroundColor={`${bgColor}`} />
@@ -1220,8 +1289,19 @@ export default function App() {
           </View>
         </View>
         {settingModal()}
+        <Snackbar
+          visible={visibleBar}
+          onDismiss={onDismissSnackBar}
+          duration={3000} // 3 seconds duration for the user to undo
+          action={{
+            label: "Undo",
+            onPress: undoDelete,
+          }}
+        >
+          Clip deleted
+        </Snackbar>
       </GestureHandlerRootView>
-    </>
+    </SafeAreaProvider>
   );
 }
 

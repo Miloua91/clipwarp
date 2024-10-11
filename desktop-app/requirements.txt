@@ -10,7 +10,7 @@ win32-setctime==1.1.0
 flask==3.0.3
 requests==2.32.2
 socketio==0.2.1
-Flask-Cors==4.0.1
+Flask-Cors==4.0.2
 Flask-SocketIO==5.3.6
 gevent==24.2.1
 gevent-websocket==0.10.1

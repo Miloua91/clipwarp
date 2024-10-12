@@ -40,7 +40,7 @@ setting_path = os.path.join(
 
 class TabBar(QTabBar):
     def tabSizeHint(self, index):
-        return QtCore.QSize(139, 32)
+        return QtCore.QSize(180, 32)
 
     def paintEvent(self, event):
         painter = QStylePainter(self)
@@ -168,10 +168,13 @@ class Ui_MainWindow(QObject):
         self.current_tab_index = self.tabWidget.currentIndex()
         self.tabWidget.clear()
         for category, clips in categorized_clips.items():
+            is_latest_category = False
             list_widget = QListWidget()
             list_widget.setFixedWidth(466)
             reversed_clips = reversed(clips)
             for clip in reversed_clips:
+                if clip["is_latest"]:
+                    is_latest_category = True
                 clip_text = clip["clips_text"]
                 username = clip["user_name"]
                 date = clip["date"]
@@ -293,7 +296,18 @@ class Ui_MainWindow(QObject):
                 button_widget.setLayout(button_layout)
                 list_widget.setItemWidget(item, button_widget)
 
-            self.tabWidget.addTab(list_widget, category)
+            MAX_CATEGORY_LENGTH = 15
+            if len(category) > MAX_CATEGORY_LENGTH:
+                category = category[: MAX_CATEGORY_LENGTH - 3] + "..."
+
+            if is_latest_category:
+                tab_label = f"{category} ({len(clips)})"
+                self.tabWidget.setIconSize(QSize(10, 10))
+                tab_icon = QIcon(load_svg("active-tab-indicator.svg"))
+                self.tabWidget.addTab(list_widget, tab_icon, tab_label)
+            else:
+                self.tabWidget.addTab(list_widget, category)
+
         self.tabWidget.setCurrentIndex(self.current_tab_index)
 
     def delete_item(self, item, list_widget):

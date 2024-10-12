@@ -164,7 +164,7 @@ class MainWindow(QMainWindow):
                     height: 139px; 
                 }
                 QTabBar::tab:selected {
-                    width: 139px;
+                    width: 180px;
                     height: 32px;
                     background-color: #c2c2c2;
                     color: #000;

@@ -61,6 +61,18 @@ class FlaskAPI(QObject):
     def get_clips(self):
         conn = self.get_db_connection()
         cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT id
+            FROM clips
+            ORDER BY createdAt DESC
+            LIMIT 1
+            """
+        )
+        latest_clip = cursor.fetchone()
+        latest_clip_id = latest_clip["id"] if latest_clip else None
+
         cursor.execute(
             """
             SELECT clips.id, clips.clips_text, clips.user_id, users.name, createdAt
@@ -78,6 +90,7 @@ class FlaskAPI(QObject):
                 "user_id": clip["user_id"],
                 "user_name": clip["name"],
                 "date": clip["createdAt"],
+                "is_latest": (clip["id"] == latest_clip_id),
             }
             for clip in clips
         ]

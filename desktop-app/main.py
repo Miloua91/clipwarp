@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         self.start_api()
         self.setup_connections()
         self.setStyleSheet(self.stylesheet())
-        self.setFixedSize(612, 392)
+        self.setFixedSize(632, 392)
         self.show_and_center()
         self.set_window_icon(load_ico("cw.ico"))
         self.setup_system_tray()
@@ -161,10 +161,10 @@ class MainWindow(QMainWindow):
                 }
                 TabBar::tab {
                     width: 32px;
-                    height: 139px; 
+                    height: 158px; 
                 }
                 QTabBar::tab:selected {
-                    width: 180px;
+                    width: 158px;
                     height: 32px;
                     background-color: #c2c2c2;
                     color: #000;

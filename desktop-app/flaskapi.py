@@ -30,6 +30,12 @@ class FlaskAPI(QObject):
             methods=["PUT"],
         )
         self.app.add_url_rule(
+            "/noti",
+            "noti",
+            self.notification,
+            methods=["POST"],
+        )
+        self.app.add_url_rule(
             "/delete/<int:clip_id>",
             "delete_clip",
             self.delete_clip,
@@ -61,21 +67,9 @@ class FlaskAPI(QObject):
     def get_clips(self):
         conn = self.get_db_connection()
         cursor = conn.cursor()
-
         cursor.execute(
             """
-            SELECT id
-            FROM clips
-            ORDER BY createdAt DESC
-            LIMIT 1
-            """
-        )
-        latest_clip = cursor.fetchone()
-        latest_clip_id = latest_clip["id"] if latest_clip else None
-
-        cursor.execute(
-            """
-            SELECT clips.id, clips.clips_text, clips.user_id, users.name, createdAt
+            SELECT clips.id, clips.clips_text, clips.user_id, users.name, is_seen, createdAt
             FROM clips
             JOIN users ON clips.user_id = users.id
         """
@@ -90,7 +84,7 @@ class FlaskAPI(QObject):
                 "user_id": clip["user_id"],
                 "user_name": clip["name"],
                 "date": clip["createdAt"],
-                "is_latest": (clip["id"] == latest_clip_id),
+                "is_seen": clip["is_seen"],
             }
             for clip in clips
         ]
@@ -150,3 +144,38 @@ class FlaskAPI(QObject):
         self.socketio.emit("reset")
 
         return jsonify({"message": "Database reset successfully"}), 200
+
+    def notification(self):
+        data = request.get_json()
+
+        if "ids" not in data:
+            return jsonify({"error": "Ids are required"}), 400
+
+        clip_ids = data["ids"]
+
+        if not clip_ids:
+            return (
+                jsonify({"error": "Id list cannot be empty"}),
+                400,
+            )
+
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+
+        placeholders = ", ".join("?" for _ in clip_ids)
+
+        cursor.execute(
+            f"UPDATE clips SET is_seen = ? WHERE id IN ({placeholders})",
+            (True, *clip_ids),
+        )
+
+        conn.commit()
+        conn.close()
+
+        if self.socketio:
+            self.socketio.emit("edit")
+
+        return (
+            jsonify({"message": "Notifications updated successfully"}),
+            200,
+        )

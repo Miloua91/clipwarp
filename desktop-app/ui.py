@@ -40,7 +40,7 @@ setting_path = os.path.join(
 
 class TabBar(QTabBar):
     def tabSizeHint(self, index):
-        return QtCore.QSize(180, 32)
+        return QtCore.QSize(158, 32)
 
     def paintEvent(self, event):
         painter = QStylePainter(self)
@@ -79,43 +79,52 @@ class Ui_MainWindow(QObject):
     def __init__(self):
         super().__init__()
         self.current_tab_index = 0
+        self.updated_tabs = set()
+
+    def load_port(self):
+        if os.path.exists(setting_path):
+            with open(setting_path, "r") as f:
+                port = f.read()
+                return int(port) + 1
+        else:
+            return 42070
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("ClipWarp")
-        MainWindow.setGeometry(QtCore.QRect(140, 0, 612, 392))
+        MainWindow.setGeometry(QtCore.QRect(160, 0, 632, 392))
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.frame_2 = QtWidgets.QFrame(self.centralwidget)
-        self.frame_2.setGeometry(QtCore.QRect(140, 0, 470, 71))
+        self.frame_2.setGeometry(QtCore.QRect(160, 0, 490, 71))
         self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_2.setObjectName("frame_2")
         self.plainTextEdit = QtWidgets.QPlainTextEdit(self.frame_2)
-        self.plainTextEdit.setGeometry(QtCore.QRect(20, 8, 331, 54))
+        self.plainTextEdit.setGeometry(QtCore.QRect(25, 8, 331, 54))
         self.plainTextEdit.setObjectName("plainTextEdit")
         self.Send = QtWidgets.QPushButton(self.frame_2)
-        self.Send.setGeometry(QtCore.QRect(370, 38, 81, 24))
+        self.Send.setGeometry(QtCore.QRect(380, 38, 81, 24))
         self.Send.setObjectName("Send")
         self.Send.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.Paste = QtWidgets.QPushButton(self.frame_2)
-        self.Paste.setGeometry(QtCore.QRect(370, 8, 80, 24))
+        self.Paste.setGeometry(QtCore.QRect(380, 8, 80, 24))
         self.Paste.setObjectName("Paste")
         self.Paste.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.tabWidget = VerticalTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(2, 70, 608, 301))
+        self.tabWidget.setGeometry(QtCore.QRect(2, 70, 628, 301))
         self.tabWidget.setObjectName("tabWidget")
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(10, 25, 57, 24))
         self.label.setObjectName("label")
         self.setting = QtWidgets.QPushButton(self.centralwidget)
-        self.setting.setGeometry(QtCore.QRect(110, 25, 24, 24))
+        self.setting.setGeometry(QtCore.QRect(125, 25, 24, 24))
         self.setting.setObjectName("pushButton")
         self.setting.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setting.clicked.connect(self.open_new_window)
         setting_icon = QIcon(load_svg("setting.svg"))
         self.setting.setIcon(setting_icon)
         self.openapp = QtWidgets.QPushButton(self.centralwidget)
-        self.openapp.setGeometry(QtCore.QRect(80, 25, 24, 24))
+        self.openapp.setGeometry(QtCore.QRect(90, 25, 24, 24))
         self.openapp.setObjectName("openApp")
         self.openapp.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.openapp.clicked.connect(self.open_app)
@@ -132,6 +141,7 @@ class Ui_MainWindow(QObject):
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.tabWidget.currentChanged.connect(self.on_tab_changed)
 
     def categorize_clips(self, clips):
         categorized = {"Text": []}
@@ -152,6 +162,28 @@ class Ui_MainWindow(QObject):
         categorized_clips = self.categorize_clips(clips)
         self.render_tabs(categorized_clips)
 
+    def on_tab_changed(self, index):
+        self.update_status_for_tab(index)
+
+    def update_status_for_tab(self, index):
+        list_widget = self.tabWidget.widget(index)
+        if list_widget:
+            clip_ids = [
+                item.data(Qt.UserRole)
+                for i in range(list_widget.count())
+                for item in [list_widget.item(i)]
+                if isinstance(item.data(Qt.UserRole), int)
+            ]
+
+            payload = {"ids": clip_ids}
+            self.send_update_request(payload)
+
+    def send_update_request(self, payload):
+        import requests
+
+        url = f"http://{self.get_ip_address()}:{self.load_port()}/noti"
+        response = requests.post(url, json=payload)
+
     def truncate_text_to_width(self, text, font, max_width):
         metrics = QFontMetrics(font)
         ellipsis = "..."
@@ -166,15 +198,16 @@ class Ui_MainWindow(QObject):
 
     def render_tabs(self, categorized_clips):
         self.current_tab_index = self.tabWidget.currentIndex()
+        self.tabWidget.blockSignals(True)
         self.tabWidget.clear()
         for category, clips in categorized_clips.items():
-            is_latest_category = False
+            is_category_seen = False
             list_widget = QListWidget()
-            list_widget.setFixedWidth(466)
+            list_widget.setFixedWidth(468)
             reversed_clips = reversed(clips)
             for clip in reversed_clips:
-                if clip["is_latest"]:
-                    is_latest_category = True
+                if not clip["is_seen"]:
+                    is_category_seen = True
                 clip_text = clip["clips_text"]
                 username = clip["user_name"]
                 date = clip["date"]
@@ -296,19 +329,45 @@ class Ui_MainWindow(QObject):
                 button_widget.setLayout(button_layout)
                 list_widget.setItemWidget(item, button_widget)
 
-            MAX_CATEGORY_LENGTH = 15
-            if len(category) > MAX_CATEGORY_LENGTH:
-                category = category[: MAX_CATEGORY_LENGTH - 3] + "..."
+            max_pixel_width = 100
+            font = list_widget.font()
+            category = self.truncate_text_to_width(category, font, max_pixel_width)
 
-            if is_latest_category:
+            if is_category_seen:
                 tab_label = f"{category} ({len(clips)})"
-                self.tabWidget.setIconSize(QSize(10, 10))
+                self.tabWidget.setIconSize(QSize(8, 8))
                 tab_icon = QIcon(load_svg("active-tab-indicator.svg"))
                 self.tabWidget.addTab(list_widget, tab_icon, tab_label)
             else:
                 self.tabWidget.addTab(list_widget, category)
 
-        self.tabWidget.setCurrentIndex(self.current_tab_index)
+        if (
+            self.current_tab_index >= 0
+            and self.current_tab_index < self.tabWidget.count()
+        ):
+            self.tabWidget.setCurrentIndex(self.current_tab_index)
+        else:
+            self.tabWidget.setCurrentIndex(0)
+
+        self.tabWidget.blockSignals(False)
+        self.update_notifications(categorized_clips)
+
+    def update_notifications(self, categorized_clips):
+        current_tab_text = self.tabWidget.tabText(self.current_tab_index)
+
+        if current_tab_text in self.updated_tabs:
+            return
+
+        for category, clips in categorized_clips.items():
+            if category in current_tab_text:
+                clip_ids = [clip["id"] for clip in clips]
+                payload = {"ids": clip_ids}
+                self.send_update_request(payload)
+                self.updated_tabs.add(current_tab_text)
+                break
+
+    def clear_updated_tabs(self):
+        self.updated_tabs.clear()
 
     def delete_item(self, item, list_widget):
         row = list_widget.row(item)

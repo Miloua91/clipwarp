@@ -4,12 +4,15 @@ import time
 
 import requests
 import socketio
+import toml
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
 
+from pushnotif import Push
+
 setting_path = os.path.join(
-    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.toml"
 )
 
 
@@ -49,9 +52,9 @@ class Chat(QObject):
 
     def load_port(self):
         if os.path.exists(setting_path):
-            with open(setting_path, "r") as f:
-                port = f.read()
-                return int(port) + 1
+            settings = toml.load(setting_path)
+            port = settings.get("port", 42069)
+            return int(port) + 1
         else:
             return 42070
 
@@ -111,7 +114,9 @@ class Chat(QObject):
     def on_button_click(self):
         message = self.ui.plainTextEdit.toPlainText()
         if message != "":
+            self.push = Push()
             self.message_signal.emit(message)
+            self.push.send_push_message(message)
             self.ui.plainTextEdit.setPlainText("")
             self.fetch_clips()
 

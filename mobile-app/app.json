@@ -13,12 +13,10 @@
       "backgroundColor": "#000000"
     },
     "notification": {
-          "icon": "./assets/notifIcon.png",
-          "color": "#000000"
+      "icon": "./assets/notifIcon.png",
+      "color": "#000000"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mokhincode.ClipWarp"
@@ -28,15 +26,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.mokhincode.ClipWarp"
+      "package": "com.mokhincode.ClipWarp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/icon.png"
     },
     "plugins": [
-      [
-        "expo-asset"
-      ],
+      ["expo-asset"],
       [
         "expo-build-properties",
         {
@@ -45,13 +42,21 @@
           }
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notifIcon.png",
+          "color": "#000000",
+          "defaultChannel": "default"
+        }
+      ],
       "expo-font",
       "expo-share-intent"
     ],
     "extra": {
       "eas": {
         "projectId": "e1f8c8e3-5c2f-406c-8b49-949789ab16e6"
-          }
+      }
     },
     "runtimeVersion": {
       "policy": "appVersion"

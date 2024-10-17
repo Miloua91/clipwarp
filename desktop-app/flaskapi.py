@@ -1,6 +1,7 @@
 import os
 import sqlite3
 
+import toml
 from engineio.async_drivers import gevent
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -8,7 +9,7 @@ from flask_socketio import SocketIO, emit
 from PyQt5.QtCore import QObject
 
 setting_path = os.path.join(
-    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.toml"
 )
 
 db_path = os.path.join(
@@ -50,9 +51,9 @@ class FlaskAPI(QObject):
 
     def load_port(self):
         if os.path.exists(setting_path):
-            with open(setting_path, "r") as f:
-                port = f.read()
-                return int(port) + 1
+            settings = toml.load(setting_path)
+            port = settings.get("port", 42069)
+            return int(port) + 1
         else:
             return 42070
 

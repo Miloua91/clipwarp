@@ -13,10 +13,13 @@ import {
   RefreshControl,
   AppState,
   BackHandler,
+  Platform,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite/legacy";
-import { ThemedButton } from "react-native-really-awesome-button";
+import AwesomeButton, {
+  ThemedButton,
+} from "react-native-really-awesome-button";
 import {
   Entypo,
   FontAwesome6,
@@ -53,7 +56,9 @@ import {
 } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Snackbar, Button } from "react-native-paper";
+import { Snackbar } from "react-native-paper";
+import * as Device from "expo-device";
+import Constants from "expo-constants";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -87,13 +92,7 @@ interface ClipDb {
 const bgColor = "#252422";
 const cardColor = "#403d39";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
+Notifications.setNotificationHandler(null);
 
 const deviceLanguage = getLocales()?.[0]?.languageCode;
 
@@ -118,8 +117,16 @@ export default function App() {
   const [seconds, setSeconds] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const appState = useRef(AppState.currentState);
-  const responseListener = useRef<Notifications.Subscription>();
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
+  const [expoPushToken, setExpoPushToken] = useState("");
+  const [channels, setChannels] = useState<Notifications.NotificationChannel[]>(
+    [],
+  );
+  const [notification, setNotification] = useState<
+    Notifications.Notification | undefined
+  >(undefined);
+  const notificationListener = useRef<Notifications.Subscription>();
+  const responseListener = useRef<Notifications.Subscription>();
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<Set<number | undefined>>(
     new Set(),
@@ -133,6 +140,104 @@ export default function App() {
   const [deletedClipDb, setDeletedClipDb] = useState<ClipDb | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
+    registerForPushNotificationsAsync().then(
+      (token) => token && setExpoPushToken(token),
+    );
+
+    if (Platform.OS === "android") {
+      Notifications.getNotificationChannelsAsync().then((value) =>
+        setChannels(value ?? []),
+      );
+    }
+
+    const handleNotificationResponse = (response: any) => {
+      const notificationId = response.notification.request.identifier;
+      const clip = response?.notification?.request?.content.body;
+      const userAction = response.actionIdentifier;
+
+      if (!clip) return;
+
+      if (!canOpenLink(clip)) {
+        Clipboard.setStringAsync(clip);
+        ToastAndroid.show("Text copied to clipboard", ToastAndroid.CENTER);
+        BackHandler.exitApp();
+      } else if (canOpenLink(clip)) {
+        Linking.openURL(clip);
+        Clipboard.setStringAsync(clip);
+        ToastAndroid.show("Link copied to clipboard", ToastAndroid.CENTER);
+      }
+      Notifications.dismissNotificationAsync(notificationId);
+    };
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        handleNotificationResponse(response);
+      },
+    );
+
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (!isMounted || !response?.notification) {
+        return;
+      }
+      handleNotificationResponse(response);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.remove();
+    };
+  }, []);
+
+  async function registerForPushNotificationsAsync() {
+    let token;
+
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+      });
+    }
+
+    if (Device.isDevice) {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== "granted") {
+        alert("Failed to get push token for push notification!");
+        return;
+      }
+      try {
+        const projectId =
+          Constants?.expoConfig?.extra?.eas?.projectId ??
+          Constants?.easConfig?.projectId;
+        if (!projectId) {
+          throw new Error("Project ID not found");
+        }
+        token = (
+          await Notifications.getExpoPushTokenAsync({
+            projectId,
+          })
+        ).data;
+        console.log(token);
+      } catch (e) {
+        token = `${e}`;
+      }
+    } else {
+      alert("Must use physical device for Push Notifications");
+    }
+
+    return token;
+  }
+
+  useEffect(() => {
     async function getAddress() {
       const address = await AsyncStorage.getItem("address");
       const port = await AsyncStorage.getItem("port");
@@ -141,37 +246,7 @@ export default function App() {
       await SplashScreen.hideAsync();
     }
     getAddress();
-
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      appState.current = nextAppState;
-      setAppStateVisible(appState.current);
-    });
-
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener(
-        async (response) => {
-          const notificationId = response.notification.request.identifier;
-          const clip = response?.notification?.request?.content.body;
-          const userAction = response.actionIdentifier;
-
-          if (!clip) return null;
-
-          if (userAction === "copy") {
-            Clipboard.setStringAsync(clip);
-            BackHandler.exitApp();
-          } else if (canOpenLink(clip)) {
-            Linking.openURL(clip);
-          }
-          await Notifications.dismissNotificationAsync(notificationId);
-        },
-      );
-
-    return () => {
-      subscription.remove();
-      responseListener.current &&
-        Notifications.removeNotificationSubscription(responseListener.current);
-    };
-  }, [connection, appStateVisible, seconds]);
+  }, []);
 
   useEffect(() => {
     if (wsAddress && wsPort) {
@@ -273,57 +348,6 @@ export default function App() {
 
     ws();
   }, [seconds]);
-
-  useEffect(() => {
-    if (appStateVisible === "background") {
-      const handleNotifications = async () => {
-        const newClips = await getClips();
-        const lastClip = newClips?.at(-1)?.clips_text;
-        const username = newClips?.at(-1)?.user_name;
-
-        if (canOpenLink(lastClip)) {
-          Notifications.setNotificationCategoryAsync("action", [
-            {
-              identifier: "copy",
-              buttonTitle: i18n.t("copyClip"),
-              options: { isDestructive: true },
-            },
-            {
-              identifier: "open",
-              buttonTitle: i18n.t("openLink"),
-              options: { isDestructive: true },
-            },
-          ]);
-        } else {
-          Notifications.setNotificationCategoryAsync("action", [
-            {
-              identifier: "copy",
-              buttonTitle: i18n.t("copyClip"),
-              options: { isDestructive: true },
-            },
-          ]);
-        }
-
-        if (lastClip && username) {
-          await Notifications.scheduleNotificationAsync({
-            content: {
-              title: username,
-              body: lastClip,
-              categoryIdentifier: "action",
-            },
-            trigger: null,
-          });
-        }
-      };
-      const ws = async () => {
-        const websocket = await webSocket();
-        websocket.onmessage = async () => {
-          handleNotifications();
-        };
-      };
-      ws();
-    }
-  }, [appStateVisible]);
 
   /*
   useEffect(() => {
@@ -1006,6 +1030,12 @@ export default function App() {
     [],
   );
 
+  function extractToken(str: string) {
+    const match = str.match(/\[(.*?)\]/);
+    const result = match ? match[1] : "";
+    return result;
+  }
+
   const settingModal = () => {
     return (
       <BottomSheetModalProvider>
@@ -1046,6 +1076,27 @@ export default function App() {
               >
                 <View className="w-full">
                   <WS />
+
+                  <View
+                    className="space-x-1 mb-4 border rounded-xl"
+                    style={styles.card}
+                  >
+                    <Text className="mx-2 text-[16px] font-semibold py-1 text-white">
+                      {i18n.t("notif")}
+                    </Text>
+                    <Text
+                      className={`${deviceLanguage === "ar" ? "pr-4 text-right" : "pl-4"} w-full text-lg m-1 bottom-2 text-white`}
+                    >
+                      {extractToken(expoPushToken)}
+                    </Text>
+                    <View
+                      className={`absolute ${deviceLanguage === "ar" ? "right-2" : "right-0"} mx-2`}
+                    >
+                      <AwesomeButton backgroundColor="#403d39" width={60}>
+                        <FontAwesome name="send" size={24} color="white" />
+                      </AwesomeButton>
+                    </View>
+                  </View>
                 </View>
                 <View
                   style={styles.card}

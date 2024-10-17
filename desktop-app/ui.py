@@ -4,17 +4,18 @@ import socket
 import sys
 import webbrowser
 
+import toml
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QFontMetrics, QIcon
 from PyQt5.QtWidgets import *
 
-# TODO: Minimize the app to the system tray instead of quitting
 # TODO: Try to change the maximize button behavior and icon
 # TODO: Display link metadata
 # TODO: Add note to links
-# TODO: Add a dot to links tab to notify for new links in that tab
 # PERF: Add time
+# PERF: Add a dot to links tab to notify for new links in that tab
+# PERF: Minimize the app to the system tray instead of quitting
 
 
 def resource_path(relative_path):
@@ -34,7 +35,7 @@ def load_svg(file_name):
 
 
 setting_path = os.path.join(
-    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.toml"
 )
 
 
@@ -83,9 +84,9 @@ class Ui_MainWindow(QObject):
 
     def load_port(self):
         if os.path.exists(setting_path):
-            with open(setting_path, "r") as f:
-                port = f.read()
-                return int(port) + 1
+            settings = toml.load(setting_path)
+            port = settings.get("port", 42069)
+            return int(port) + 1
         else:
             return 42070
 
@@ -591,8 +592,12 @@ class Ui_MainWindow(QObject):
             dlg.setWindowTitle("Change Port")
             result = dlg.exec()
             if result == QDialog.Accepted:
+                settings = {}
+                if os.path.exists(setting_path):
+                    settings = toml.load(setting_path)
+                settings["port"] = int(port)
                 with open(setting_path, "w") as f:
-                    f.write(port)
+                    toml.dump(settings, f)
                 os._exit(1)
             print("Port saved successfully.")
         else:
@@ -637,9 +642,9 @@ class Ui_MainWindow(QObject):
 
     def load_settings(self):
         if os.path.exists(setting_path):
-            with open(setting_path, "r") as f:
-                port = f.read()
-                self.port_edit.setPlainText(port)
+            settings = toml.load(setting_path)
+            port = str(settings.get('port', ''))
+            self.port_edit.setPlainText(port)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

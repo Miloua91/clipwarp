@@ -122,11 +122,6 @@ export default function App() {
   const [channels, setChannels] = useState<Notifications.NotificationChannel[]>(
     [],
   );
-  const [notification, setNotification] = useState<
-    Notifications.Notification | undefined
-  >(undefined);
-  const notificationListener = useRef<Notifications.Subscription>();
-  const responseListener = useRef<Notifications.Subscription>();
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<Set<number | undefined>>(
     new Set(),
@@ -1036,6 +1031,28 @@ export default function App() {
     return result;
   }
 
+  const sendToken = (token: string) => {
+    if (extractToken(token) === undefined) {
+      return ToastAndroid.show("You don't have a token", ToastAndroid.CENTER);
+    }
+    if (connection) {
+      const ws = async () => {
+        const websocket = await webSocket();
+        websocket.onopen = () => {
+          if (extractToken(token) !== undefined) {
+            websocket.send(extractToken(token));
+          }
+        };
+      };
+      ws();
+    } else if (!connection) {
+      return ToastAndroid.show(
+        "Connect to the desktop app to send the token",
+        ToastAndroid.CENTER,
+      );
+    }
+  };
+
   const settingModal = () => {
     return (
       <BottomSheetModalProvider>
@@ -1092,7 +1109,11 @@ export default function App() {
                     <View
                       className={`absolute ${deviceLanguage === "ar" ? "right-2" : "right-0"} mx-2`}
                     >
-                      <AwesomeButton backgroundColor="#403d39" width={60}>
+                      <AwesomeButton
+                        onPress={() => sendToken(expoPushToken)}
+                        backgroundColor="#403d39"
+                        width={60}
+                      >
                         <FontAwesome name="send" size={24} color="white" />
                       </AwesomeButton>
                     </View>

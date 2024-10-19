@@ -10,6 +10,7 @@ from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QFontMetrics, QIcon
 from PyQt5.QtWidgets import *
 
+# TODO: Make the app work when there is no connection
 # TODO: Try to change the maximize button behavior and icon
 # TODO: Display link metadata
 # TODO: Add note to links
@@ -426,6 +427,25 @@ class Ui_MainWindow(QObject):
         port_layout.addWidget(self.port_edit)
         layout.addLayout(port_layout)
 
+        token_label = QLabel("Notificatoin token")
+        self.token_edit = QPlainTextEdit("Get token from ClipWarp app")
+        self.token_edit.setFixedHeight(26)
+        self.token_edit.setFixedWidth(180)
+        self.token_edit.setStyleSheet(
+            """
+                QPlainTextEdit {
+                    background-color: #f0f0f0;
+                    color: #333;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                }
+            """
+        )
+        token_layout = QVBoxLayout()
+        token_layout.addWidget(token_label)
+        token_layout.addWidget(self.token_edit)
+        layout.addLayout(token_layout)
+
         reset_button = QPushButton("Reset Database")
         reset_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         reset_button.setStyleSheet(
@@ -467,7 +487,7 @@ class Ui_MainWindow(QObject):
 
         new_window.setLayout(layout)
         self.load_settings()
-        new_window.setFixedSize(200, 160)
+        new_window.setFixedSize(200, 200)
         new_window.exec_()
 
     def reset_db(self):
@@ -534,6 +554,7 @@ class Ui_MainWindow(QObject):
 
     def save_port(self):
         port = self.port_edit.toPlainText()
+        token = self.token_edit.toPlainText()
         if port.isdigit():
             dlg = QDialog()
             dlg.setFixedSize(340, 100)
@@ -596,9 +617,10 @@ class Ui_MainWindow(QObject):
                 if os.path.exists(setting_path):
                     settings = toml.load(setting_path)
                 settings["port"] = int(port)
+                settings["token"] = str(f"ExponentPushToken[{token}]")
                 with open(setting_path, "w") as f:
                     toml.dump(settings, f)
-                os._exit(1)
+                exit(1)
             print("Port saved successfully.")
         else:
             dlg = QDialog()
@@ -643,8 +665,13 @@ class Ui_MainWindow(QObject):
     def load_settings(self):
         if os.path.exists(setting_path):
             settings = toml.load(setting_path)
-            port = str(settings.get('port', ''))
+            port = str(settings.get("port", ""))
+            token = str(settings.get("token", ""))
             self.port_edit.setPlainText(port)
+            match = re.search(r"\[(.*?)\]", token)
+            if match:
+                extracted_token = match.group(1)
+                self.token_edit.setPlainText(extracted_token)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

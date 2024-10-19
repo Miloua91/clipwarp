@@ -14,3 +14,6 @@ Flask-Cors==4.0.2
 Flask-SocketIO==5.3.6
 gevent==24.2.1
 gevent-websocket==0.10.1
+toml==0.10.2
+exponent-server-sdk==2.1.0
+websocket-client==1.8.0

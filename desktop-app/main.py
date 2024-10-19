@@ -82,6 +82,7 @@ class MainWindow(QMainWindow):
 
     def show_msg(self, msg):
         notification = Notify()
+        notification.application_name = "ClipWarp"
         notification.title = msg[0]
         notification.message = msg[1]
         notification.icon = load_ico("cw.svg")
@@ -151,17 +152,26 @@ class MainWindow(QMainWindow):
 
     def stylesheet(self):
         return """
-                QPlainTextEdit, QMainWindow, QFrame, QLabel, QPushButton, VerticalTabWidget {
+                QPlainTextEdit, QMainWindow, QFrame, QLabel, QPushButton {
                     background-color: #333;
                     color: #FFF;
                 }
-                QPlainTextEdit, TabBar, QListWidget {
-                    background-color: #4d4d4d;
+                VerticalTabWidget {
+                    background-color: #333;
                     color: #FFF;
+                    border: none;
+                }
+                QPlainTextEdit,TabBar, QListWidget {
+                    background-color: #4d4d4d;
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 4px;
                 }
                 TabBar::tab {
-                    width: 32px;
-                    height: 158px; 
+                    height: 32px;
+                    width: 158px; 
+                    background-color: #424242;
                 }
                 QTabBar::tab:selected {
                     width: 158px;

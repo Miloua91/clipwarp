@@ -9,7 +9,7 @@ from exponent_server_sdk import (
     PushServerError,
     PushTicketError,
 )
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, QThread, pyqtSignal
 from requests.exceptions import ConnectionError, HTTPError
 
 setting_path = os.path.join(
@@ -27,6 +27,13 @@ session.headers.update(
 
 
 class Push(QObject):
+    message_sent = pyqtSignal(str)
+    error_occurred = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.session = session
+
     def token(self):
         if os.path.exists(setting_path):
             try:
@@ -50,53 +57,36 @@ class Push(QObject):
             return "Server"
 
     def send_push_message(self, message, extra=None):
-        try:
-            response = PushClient(session=session).publish(
-                PushMessage(
-                    to=self.token(),
-                    category="default",
-                    title=self.title(),
-                    body=message,
-                    data=extra,
+        if self.token():
+            try:
+                response = PushClient(session=self.session).publish(
+                    PushMessage(
+                        to=self.token(),
+                        category="default",
+                        title=self.title(),
+                        body=message,
+                        data=extra,
+                    )
                 )
-            )
-        except PushServerError as exc:
-            rollbar.report_exc_info(
-                extra_data={
-                    "token": self.token(),
-                    "title": self.title(),
-                    "message": message,
-                    "extra": extra,
-                    "errors": exc.errors,
-                    "response_data": exc.response_data,
-                }
-            )
-            raise
-        except (ConnectionError, HTTPError) as exc:
-            rollbar.report_exc_info(
-                extra_data={
-                    "token": self.token(),
-                    "title": self.title(),
-                    "message": message,
-                    "extra": extra,
-                }
-            )
-            raise self.retry(exc=exc)
+                response.validate_response()
+                self.message_sent.emit("Message sent successfully.")
+            except DeviceNotRegisteredError:
+                self.error_occurred.emit("The push token is no longer registered.")
+            except (PushServerError, ConnectionError, HTTPError) as exc:
+                self.error_occurred.emit(f"Error occurred: {str(exc)}")
 
+
+class PushThread(QThread):
+    finished_signal = pyqtSignal()
+
+    def __init__(self, msg, push_obj):
+        super().__init__()
+        self.msg = msg
+        self.push_obj = push_obj
+
+    def run(self):
         try:
-            response.validate_response()
-        except DeviceNotRegisteredError:
-            from notifications.models import PushToken
-
-            PushToken.objects.filter(token=token).update(active=False)
-        except PushTicketError as exc:
-            rollbar.report_exc_info(
-                extra_data={
-                    "token": self.token(),
-                    "title": self.title(),
-                    "message": message,
-                    "extra": extra,
-                    "push_response": exc.push_response._asdict(),
-                }
-            )
-            raise self.retry(exc=exc)
+            self.push_obj.send_push_message(self.msg)
+            self.finished_signal.emit()
+        except Exception as e:
+            print(f"Error sending notification: {e}")

@@ -9,7 +9,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
 
-from pushnotif import Push
+from pushnotif import Push, PushThread
 
 setting_path = os.path.join(
     os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.toml"
@@ -113,12 +113,19 @@ class Chat(QObject):
 
     def on_button_click(self):
         message = self.ui.plainTextEdit.toPlainText()
-        if message != "":
+        if message:
             self.push = Push()
+            self.push_thread = PushThread(message, self.push)
+            self.push_thread.finished_signal.connect(self.cleanup_push_thread)
+            self.push_thread.start()
             self.message_signal.emit(message)
-            self.push.send_push_message(message)
             self.ui.plainTextEdit.setPlainText("")
             self.fetch_clips()
+
+    def cleanup_push_thread(self):
+        self.push_thread.quit()
+        self.push_thread.wait()
+        self.push_thread = None
 
     def paste_text(self):
         text_edit = self.ui.plainTextEdit

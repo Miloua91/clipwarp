@@ -53,7 +53,8 @@ import {
 } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Snackbar, Button } from "react-native-paper";
+import { Snackbar } from "react-native-paper";
+import { ThemeProvider, useTheme } from "./ThemeContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -84,9 +85,6 @@ interface ClipDb {
   date: string;
 }
 
-const bgColor = "#252422";
-const cardColor = "#403d39";
-
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -99,7 +97,7 @@ const deviceLanguage = getLocales()?.[0]?.languageCode;
 
 NavigationBar.setBackgroundColorAsync("#000");
 
-export default function App() {
+function App() {
   /*
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent({
     debug: true,
@@ -122,15 +120,24 @@ export default function App() {
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<Set<number | undefined>>(
-    new Set(),
+    new Set()
   );
   const [selectedItemsDb, setSelectedItemsDb] = useState<Set<number>>(
-    new Set(),
+    new Set()
   );
   const [edit, setEdit] = useState<boolean>(false);
   const [visibleBar, setVisibleBar] = useState<boolean>(false);
   const [deletedClip, setDeletedClip] = useState<Clip | null>(null);
   const [deletedClipDb, setDeletedClipDb] = useState<ClipDb | null>(null);
+  const { theme, toggleTheme, themes } = useTheme();
+  const {
+    bgColor,
+    cardBgColor,
+    cardSelectedBgColor,
+    textColor,
+    textSelectedColor,
+    textNonSelectedColor,
+  } = themes[theme];
 
   useEffect(() => {
     async function getAddress() {
@@ -163,7 +170,7 @@ export default function App() {
             Linking.openURL(clip);
           }
           await Notifications.dismissNotificationAsync(notificationId);
-        },
+        }
       );
 
     return () => {
@@ -182,7 +189,7 @@ export default function App() {
   const getClips = async () => {
     try {
       const response = await fetch(
-        `http://${wsAddress}:${(wsPort ?? 42069) + 1}/`,
+        `http://${wsAddress}:${(wsPort ?? 42069) + 1}/`
       );
       const data = await response.json();
       setClipsDb(data);
@@ -381,7 +388,7 @@ export default function App() {
           `http://${wsAddress}:${(wsPort ?? 42069) + 1}/delete/${clipId}`,
           {
             method: "DELETE",
-          },
+          }
         );
         if (!response.ok) {
           throw new Error("Failed to delete clip");
@@ -400,7 +407,7 @@ export default function App() {
         `http://${wsAddress}:${(wsPort ?? 42069) + 1}/reset`,
         {
           method: "POST",
-        },
+        }
       );
       if (!response.ok) {
         throw new Error("Failed to delete clips");
@@ -421,7 +428,7 @@ export default function App() {
     db.transaction((tx) => {
       tx.executeSql(
         "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
-        [],
+        []
       );
     });
 
@@ -456,7 +463,7 @@ export default function App() {
     db.transaction((tx) => {
       tx.executeSql(
         "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
-        [],
+        []
       );
     });
 
@@ -467,13 +474,13 @@ export default function App() {
   useEffect(() => {
     db.transaction((tx) => {
       tx.executeSql(
-        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
+        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)"
       );
     });
 
     db.transaction((tx) => {
       tx.executeSql("SELECT * FROM clips", [], (txObj, resultSet) =>
-        setVal(resultSet.rows._array),
+        setVal(resultSet.rows._array)
       );
     });
   }, [db]);
@@ -509,7 +516,7 @@ export default function App() {
             existingClips.push({ id: resultSet.insertId, clip: currentVal });
             setVal(existingClips);
             setCurrentVal(undefined);
-          },
+          }
         );
       });
     }
@@ -542,7 +549,7 @@ export default function App() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ clip: newText }),
-          },
+          }
         );
         if (!response.ok) {
           throw new Error("Failed to edit clip");
@@ -576,7 +583,7 @@ export default function App() {
                 inputRef.current.blur();
               }
             }
-          },
+          }
         );
       });
     }
@@ -598,7 +605,7 @@ export default function App() {
               setVal(existingClips);
               setVisibleBar(true);
             }
-          },
+          }
         );
       });
     } else {
@@ -632,7 +639,7 @@ export default function App() {
           (txObj, resultSet) => {
             setVal((prev) => [...prev, deletedClip]);
             setDeletedClip(null);
-          },
+          }
         );
       });
     } else {
@@ -686,7 +693,7 @@ export default function App() {
           return true;
         }
         return false;
-      },
+      }
     );
 
     return () => {
@@ -742,13 +749,13 @@ export default function App() {
           text: "No",
           style: "cancel",
         },
-      ],
+      ]
     );
   }
 
   const deleteClips = (ids: Set<number | undefined>) => {
     const idArray = Array.from(ids).filter(
-      (id): id is number => id !== undefined,
+      (id): id is number => id !== undefined
     );
     if (idArray.length === 0) return;
 
@@ -760,11 +767,11 @@ export default function App() {
         (txObj, resultSet) => {
           if (resultSet.rowsAffected > 0) {
             const existingClips = val.filter(
-              (clip) => !idArray.includes(clip.id as number),
+              (clip) => !idArray.includes(clip.id as number)
             );
             setVal(existingClips);
           }
-        },
+        }
       );
     });
   };
@@ -785,24 +792,33 @@ export default function App() {
       <View
         key={clip.id}
         className={`mb-2 py-2 rounded-xl min-w-full`}
-        style={isSelected ? styles.cardSelected : styles.card}
+        style={{
+          backgroundColor: isSelected ? cardSelectedBgColor : cardBgColor,
+        }}
       >
         <Pressable
           onLongPress={() => toggleSelection(clip.id)}
           delayLongPress={selectedItems.size >= 1 ? 1 : 500}
         >
           <View
-            className={`px-2 w-full ${isSelected ? "border-0" : "border-b pb-4"}  border-stone-600 my-1  flex flex-col`}
+            className={`px-2 w-full ${
+              isSelected ? "border-0" : "border-b pb-4"
+            }  border-stone-600 my-1  flex flex-col`}
           >
             <Text
-              className={`${isSelected ? "text-gray-900" : "text-gray-100"}  text-[16px]`}
+              className={`text-[16px]`}
+              style={{
+                color: isSelected ? textSelectedColor : textNonSelectedColor,
+              }}
             >
               {clip.clip}
             </Text>
           </View>
         </Pressable>
         <View
-          className={`${isSelected ? "hidden" : "flex"} flex-row justify-between py-2 px-3`}
+          className={`${
+            isSelected ? "hidden" : "flex"
+          } flex-row justify-between py-2 px-3`}
         >
           <Pressable
             onPress={() => {
@@ -811,13 +827,13 @@ export default function App() {
             }}
             className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
           >
-            <Feather name="copy" size={26} color="white" />
+            <Feather name="copy" size={26} color={textColor} />
           </Pressable>
           <Pressable
             onPress={() => clip.clip !== undefined && shareClip(clip.clip)}
             className="active:bg-stone-600 w-15 h-9 p-1 rounded"
           >
-            <Entypo name="share" size={26} color="white" />
+            <Entypo name="share" size={26} color={textColor} />
           </Pressable>
           <Pressable
             disabled={canOpenLink(clip.clip) ? false : true}
@@ -832,9 +848,11 @@ export default function App() {
           </Pressable>
           <Pressable
             onPress={() => clip.id !== undefined && deleteClip(clip.id)}
-            className={`active:bg-red-500 w-15 h-9 p-1 rounded ${deviceLanguage === "ar" ? "rotate-180" : ""}`}
+            className={`active:bg-red-500 w-15 h-9 p-1 rounded ${
+              deviceLanguage === "ar" ? "rotate-180" : ""
+            }`}
           >
-            <FontAwesome6 name="delete-left" size={28} color="white" />
+            <FontAwesome6 name="delete-left" size={28} color={textColor} />
           </Pressable>
         </View>
       </View>
@@ -889,7 +907,7 @@ export default function App() {
           text: "No",
           style: "cancel",
         },
-      ],
+      ]
     );
   }
 
@@ -910,30 +928,41 @@ export default function App() {
       <View
         key={clip.id}
         className={`mb-2 py-2 rounded-xl min-w-full`}
-        style={isSelected ? styles.cardSelected : styles.card}
+        style={{
+          backgroundColor: isSelected ? cardSelectedBgColor : cardBgColor,
+        }}
       >
         <Pressable
           onLongPress={() => toggleSelectionDb(clip.id)}
           delayLongPress={selectedItemsDb.size >= 1 ? 1 : 500}
         >
           <View
-            className={`px-2 w-full ${isSelected ? "border-0" : "border-b pb-4"}  border-stone-600 my-1  flex flex-col`}
+            className={`px-2 w-full ${
+              isSelected ? "border-0" : "border-b pb-4"
+            }  border-stone-600 my-1  flex flex-col`}
           >
             <Text
-              className={`${isSelected ? "text-gray-900" : "text-gray-100"}  text-[16px]`}
+              className={`text-[16px]`}
+              style={{
+                color: isSelected ? textSelectedColor : textNonSelectedColor,
+              }}
             >
               {clip.clips_text}
             </Text>
             <Text
               style={styles.text}
-              className={`${isSelected ? "text-gray-900" : "text-gray-100"}  text-[14px]`}
+              className={`${
+                isSelected ? "text-gray-900" : "text-gray-100"
+              }  text-[14px]`}
             >
               {clip?.date} {clip.date && "|"} {clip.user_name}
             </Text>
           </View>
         </Pressable>
         <View
-          className={`${isSelected ? "hidden" : "flex"} flex-row justify-between py-2 px-3`}
+          className={`${
+            isSelected ? "hidden" : "flex"
+          } flex-row justify-between py-2 px-3`}
         >
           <Pressable
             onPress={() => {
@@ -942,7 +971,7 @@ export default function App() {
             }}
             className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
           >
-            <Feather name="copy" size={26} color="white" />
+            <Feather name="copy" size={26} color={textColor} />
           </Pressable>
           <Pressable
             onPress={() =>
@@ -950,7 +979,7 @@ export default function App() {
             }
             className="active:bg-stone-600 w-15 h-9 p-1 rounded"
           >
-            <Entypo name="share" size={26} color="white" />
+            <Entypo name="share" size={26} color={textColor} />
           </Pressable>
           <Pressable
             disabled={canOpenLink(clip.clips_text) ? false : true}
@@ -967,9 +996,11 @@ export default function App() {
           </Pressable>
           <Pressable
             onPress={() => clip.id !== undefined && deleteClipsDb(clip.id)}
-            className={`active:bg-red-500 w-15 h-9 p-1 rounded ${deviceLanguage === "ar" ? "rotate-180" : ""}`}
+            className={`active:bg-red-500 w-15 h-9 p-1 rounded ${
+              deviceLanguage === "ar" ? "rotate-180" : ""
+            }`}
           >
-            <FontAwesome6 name="delete-left" size={28} color="white" />
+            <FontAwesome6 name="delete-left" size={28} color={textColor} />
           </Pressable>
         </View>
       </View>
@@ -1003,7 +1034,7 @@ export default function App() {
         onPress={handleCloseModalPress}
       />
     ),
-    [],
+    []
   );
 
   const settingModal = () => {
@@ -1021,37 +1052,77 @@ export default function App() {
               backgroundColor: bgColor,
               borderRadius: 10,
             }}
-            handleIndicatorStyle={{ backgroundColor: "white" }}
+            handleIndicatorStyle={{ backgroundColor: textColor}}
             onDismiss={() => setSetting(false)}
             backdropComponent={renderBackdrop}
           >
             <BottomSheetView style={styles.contentContainer}>
               <View
                 className="flex flex-row justify-start px-2 py-[2px] w-full"
-                style={styles.background}
+                style={{ backgroundColor: bgColor }}
               >
                 <Pressable
                   onPress={handleCloseModalPress}
                   className="active:bg-stone-600 w-10 h-10 px-[10px] py-[4px] rounded absolute mx-2"
                 >
-                  <FontAwesome name={"angle-down"} size={32} color="white" />
+                  <FontAwesome
+                    name={"angle-down"}
+                    size={32}
+                    color={textColor}
+                  />
                 </Pressable>
-                <Text className="m-auto text-xl font-semibold pb-6 text-white">
+                <Text
+                  className="m-auto text-xl font-semibold pb-6"
+                  style={{ color: textColor }}
+                >
                   {i18n.t("settings")}
                 </Text>
               </View>
               <View
-                style={styles.background}
+                style={{ backgroundColor: bgColor }}
                 className="w-full flex items-center space-y-8 h-full px-6"
               >
                 <View className="w-full">
                   <WS />
                 </View>
                 <View
-                  style={styles.card}
+                  className="space-y-4"
+                  style={{ backgroundColor: cardBgColor }}
+                >
+                  <View
+                    className={`border rounded-xl h-20 w-full p-2 flex flex-row justify-between items-center m-auto`}
+                  >
+                    <Text
+                      className={`text-lg w-[70%]`}
+                      style={{ color: textColor }}
+                    >
+                      {i18n.t("changeTheme")}
+                    </Text>
+                    <Pressable onPress={toggleTheme}>
+                      {theme === "light" ? (
+                        <MaterialIcons
+                          name="dark-mode"
+                          size={32}
+                          color="black"
+                        />
+                      ) : (
+                        <MaterialIcons
+                          name="light-mode"
+                          size={32}
+                          color="white"
+                        />
+                      )}
+                    </Pressable>
+                  </View>
+                </View>
+                <View
+                  style={{ backgroundColor: cardBgColor }}
                   className={`border rounded-xl h-20 w-full p-2 flex flex-row justify-between items-center m-auto`}
                 >
-                  <Text className="text-lg text-white  w-[70%]">
+                  <Text
+                    className="text-lg w-[70%]"
+                    style={{ color: textColor }}
+                  >
                     {i18n.t("resetDb")}
                   </Text>
                   <ThemedButton
@@ -1090,27 +1161,36 @@ export default function App() {
         <View className="h-full w-full">
           <View
             className="flex flex-row justify-between items-center h-12"
-            style={styles.background}
+            style={{ backgroundColor: bgColor }}
           >
             <View
-              className={`w-3 h-3 m-5 rounded-full ${connection ? "bg-green-500" : "bg-red-500"}`}
+              className={`w-3 h-3 m-5 rounded-full ${
+                connection ? "bg-green-500" : "bg-red-500"
+              }`}
             />
             <Pressable
               className="h-12 w-12 p-2 mx-1 my-4 active:bg-stone-600 rounded-lg"
               onPress={handleSettingPress}
             >
-              <Ionicons name="settings-sharp" size={32} color="white" />
+              <Ionicons name="settings-sharp" size={32} color={textColor} />
             </Pressable>
           </View>
-          <View style={styles.container} className="pt-4">
+          <View
+            style={[styles.container, { backgroundColor: bgColor }]}
+            className="pt-4"
+          >
             <TextInput
               ref={inputRef}
-              className="w-[97%] rounded-lg h-16 text-center text-[16px] text-white"
+              className="w-[97%] rounded-lg h-16 text-center text-[16px]"
               multiline
               value={currentVal}
               placeholder="ClipWarp"
               onChangeText={setCurrentVal}
-              style={styles.card}
+              placeholderTextColor={textColor}
+              style={{
+                backgroundColor: cardBgColor,
+                color: textColor,
+              }}
             />
             <View className="flex flex-row my-4 w-[96%] justify-between">
               <ThemedButton
@@ -1133,7 +1213,7 @@ export default function App() {
             </View>
             <View className="border-b border-stone-500 w-[97%] my-2" />
           </View>
-          <View style={[styles.contentContainer, styles.background]}>
+          <View style={[styles.contentContainer, { backgroundColor: bgColor }]}>
             {loading ? (
               <>
                 <Skeleton />
@@ -1153,11 +1233,13 @@ export default function App() {
                     {edit ? (
                       <Pressable
                         disabled={selectedItemsDb.size !== 1}
-                        className={`${selectedItemsDb.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-[13.7px] rounded-lg`}
+                        className={`${
+                          selectedItemsDb.size !== 1 ? "hidden" : "flex"
+                        } border-2 bg-sky-200 py-2 px-[13.7px] rounded-lg`}
                         onPress={() =>
                           editClip(
                             Array.from(selectedItemsDb)[0] as number,
-                            currentVal as string,
+                            currentVal as string
                           )
                         }
                       >
@@ -1166,7 +1248,9 @@ export default function App() {
                     ) : (
                       <Pressable
                         disabled={selectedItemsDb.size !== 1}
-                        className={`${selectedItemsDb.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        className={`${
+                          selectedItemsDb.size !== 1 ? "hidden" : "flex"
+                        } border-2 bg-sky-200 py-2 px-4 rounded-lg`}
                         onPress={() =>
                           clipEdit(Array.from(selectedItemsDb)[0] as number)
                         }
@@ -1207,7 +1291,9 @@ export default function App() {
                   data={reversedClipsDb}
                   renderItem={showClipsBd}
                   keyExtractor={(clip) => clip.id.toString()}
-                  style={styles.background}
+                  style={{
+                    backgroundColor: bgColor,
+                  }}
                   contentContainerStyle={{
                     alignItems: "center",
                   }}
@@ -1227,11 +1313,13 @@ export default function App() {
                     {edit ? (
                       <Pressable
                         disabled={selectedItems.size !== 1}
-                        className={`${selectedItems.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        className={`${
+                          selectedItems.size !== 1 ? "hidden" : "flex"
+                        } border-2 bg-sky-200 py-2 px-4 rounded-lg`}
                         onPress={() =>
                           editClip(
                             Array.from(selectedItems)[0] as number,
-                            currentVal as string,
+                            currentVal as string
                           )
                         }
                       >
@@ -1240,7 +1328,9 @@ export default function App() {
                     ) : (
                       <Pressable
                         disabled={selectedItems.size !== 1}
-                        className={`${selectedItems.size !== 1 ? "hidden" : "flex"} border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        className={`${
+                          selectedItems.size !== 1 ? "hidden" : "flex"
+                        } border-2 bg-sky-200 py-2 px-4 rounded-lg`}
                         onPress={() =>
                           clipEdit(Array.from(selectedItems)[0] as number)
                         }
@@ -1278,7 +1368,9 @@ export default function App() {
                   keyExtractor={(clip) =>
                     clip.id ? clip.id.toString() : Math.random().toString()
                   }
-                  style={styles.background}
+                  style={{
+                    backgroundColor: bgColor,
+                  }}
                   contentContainerStyle={{
                     alignItems: "center",
                   }}
@@ -1307,10 +1399,8 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: `${bgColor}`,
     alignItems: "center",
     justifyContent: "center",
-    color: "#fff",
   },
   row: {
     flexDirection: "row",
@@ -1323,16 +1413,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
   },
-  card: {
-    backgroundColor: `${cardColor}`,
-  },
-  cardSelected: {
-    backgroundColor: `#c2c2c2`,
-  },
-  background: {
-    backgroundColor: `${bgColor}`,
-  },
   text: {
     textAlign: "right",
   },
 });
+
+export default function Main() {
+  return (
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  );
+}

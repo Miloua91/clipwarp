@@ -3,11 +3,12 @@ import os
 import socket
 import ssl
 
+import toml
 import websockets
 from PyQt5.QtCore import QObject, pyqtSignal
 
 setting_path = os.path.join(
-    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.toml"
 )
 
 
@@ -16,9 +17,8 @@ class Client(QObject):
 
     def load_port(self):
         if os.path.exists(setting_path):
-            with open(setting_path, "r") as f:
-                port = f.read()
-                return port
+            settings = toml.load(setting_path)
+            return settings.get("port", 42069)
         else:
             return 42069
 

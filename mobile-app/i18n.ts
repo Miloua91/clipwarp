@@ -37,6 +37,7 @@ export const i18n = new I18n({
     deleteItemMessage: "Do you want to delete this clip?",
     deleteItems: "Delete Clips",
     deleteItemsMessage: "Do you want to delete these clips?",
+    notif: "Notification token",
   },
   fr: {
     Send: "Envoyer",

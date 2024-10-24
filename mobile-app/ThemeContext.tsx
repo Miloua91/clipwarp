@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, ReactNode } from "react";
 import { useColorScheme } from "nativewind";
 type Theme = "light" | "dark";

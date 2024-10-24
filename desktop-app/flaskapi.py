@@ -1,6 +1,7 @@
 import os
 import sqlite3
 
+import toml
 from engineio.async_drivers import gevent
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -8,7 +9,7 @@ from flask_socketio import SocketIO, emit
 from PyQt5.QtCore import QObject
 
 setting_path = os.path.join(
-    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.txt"
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.toml"
 )
 
 db_path = os.path.join(
@@ -30,6 +31,12 @@ class FlaskAPI(QObject):
             methods=["PUT"],
         )
         self.app.add_url_rule(
+            "/noti",
+            "noti",
+            self.notification,
+            methods=["POST"],
+        )
+        self.app.add_url_rule(
             "/delete/<int:clip_id>",
             "delete_clip",
             self.delete_clip,
@@ -44,9 +51,9 @@ class FlaskAPI(QObject):
 
     def load_port(self):
         if os.path.exists(setting_path):
-            with open(setting_path, "r") as f:
-                port = f.read()
-                return int(port) + 1
+            settings = toml.load(setting_path)
+            port = settings.get("port", 42069)
+            return int(port) + 1
         else:
             return 42070
 
@@ -63,7 +70,7 @@ class FlaskAPI(QObject):
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT clips.id, clips.clips_text, clips.user_id, users.name, createdAt
+            SELECT clips.id, clips.clips_text, clips.user_id, users.name, is_seen, createdAt
             FROM clips
             JOIN users ON clips.user_id = users.id
         """
@@ -78,6 +85,7 @@ class FlaskAPI(QObject):
                 "user_id": clip["user_id"],
                 "user_name": clip["name"],
                 "date": clip["createdAt"],
+                "is_seen": clip["is_seen"],
             }
             for clip in clips
         ]
@@ -137,3 +145,38 @@ class FlaskAPI(QObject):
         self.socketio.emit("reset")
 
         return jsonify({"message": "Database reset successfully"}), 200
+
+    def notification(self):
+        data = request.get_json()
+
+        if "ids" not in data:
+            return jsonify({"error": "Ids are required"}), 400
+
+        clip_ids = data["ids"]
+
+        if not clip_ids:
+            return (
+                jsonify({"error": "Id list cannot be empty"}),
+                400,
+            )
+
+        conn = self.get_db_connection()
+        cursor = conn.cursor()
+
+        placeholders = ", ".join("?" for _ in clip_ids)
+
+        cursor.execute(
+            f"UPDATE clips SET is_seen = ? WHERE id IN ({placeholders})",
+            (True, *clip_ids),
+        )
+
+        conn.commit()
+        conn.close()
+
+        if self.socketio:
+            self.socketio.emit("edit")
+
+        return (
+            jsonify({"message": "Notifications updated successfully"}),
+            200,
+        )

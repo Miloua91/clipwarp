@@ -59,6 +59,7 @@ class Database(QObject):
           id INTEGER PRIMARY KEY AUTOINCREMENT, 
           clips_text TEXT NOT NULL, 
           user_id INTEGER NOT NULL, 
+          is_seen BOOLEAN DEFAULT FALSE,
           createdAt DATETIME DEFAULT CURRENT_TIMESTAMP, 
           FOREIGN KEY (user_id) REFERENCES users (id)
         );

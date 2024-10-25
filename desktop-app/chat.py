@@ -123,9 +123,10 @@ class Chat(QObject):
             self.fetch_clips()
 
     def cleanup_push_thread(self):
-        self.push_thread.quit()
-        self.push_thread.wait()
-        self.push_thread = None
+        if self.push_thread is not None:
+            self.push_thread.quit()
+            self.push_thread.wait()
+            self.push_thread = None
 
     def paste_text(self):
         text_edit = self.ui.plainTextEdit

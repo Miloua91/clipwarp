@@ -94,8 +94,6 @@ Notifications.setNotificationHandler(null);
 
 const deviceLanguage = getLocales()?.[0]?.languageCode;
 
-NavigationBar.setBackgroundColorAsync("#000");
-
 function App() {
   /*
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent({
@@ -118,14 +116,14 @@ function App() {
   const [appStateVisible, setAppStateVisible] = useState(appState.current);
   const [expoPushToken, setExpoPushToken] = useState("");
   const [channels, setChannels] = useState<Notifications.NotificationChannel[]>(
-    []
+    [],
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedItems, setSelectedItems] = useState<Set<number | undefined>>(
-    new Set()
+    new Set(),
   );
   const [selectedItemsDb, setSelectedItemsDb] = useState<Set<number>>(
-    new Set()
+    new Set(),
   );
   const [edit, setEdit] = useState<boolean>(false);
   const [visibleBar, setVisibleBar] = useState<boolean>(false);
@@ -141,16 +139,18 @@ function App() {
     textNonSelectedColor,
   } = themes[theme];
 
+  NavigationBar.setBackgroundColorAsync(textColor);
+
   useEffect(() => {
     let isMounted = true;
 
     registerForPushNotificationsAsync().then(
-      (token) => token && setExpoPushToken(token)
+      (token) => token && setExpoPushToken(token),
     );
 
     if (Platform.OS === "android") {
       Notifications.getNotificationChannelsAsync().then((value) =>
-        setChannels(value ?? [])
+        setChannels(value ?? []),
       );
     }
 
@@ -176,7 +176,7 @@ function App() {
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         handleNotificationResponse(response);
-      }
+      },
     );
 
     Notifications.getLastNotificationResponseAsync().then((response) => {
@@ -259,7 +259,7 @@ function App() {
   const getClips = async () => {
     try {
       const response = await fetch(
-        `http://${wsAddress}:${(wsPort ?? 42069) + 1}/`
+        `http://${wsAddress}:${(wsPort ?? 42069) + 1}/`,
       );
       const data = await response.json();
       setClipsDb(data);
@@ -407,7 +407,7 @@ function App() {
           `http://${wsAddress}:${(wsPort ?? 42069) + 1}/delete/${clipId}`,
           {
             method: "DELETE",
-          }
+          },
         );
         if (!response.ok) {
           throw new Error("Failed to delete clip");
@@ -426,7 +426,7 @@ function App() {
         `http://${wsAddress}:${(wsPort ?? 42069) + 1}/reset`,
         {
           method: "POST",
-        }
+        },
       );
       if (!response.ok) {
         throw new Error("Failed to delete clips");
@@ -447,7 +447,7 @@ function App() {
     db.transaction((tx) => {
       tx.executeSql(
         "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
-        []
+        [],
       );
     });
 
@@ -482,7 +482,7 @@ function App() {
     db.transaction((tx) => {
       tx.executeSql(
         "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
-        []
+        [],
       );
     });
 
@@ -493,13 +493,13 @@ function App() {
   useEffect(() => {
     db.transaction((tx) => {
       tx.executeSql(
-        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)"
+        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
       );
     });
 
     db.transaction((tx) => {
       tx.executeSql("SELECT * FROM clips", [], (txObj, resultSet) =>
-        setVal(resultSet.rows._array)
+        setVal(resultSet.rows._array),
       );
     });
   }, [db]);
@@ -535,7 +535,7 @@ function App() {
             existingClips.push({ id: resultSet.insertId, clip: currentVal });
             setVal(existingClips);
             setCurrentVal(undefined);
-          }
+          },
         );
       });
     }
@@ -568,7 +568,7 @@ function App() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ clip: newText }),
-          }
+          },
         );
         if (!response.ok) {
           throw new Error("Failed to edit clip");
@@ -602,7 +602,7 @@ function App() {
                 inputRef.current.blur();
               }
             }
-          }
+          },
         );
       });
     }
@@ -624,7 +624,7 @@ function App() {
               setVal(existingClips);
               setVisibleBar(true);
             }
-          }
+          },
         );
       });
     } else {
@@ -658,7 +658,7 @@ function App() {
           (txObj, resultSet) => {
             setVal((prev) => [...prev, deletedClip]);
             setDeletedClip(null);
-          }
+          },
         );
       });
     } else {
@@ -712,7 +712,7 @@ function App() {
           return true;
         }
         return false;
-      }
+      },
     );
 
     return () => {
@@ -768,13 +768,13 @@ function App() {
           text: "No",
           style: "cancel",
         },
-      ]
+      ],
     );
   }
 
   const deleteClips = (ids: Set<number | undefined>) => {
     const idArray = Array.from(ids).filter(
-      (id): id is number => id !== undefined
+      (id): id is number => id !== undefined,
     );
     if (idArray.length === 0) return;
 
@@ -786,11 +786,11 @@ function App() {
         (txObj, resultSet) => {
           if (resultSet.rowsAffected > 0) {
             const existingClips = val.filter(
-              (clip) => !idArray.includes(clip.id as number)
+              (clip) => !idArray.includes(clip.id as number),
             );
             setVal(existingClips);
           }
-        }
+        },
       );
     });
   };
@@ -862,7 +862,7 @@ function App() {
             <MaterialIcons
               name="open-in-browser"
               size={32}
-              color={canOpenLink(clip.clip) ? "white" : "gray"}
+              color={canOpenLink(clip.clip) ? textColor : "gray"}
             />
           </Pressable>
           <Pressable
@@ -926,7 +926,7 @@ function App() {
           text: "No",
           style: "cancel",
         },
-      ]
+      ],
     );
   }
 
@@ -1053,7 +1053,7 @@ function App() {
         onPress={handleCloseModalPress}
       />
     ),
-    []
+    [],
   );
 
   function extractToken(str: string) {
@@ -1079,7 +1079,7 @@ function App() {
     } else if (!connection) {
       return ToastAndroid.show(
         "Connect to the desktop app to send the token",
-        ToastAndroid.CENTER
+        ToastAndroid.CENTER,
       );
     }
   };
@@ -1158,7 +1158,7 @@ function App() {
                       <AwesomeButton
                         onPress={() => sendToken(expoPushToken)}
                         width={60}
-                        backgroundColor={bgColor}
+                        backgroundColor={cardBgColor}
                       >
                         <FontAwesome name="send" size={24} color={textColor} />
                       </AwesomeButton>
@@ -1166,7 +1166,7 @@ function App() {
                   </View>
                   <View
                     style={{ backgroundColor: cardBgColor }}
-                    className={`border rounded-xl h-20 w-full p-2 flex flex-row justify-between items-center m-auto mb-4`}
+                    className={`border rounded-xl w-full px-2 py-[5px] flex flex-row justify-between items-center m-auto mb-4`}
                   >
                     <Text
                       className={`text-lg w-[70%]`}
@@ -1177,7 +1177,7 @@ function App() {
                     <AwesomeButton
                       onPress={toggleTheme}
                       width={60}
-                      backgroundColor={bgColor}
+                      backgroundColor={cardBgColor}
                     >
                       {theme === "light" ? (
                         <MaterialIcons
@@ -1319,7 +1319,7 @@ function App() {
                         onPress={() =>
                           editClip(
                             Array.from(selectedItemsDb)[0] as number,
-                            currentVal as string
+                            currentVal as string,
                           )
                         }
                       >
@@ -1399,7 +1399,7 @@ function App() {
                         onPress={() =>
                           editClip(
                             Array.from(selectedItems)[0] as number,
-                            currentVal as string
+                            currentVal as string,
                           )
                         }
                       >

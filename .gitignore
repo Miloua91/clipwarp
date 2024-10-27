@@ -36,6 +36,8 @@ yarn-error.*
 
 # local env files
 .env*.local
+mobile-app/firebase-creds.json
+#mobile-app/google-services.json
 
 # typescript
 *.tsbuildinfo

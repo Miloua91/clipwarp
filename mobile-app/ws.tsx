@@ -132,7 +132,7 @@ export function WS() {
           } mx-2`}
         >
           <AwesomeButton
-            backgroundColor={bgColor}
+            backgroundColor={cardBgColor}
             width={60}
             onPress={handleWsAddressChange}
           >
@@ -168,7 +168,7 @@ export function WS() {
           } mx-2`}
         >
           <AwesomeButton
-            backgroundColor={bgColor}
+            backgroundColor={cardBgColor}
             width={60}
             onPress={handleWsPortChange}
           >
@@ -207,7 +207,7 @@ export function WS() {
           } mx-2`}
         >
           <AwesomeButton
-            backgroundColor={bgColor}
+            backgroundColor={cardBgColor}
             width={60}
             onPress={saveDeviceName}
           >
@@ -225,6 +225,6 @@ export const webSocket = async () => {
   const getDevice = await AsyncStorage.getItem("device");
   const device = getDevice?.replace(/\s+/g, "-");
   return new WebSocket(
-    `ws://${wsAddress}:${wsPort ?? "42069"}/${device ?? "Phone"}`
+    `ws://${wsAddress}:${wsPort ?? "42069"}/${device ?? "Phone"}`,
   );
 };

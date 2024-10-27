@@ -12,9 +12,10 @@ import { getLocales } from "expo-localization";
 import {
   Entypo,
   FontAwesome6,
-  FontAwesome,
+  Feather,
   MaterialIcons,
 } from "@expo/vector-icons";
+import { ThemeProvider, useTheme } from "./ThemeContext";
 
 const deviceLanguage = getLocales()?.[0]?.languageCode;
 const bgColor = "#252422";
@@ -31,10 +32,12 @@ type SkeletonProps = {
 export const SkeletonLoader = ({
   width,
   height,
-  bgColor = "#eee",
   borderRadius = 8,
   style,
 }: SkeletonProps) => {
+  const { theme, themes } = useTheme();
+  const { cardSelectedBgColor } = themes[theme];
+
   const animation = useRef(new Animated.Value(0.5)).current;
 
   const startAnimation = useCallback(() => {
@@ -62,7 +65,7 @@ export const SkeletonLoader = ({
     opacity: animation,
     width,
     height,
-    backgroundColor: bgColor,
+    backgroundColor: cardSelectedBgColor,
     borderRadius,
   };
 
@@ -70,10 +73,12 @@ export const SkeletonLoader = ({
 };
 
 export function Skeleton() {
+  const { theme, themes } = useTheme();
+  const { cardBgColor, textColor } = themes[theme];
   return (
     <View
       className={`mb-2 w-[97%] py-2 rounded-xl bg-stone-800`}
-      style={styles.card}
+      style={{ backgroundColor: cardBgColor }}
     >
       <View className="px-2 w-full border-b border-stone-600 my-1 pb-4 flex flex-col">
         <SkeletonLoader width="100%" height={28} />
@@ -82,29 +87,29 @@ export function Skeleton() {
         </View>
       </View>
       <View className="flex flex-row justify-between py-2 px-3">
-        <Pressable className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded">
-          <FontAwesome name="clipboard" size={26} color="white" />
-        </Pressable>
-        <Pressable className="active:bg-stone-600 w-15 h-9 p-1 rounded">
-          <Entypo name="share" size={26} color="white" />
-        </Pressable>
-        <Pressable className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded">
-          <MaterialIcons name="open-in-browser" size={32} color="white" />
+        <Pressable
+          className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-[2rem] h-9 px-[5px] py-[5px] rounded`}
+        >
+          <Feather name="copy" size={26} color={textColor} />
         </Pressable>
         <Pressable
-          className={`active:bg-red-500 w-15 h-9 p-1 rounded ${deviceLanguage === "ar" ? "rotate-180" : ""}`}
+          className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-15 h-9 p-1 rounded`}
         >
-          <FontAwesome6 name="delete-left" size={28} color="white" />
+          <Entypo name="share" size={26} color={textColor} />
+        </Pressable>
+        <Pressable
+          className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-15 h-9 px-1 py-[2px] rounded`}
+        >
+          <MaterialIcons name="open-in-browser" size={32} color={textColor} />
+        </Pressable>
+        <Pressable
+          className={`${theme === "light" ? "active:bg-red-400" : "active:bg-red-500"} w-15 h-9 p-1 rounded ${
+            deviceLanguage === "ar" ? "rotate-180" : ""
+          }`}
+        >
+          <FontAwesome6 name="delete-left" size={28} color={textColor} />
         </Pressable>
       </View>
     </View>
   );
 }
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: `${cardColor}`,
-  },
-  text: {
-    textAlign: "right",
-  },
-});

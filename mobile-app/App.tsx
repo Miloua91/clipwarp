@@ -139,7 +139,7 @@ function App() {
     textNonSelectedColor,
   } = themes[theme];
 
-  NavigationBar.setBackgroundColorAsync(textColor);
+  NavigationBar.setBackgroundColorAsync(bgColor);
 
   useEffect(() => {
     let isMounted = true;
@@ -396,7 +396,7 @@ function App() {
     ws();
   }, [connection]);
 
-  async function deleteClipsDb(clipId: number) {
+  async function deleteClipDb(clipId: number) {
     const clipToDelete = clipsDb.find((clip) => clip.id === clipId);
 
     if (clipToDelete) {
@@ -414,6 +414,27 @@ function App() {
         }
         await getClips();
         setVisibleBar(true);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
+  async function deleteClipsDb(clipId: number) {
+    const clipToDelete = clipsDb.find((clip) => clip.id === clipId);
+
+    if (clipToDelete) {
+      try {
+        const response = await fetch(
+          `http://${wsAddress}:${(wsPort ?? 42069) + 1}/delete/${clipId}`,
+          {
+            method: "DELETE",
+          },
+        );
+        if (!response.ok) {
+          throw new Error("Failed to delete clip");
+        }
+        await getClips();
       } catch (error) {
         console.error(error);
       }
@@ -718,7 +739,7 @@ function App() {
     return () => {
       backHandler.remove();
     };
-  }, [hasSelectedItems, hasSelectedItemsDb]);
+  }, [hasSelectedItems, hasSelectedItemsDb, setting]);
 
   const toggleSelection = (id: number | undefined) => {
     setSelectedItems((prev) => {
@@ -844,20 +865,20 @@ function App() {
               Clipboard.setStringAsync(clip.clip);
               ToastAndroid.show("Text copied to clipboard", ToastAndroid.SHORT);
             }}
-            className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-[2rem] h-9 px-[5px] py-[5px] rounded`}
           >
             <Feather name="copy" size={26} color={textColor} />
           </Pressable>
           <Pressable
             onPress={() => clip.clip !== undefined && shareClip(clip.clip)}
-            className="active:bg-stone-600 w-15 h-9 p-1 rounded"
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-15 h-9 p-1 rounded`}
           >
             <Entypo name="share" size={26} color={textColor} />
           </Pressable>
           <Pressable
             disabled={canOpenLink(clip.clip) ? false : true}
             onPress={() => clip.clip !== undefined && openLink(clip.clip)}
-            className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded"
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-15 h-9 px-1 py-[2px] rounded`}
           >
             <MaterialIcons
               name="open-in-browser"
@@ -867,7 +888,7 @@ function App() {
           </Pressable>
           <Pressable
             onPress={() => clip.id !== undefined && deleteClip(clip.id)}
-            className={`active:bg-red-500 w-15 h-9 p-1 rounded ${
+            className={`${theme === "light" ? "active:bg-red-400" : "active:bg-red-500"} w-15 h-9 p-1 rounded ${
               deviceLanguage === "ar" ? "rotate-180" : ""
             }`}
           >
@@ -969,7 +990,10 @@ function App() {
               {clip.clips_text}
             </Text>
             <Text
-              style={styles.text}
+              style={{
+                color: isSelected ? textSelectedColor : textNonSelectedColor,
+                textAlign: "right",
+              }}
               className={`${
                 isSelected ? "text-gray-900" : "text-gray-100"
               }  text-[14px]`}
@@ -988,7 +1012,7 @@ function App() {
               Clipboard.setStringAsync(clip.clips_text);
               ToastAndroid.show("Text copied to clipboard", ToastAndroid.SHORT);
             }}
-            className="active:bg-stone-600 w-[2rem] h-9 p-1 rounded"
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-[2rem] h-9 p-1 rounded`}
           >
             <Feather name="copy" size={26} color={textColor} />
           </Pressable>
@@ -996,7 +1020,7 @@ function App() {
             onPress={() =>
               clip.clips_text !== undefined && shareClip(clip.clips_text)
             }
-            className="active:bg-stone-600 w-15 h-9 p-1 rounded"
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-15 h-9 p-1 rounded`}
           >
             <Entypo name="share" size={26} color={textColor} />
           </Pressable>
@@ -1005,17 +1029,17 @@ function App() {
             onPress={() =>
               clip.clips_text !== undefined && openLink(clip.clips_text)
             }
-            className="active:bg-stone-600 w-15 h-9 px-1 py-[2px] rounded"
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-[2rem] h-9 px-1 py-[2px] rounded`}
           >
             <MaterialIcons
               name="open-in-browser"
               size={32}
-              color={canOpenLink(clip.clips_text) ? "white" : "gray"}
+              color={canOpenLink(clip.clips_text) ? textColor : "gray"}
             />
           </Pressable>
           <Pressable
-            onPress={() => clip.id !== undefined && deleteClipsDb(clip.id)}
-            className={`active:bg-red-500 w-15 h-9 p-1 rounded ${
+            onPress={() => clip.id !== undefined && deleteClipDb(clip.id)}
+            className={`${theme === "light" ? "active:bg-red-400" : "active:bg-red-500"} w-15 h-9 p-1 rounded ${
               deviceLanguage === "ar" ? "rotate-180" : ""
             }`}
           >
@@ -1110,7 +1134,7 @@ function App() {
               >
                 <Pressable
                   onPress={handleCloseModalPress}
-                  className="active:bg-stone-600 w-10 h-10 px-[10px] py-[4px] rounded absolute mx-2"
+                  className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-10 h-10 px-[10px] py-[4px] rounded absolute mx-2`}
                 >
                   <FontAwesome
                     name={"angle-down"}
@@ -1166,7 +1190,7 @@ function App() {
                   </View>
                   <View
                     style={{ backgroundColor: cardBgColor }}
-                    className={`border rounded-xl w-full px-2 py-[5px] flex flex-row justify-between items-center m-auto mb-4`}
+                    className={`border rounded-xl w-full px-2 pb-[5px] flex flex-row justify-between items-center m-auto mb-4`}
                   >
                     <Text
                       className={`text-lg w-[70%]`}
@@ -1236,7 +1260,10 @@ function App() {
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaView>
-          <StatusBar backgroundColor={`${bgColor}`} />
+          <StatusBar
+            barStyle={theme === "light" ? "dark-content" : "light-content"}
+            backgroundColor={`${bgColor}`}
+          />
         </SafeAreaView>
         <View className="h-full w-full">
           <View
@@ -1249,7 +1276,7 @@ function App() {
               }`}
             />
             <Pressable
-              className="h-12 w-12 p-2 mx-1 my-4 active:bg-stone-600 rounded-lg"
+              className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} h-12 w-12 p-2 mx-1 my-4  rounded-lg`}
               onPress={handleSettingPress}
             >
               <Ionicons name="settings-sharp" size={32} color={textColor} />
@@ -1464,7 +1491,7 @@ function App() {
         <Snackbar
           visible={visibleBar}
           onDismiss={onDismissSnackBar}
-          duration={3000} // 3 seconds duration for the user to undo
+          duration={3000}
           action={{
             label: "Undo",
             onPress: undoDelete,
@@ -1492,9 +1519,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     alignItems: "center",
-  },
-  text: {
-    textAlign: "right",
   },
 });
 

@@ -15,6 +15,7 @@ import {
   BackHandler,
   Platform,
 } from "react-native";
+import "./global.css";
 import * as Clipboard from "expo-clipboard";
 import * as SQLite from "expo-sqlite/legacy";
 import AwesomeButton, {
@@ -865,20 +866,20 @@ function App() {
               Clipboard.setStringAsync(clip.clip);
               ToastAndroid.show("Text copied to clipboard", ToastAndroid.SHORT);
             }}
-            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-[2rem] h-9 px-[5px] py-[5px] rounded`}
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} h-10 w-10 justify-center items-center rounded`}
           >
             <Feather name="copy" size={26} color={textColor} />
           </Pressable>
           <Pressable
             onPress={() => clip.clip !== undefined && shareClip(clip.clip)}
-            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-15 h-9 p-1 rounded`}
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} h-10 w-10 justify-center items-center rounded`}
           >
             <Entypo name="share" size={26} color={textColor} />
           </Pressable>
           <Pressable
             disabled={canOpenLink(clip.clip) ? false : true}
             onPress={() => clip.clip !== undefined && openLink(clip.clip)}
-            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-15 h-9 px-1 py-[2px] rounded`}
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} h-10 w-10 justify-center items-center rounded`}
           >
             <MaterialIcons
               name="open-in-browser"
@@ -888,11 +889,11 @@ function App() {
           </Pressable>
           <Pressable
             onPress={() => clip.id !== undefined && deleteClip(clip.id)}
-            className={`${theme === "light" ? "active:bg-red-400" : "active:bg-red-500"} w-15 h-9 p-1 rounded ${
+            className={`${theme === "light" ? "active:bg-red-400" : "active:bg-red-500"} h-10 w-12 justify-center items-center rounded ${
               deviceLanguage === "ar" ? "rotate-180" : ""
             }`}
           >
-            <FontAwesome6 name="delete-left" size={28} color={textColor} />
+            <FontAwesome6 name="delete-left" size={26} color={textColor} />
           </Pressable>
         </View>
       </View>
@@ -1012,7 +1013,7 @@ function App() {
               Clipboard.setStringAsync(clip.clips_text);
               ToastAndroid.show("Text copied to clipboard", ToastAndroid.SHORT);
             }}
-            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-[2rem] h-9 p-1 rounded`}
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} h-10 w-10 justify-center items-center rounded`}
           >
             <Feather name="copy" size={26} color={textColor} />
           </Pressable>
@@ -1020,7 +1021,7 @@ function App() {
             onPress={() =>
               clip.clips_text !== undefined && shareClip(clip.clips_text)
             }
-            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-15 h-9 p-1 rounded`}
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} h-10 w-10 justify-center items-center rounded`}
           >
             <Entypo name="share" size={26} color={textColor} />
           </Pressable>
@@ -1029,7 +1030,7 @@ function App() {
             onPress={() =>
               clip.clips_text !== undefined && openLink(clip.clips_text)
             }
-            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-[2rem] h-9 px-1 py-[2px] rounded`}
+            className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} h-10 w-10 justify-center items-center rounded`}
           >
             <MaterialIcons
               name="open-in-browser"
@@ -1039,11 +1040,11 @@ function App() {
           </Pressable>
           <Pressable
             onPress={() => clip.id !== undefined && deleteClipDb(clip.id)}
-            className={`${theme === "light" ? "active:bg-red-400" : "active:bg-red-500"} w-15 h-9 p-1 rounded ${
+            className={`${theme === "light" ? "active:bg-red-400" : "active:bg-red-500"} h-10 w-12 justify-center items-center rounded ${
               deviceLanguage === "ar" ? "rotate-180" : ""
             }`}
           >
-            <FontAwesome6 name="delete-left" size={28} color={textColor} />
+            <FontAwesome6 name="delete-left" size={26} color={textColor} />
           </Pressable>
         </View>
       </View>
@@ -1134,7 +1135,7 @@ function App() {
               >
                 <Pressable
                   onPress={handleCloseModalPress}
-                  className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-10 h-10 px-[10px] py-[4px] rounded absolute mx-2`}
+                  className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} w-10 h-10 justify-center items-center rounded absolute mx-2`}
                 >
                   <FontAwesome
                     name={"angle-down"}
@@ -1143,7 +1144,7 @@ function App() {
                   />
                 </Pressable>
                 <Text
-                  className="m-auto text-xl font-semibold pb-6"
+                  className="m-auto text-xl font-semibold pb-4"
                   style={{ color: textColor }}
                 >
                   {i18n.t("settings")}
@@ -1157,7 +1158,7 @@ function App() {
                   <WS />
 
                   <View
-                    className="space-x-1 mb-4 border rounded-xl"
+                    className="space-x-1 mb-4 h-20 justify-center border rounded-xl"
                     style={{ backgroundColor: cardBgColor }}
                   >
                     <Text
@@ -1167,17 +1168,17 @@ function App() {
                       {i18n.t("notif")}
                     </Text>
                     <Text
-                      className={`${
-                        deviceLanguage === "ar" ? "pr-4 text-right" : "pl-4"
-                      } w-full text-lg m-1 bottom-2`}
+                      className={`text-lg ${
+                        deviceLanguage === "ar" ? "text-left" : "text-right"
+                      } mx-2 pb-2`}
                       style={{ color: textColor }}
                     >
                       {extractToken(expoPushToken)}
                     </Text>
                     <View
                       className={`absolute ${
-                        deviceLanguage === "ar" ? "right-2" : "right-0"
-                      } mx-2`}
+                        deviceLanguage === "ar" ? "right-0" : "right-0"
+                      } mx-2 pb-1`}
                     >
                       <AwesomeButton
                         onPress={() => sendToken(expoPushToken)}
@@ -1190,52 +1191,64 @@ function App() {
                   </View>
                   <View
                     style={{ backgroundColor: cardBgColor }}
-                    className={`border rounded-xl w-full px-2 pb-[5px] flex flex-row justify-between items-center m-auto mb-4`}
+                    className={`border rounded-xl w-full h-20 flex flex-row justify-between items-center m-auto mb-4`}
                   >
                     <Text
-                      className={`text-lg w-[70%]`}
+                      className={`mx-2 text-[16px] font-semibold py-1`}
                       style={{ color: textColor }}
                     >
                       {i18n.t("changeTheme")}
                     </Text>
-                    <AwesomeButton
-                      onPress={toggleTheme}
-                      width={60}
-                      backgroundColor={cardBgColor}
+                    <View
+                      className={`absolute ${
+                        deviceLanguage === "ar" ? "right-0" : "right-0"
+                      } mx-2 pb-1`}
                     >
-                      {theme === "light" ? (
-                        <MaterialIcons
-                          name="dark-mode"
-                          size={32}
-                          color="black"
-                        />
-                      ) : (
-                        <MaterialIcons
-                          name="light-mode"
-                          size={32}
-                          color="white"
-                        />
-                      )}
-                    </AwesomeButton>
+                      <AwesomeButton
+                        onPress={toggleTheme}
+                        width={60}
+                        backgroundColor={cardBgColor}
+                      >
+                        {theme === "light" ? (
+                          <MaterialIcons
+                            name="dark-mode"
+                            size={32}
+                            color="black"
+                          />
+                        ) : (
+                          <MaterialIcons
+                            name="light-mode"
+                            size={32}
+                            color="white"
+                          />
+                        )}
+                      </AwesomeButton>
+                    </View>
                   </View>
                   <View
                     style={{ backgroundColor: cardBgColor }}
-                    className={`border rounded-xl h-20 w-full p-2 flex flex-row justify-between items-center m-auto`}
+                    className={`border rounded-xl h-20 w-full flex flex-row justify-between items-center m-auto`}
                   >
                     <Text
-                      className="text-lg w-[70%]"
+                      className={`mx-2 text-[16px] font-semibold py-1`}
                       style={{ color: textColor }}
                     >
                       {i18n.t("resetDb")}
                     </Text>
-                    <ThemedButton
-                      width={75}
-                      name="bruce"
-                      type="danger"
-                      onPress={() => resetAlert()}
+                    <View
+                      className={`absolute ${
+                        deviceLanguage === "ar" ? "right-0" : "right-0"
+                      } mx-2 pb-1`}
                     >
-                      Reset
-                    </ThemedButton>
+                      <ThemedButton
+                        width={75}
+                        name="bruce"
+                        type="danger"
+                        onPress={() => resetAlert()}
+                      >
+                        Reset
+                      </ThemedButton>
+                    </View>
                   </View>
                 </View>
               </View>
@@ -1271,12 +1284,13 @@ function App() {
             style={{ backgroundColor: bgColor }}
           >
             <View
+              key={1}
               className={`w-3 h-3 m-5 rounded-full ${
                 connection ? "bg-green-500" : "bg-red-500"
               }`}
             />
             <Pressable
-              className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} h-12 w-12 p-2 mx-1 my-4  rounded-lg`}
+              className={`${theme === "light" ? "active:bg-stone-300" : "active:bg-stone-600"} h-12 w-12 px-[5px] py-[5px] mx-1 my-4 rounded-lg`}
               onPress={handleSettingPress}
             >
               <Ionicons name="settings-sharp" size={32} color={textColor} />
@@ -1333,7 +1347,7 @@ function App() {
                   <View className="flex flex-row justify-between w-full px-1 pb-2">
                     <Pressable
                       onPress={copySelectedItemsDb}
-                      className="border-2 bg-green-200 py-2 px-4 rounded-lg "
+                      className="border-2 bg-green-200 h-12 w-12 justify-center items-center rounded-lg "
                     >
                       <Foundation name="page-copy" size={26} color="black" />
                     </Pressable>
@@ -1342,7 +1356,7 @@ function App() {
                         disabled={selectedItemsDb.size !== 1}
                         className={`${
                           selectedItemsDb.size !== 1 ? "hidden" : "flex"
-                        } border-2 bg-sky-200 py-2 px-[13.7px] rounded-lg`}
+                        } border-2 bg-sky-200 h-12 w-12 justify-center items-center rounded-lg`}
                         onPress={() =>
                           editClip(
                             Array.from(selectedItemsDb)[0] as number,
@@ -1357,7 +1371,7 @@ function App() {
                         disabled={selectedItemsDb.size !== 1}
                         className={`${
                           selectedItemsDb.size !== 1 ? "hidden" : "flex"
-                        } border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        } border-2 bg-sky-200 h-12 w-12 justify-center items-center rounded-lg`}
                         onPress={() =>
                           clipEdit(Array.from(selectedItemsDb)[0] as number)
                         }
@@ -1368,13 +1382,13 @@ function App() {
 
                     <Pressable
                       onPress={deleteSelectedItemsAlertDb}
-                      className="border-2 bg-red-200 py-2 px-4 rounded-lg "
+                      className="border-2 bg-red-200 h-12 w-12 justify-center items-center rounded-lg "
                     >
                       <Foundation name="page-delete" size={26} color="black" />
                     </Pressable>
                     <Pressable
                       onPress={toggleSelectAllDb}
-                      className="border-2 bg-zinc-200 py-2 px-3 rounded-lg "
+                      className="border-2 bg-zinc-200 h-12 w-12 justify-center items-center rounded-lg "
                     >
                       <MaterialIcons
                         name={
@@ -1413,7 +1427,7 @@ function App() {
                   <View className="flex flex-row justify-between w-full px-1 pb-2">
                     <Pressable
                       onPress={copySelectedItems}
-                      className="border-2 bg-green-200 py-2 px-4 rounded-lg "
+                      className="border-2 bg-green-200 h-12 w-12 justify-center items-center rounded-lg "
                     >
                       <Foundation name="page-copy" size={26} color="black" />
                     </Pressable>
@@ -1422,7 +1436,7 @@ function App() {
                         disabled={selectedItems.size !== 1}
                         className={`${
                           selectedItems.size !== 1 ? "hidden" : "flex"
-                        } border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        } border-2 bg-sky-200 h-12 w-12 justify-center items-center rounded-lg`}
                         onPress={() =>
                           editClip(
                             Array.from(selectedItems)[0] as number,
@@ -1437,7 +1451,7 @@ function App() {
                         disabled={selectedItems.size !== 1}
                         className={`${
                           selectedItems.size !== 1 ? "hidden" : "flex"
-                        } border-2 bg-sky-200 py-2 px-4 rounded-lg`}
+                        } border-2 bg-sky-200 h-12 w-12 justify-center items-center rounded-lg`}
                         onPress={() =>
                           clipEdit(Array.from(selectedItems)[0] as number)
                         }
@@ -1448,13 +1462,13 @@ function App() {
 
                     <Pressable
                       onPress={deleteSelectedItemsAlert}
-                      className="border-2 bg-red-200 py-2 px-4 rounded-lg "
+                      className="border-2 bg-red-200 h-12 w-12 justify-center items-center rounded-lg "
                     >
                       <Foundation name="page-delete" size={26} color="black" />
                     </Pressable>
                     <Pressable
                       onPress={toggleSelectAll}
-                      className="border-2 bg-zinc-200 py-2 px-3 rounded-lg "
+                      className="border-2 bg-zinc-200 h-12 w-12 justify-center items-center rounded-lg "
                     >
                       <MaterialIcons
                         name={

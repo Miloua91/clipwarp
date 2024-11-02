@@ -8,6 +8,7 @@ import * as Updates from "expo-updates";
 import { i18n } from "./i18n";
 import { getLocales } from "expo-localization";
 import { useTheme } from "./ThemeContext";
+import "./global.css";
 
 const deviceLanguage = getLocales()?.[0]?.languageCode;
 
@@ -18,7 +19,7 @@ export function WS() {
   let device = getDevice.replace(/\s+/g, "-");
   const [deviceName, setDeviceName] = useState(device);
   const { theme, themes } = useTheme();
-  const { cardBgColor, textColor, bgColor } = themes[theme];
+  const { cardBgColor, textColor } = themes[theme];
   // Load the WebSocket address from AsyncStorage on component mount
   useEffect(() => {
     const loadWsAddress = async () => {
@@ -106,7 +107,7 @@ export function WS() {
   return (
     <View className="w-full m-auto mt-6">
       <View
-        className="space-x-1 mb-4 border rounded-xl"
+        className="space-x-1 mb-4 h-20 justify-center border rounded-xl"
         style={{
           backgroundColor: cardBgColor,
         }}
@@ -128,8 +129,8 @@ export function WS() {
         />
         <View
           className={`absolute ${
-            deviceLanguage === "ar" ? "right-2" : "right-0"
-          } mx-2`}
+            deviceLanguage === "ar" ? "right-0" : "right-0"
+          } mx-2 pb-1`}
         >
           <AwesomeButton
             backgroundColor={cardBgColor}
@@ -142,7 +143,7 @@ export function WS() {
       </View>
 
       <View
-        className="space-x-1 mb-4 border rounded-xl"
+        className="space-x-1 mb-4 h-20 justify-center border rounded-xl"
         style={{
           backgroundColor: cardBgColor,
         }}
@@ -164,8 +165,8 @@ export function WS() {
         />
         <View
           className={`absolute ${
-            deviceLanguage === "ar" ? "right-2" : "right-0"
-          } mx-2`}
+            deviceLanguage === "ar" ? "right-0" : "right-0"
+          } mx-2 pb-1`}
         >
           <AwesomeButton
             backgroundColor={cardBgColor}
@@ -178,7 +179,7 @@ export function WS() {
       </View>
 
       <View
-        className="space-x-1 mb-4 border rounded-xl"
+        className="space-x-1 mb-4 h-20 justify-center border rounded-xl"
         style={{
           backgroundColor: cardBgColor,
         }}
@@ -203,8 +204,8 @@ export function WS() {
         )}
         <View
           className={`absolute ${
-            deviceLanguage === "ar" ? "right-2" : "right-0"
-          } mx-2`}
+            deviceLanguage === "ar" ? "right-0" : "right-0"
+          } mx-2 pb-1`}
         >
           <AwesomeButton
             backgroundColor={cardBgColor}

@@ -60,6 +60,7 @@ export const i18n = new I18n({
     deleteItemMessage: "Voulez-vous supprimer ce clip?",
     deleteItems: "Supprimer les clips",
     deleteItemsMessage: "Voulez-vous supprimer ces clips?",
+    notif: "Jeton de notification",
   },
   ar: {
     Send: "إرسال",
@@ -82,6 +83,7 @@ export const i18n = new I18n({
     deleteItemMessage: "هل تريد حذف هذا المقطع؟",
     deleteItems: "حذف المقاطع",
     deleteItemsMessage: "هل تريد حذف هذه المقاطع؟",
+    notif: "رمز الإشعار",
   },
   es: {
     Send: "Enviar",
@@ -104,6 +106,7 @@ export const i18n = new I18n({
     deleteItemMessage: "¿Quieres eliminar este clip?",
     deleteItems: "Eliminar clips",
     deleteItemsMessage: "¿Quieres eliminar estos clips?",
+    notif: "Token de notificación",
   },
   pr: {
     Send: "Enviar",
@@ -126,6 +129,7 @@ export const i18n = new I18n({
     deleteItemMessage: "Você quer excluir este clipe?",
     deleteItems: "Excluir clipes",
     deleteItemsMessage: "Você quer excluir esses clipes?",
+    notif: "Token de notificação",
   },
   it: {
     Send: "Invia",
@@ -148,6 +152,7 @@ export const i18n = new I18n({
     deleteItemMessage: "Vuoi eliminare questo clip?",
     deleteItems: "Elimina clip",
     deleteItemsMessage: "Vuoi eliminare questi clip?",
+    notif: "Token di notifica",
   },
   ru: {
     Send: "Отправить",
@@ -170,6 +175,7 @@ export const i18n = new I18n({
     deleteItemMessage: "Вы хотите удалить этот клип?",
     deleteItems: "Удалить клипы",
     deleteItemsMessage: "Вы хотите удалить эти клипы?",
+    notif: "Токен уведомления",
   },
   zh: {
     Send: "发送",
@@ -191,6 +197,7 @@ export const i18n = new I18n({
     deleteItemMessage: "你确定要删除这个剪辑吗？",
     deleteItems: "删除剪辑",
     deleteItemsMessage: "你确定要删除这些剪辑吗？",
+    notif: "通知令牌",
   },
   jp: {
     Send: "送信",
@@ -213,6 +220,7 @@ export const i18n = new I18n({
     deleteItemMessage: "このクリップを削除しますか？",
     deleteItems: "クリップを削除",
     deleteItemsMessage: "これらのクリップを削除しますか？",
+    notif: "通知トークン",
   },
   de: {
     Send: "Senden",
@@ -235,6 +243,7 @@ export const i18n = new I18n({
     deleteItemMessage: "Möchten Sie diesen Clip löschen?",
     deleteItems: "Clips löschen",
     deleteItemsMessage: "Möchten Sie diese Clips löschen?",
+    notif: "Benachrichtigungstoken",
   },
 });
 

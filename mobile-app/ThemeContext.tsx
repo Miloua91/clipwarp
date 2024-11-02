@@ -1,5 +1,13 @@
-import React, { createContext, useContext, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useEffect,
+  useState,
+} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColorScheme } from "nativewind";
+
 type Theme = "light" | "dark";
 
 interface ThemeStyles {
@@ -37,15 +45,35 @@ const lightTheme: ThemeStyles = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const THEME_STORAGE_KEY = "user_theme_choice";
+
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const { colorScheme: theme, toggleColorScheme: toggleTheme } =
+  const { colorScheme: systemTheme, toggleColorScheme: systemToggleTheme } =
     useColorScheme();
+  const [theme, setTheme] = useState<Theme>(systemTheme as Theme);
 
   const themes: Record<Theme, ThemeStyles> = {
     light: lightTheme,
     dark: darkTheme,
+  };
+
+  useEffect(() => {
+    const loadTheme = async () => {
+      const storedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+      if (storedTheme) {
+        setTheme(storedTheme as Theme);
+      }
+    };
+    loadTheme();
+  }, []);
+
+  const toggleTheme = async () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    await AsyncStorage.setItem(THEME_STORAGE_KEY, newTheme);
+    systemToggleTheme();
   };
 
   return (

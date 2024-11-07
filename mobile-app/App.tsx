@@ -1168,9 +1168,7 @@ function App() {
                       {i18n.t("notif")}
                     </Text>
                     <Text
-                      className={`text-lg ${
-                        deviceLanguage === "ar" ? "text-left" : "text-right"
-                      } mx-2 pb-2`}
+                      className={`text-lg mx-2 pb-2 text-left`}
                       style={{ color: textColor }}
                     >
                       {extractToken(expoPushToken)}

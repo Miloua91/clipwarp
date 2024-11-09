@@ -63,6 +63,14 @@ class MainWindow(QMainWindow):
         self.db_function()
         self.Chat = Chat(self.ui)
         self.client_function()
+        self.ui.settingSave.connect(self.restart_api)
+
+    def restart_api(self):
+        self.api.stop()
+        self.thread.quit()
+        self.thread.wait()
+
+        self.start_api()
 
     def start_api(self):
         self.thread = QThread()
@@ -75,6 +83,7 @@ class MainWindow(QMainWindow):
         self.server_thread = QThread()
         self.server = Server()
         self.server.message_signal.connect(lambda msg: self.show_msg(msg))
+        self.ui.settingSave.connect(self.server.change_port)
         self.server.moveToThread(self.server_thread)
         self.server_thread.started.connect(self.server.run)
         self.server_thread.finished.connect(self.server_thread.deleteLater)
@@ -105,6 +114,7 @@ class MainWindow(QMainWindow):
         self.Chat.clips_fetched.connect(self.ui.load_clips)
         self.ui.itemDeleted.connect(self.Chat.delete_clip)
         self.ui.resetDB.connect(self.Chat.reset_db)
+        self.ui.settingSave.connect(self.client.change_port)
         self.client.recv_signal.connect(self.Chat.show_msg)
         self.client.moveToThread(self.client_thread)
         self.client_thread.started.connect(self.client.run)

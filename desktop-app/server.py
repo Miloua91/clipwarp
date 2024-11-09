@@ -12,7 +12,6 @@ from db import Database
 setting_path = os.path.join(
     os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.toml"
 )
-
 db_path = os.path.join(
     os.path.expanduser("~"), ".config", "clipwarp", "assets", "clipwarp.db"
 )
@@ -25,6 +24,10 @@ class Server(QObject):
     def __init__(self):
         super().__init__()
         self.db = Database()
+        self.server = None
+        self.server_task = None
+        self.current_port = None
+        self.loop = None
 
     def load_port(self):
         if os.path.exists(setting_path):
@@ -32,10 +35,6 @@ class Server(QObject):
             return settings.get("port", 42069)
         else:
             return 42069
-
-    def run(self):
-        print("server is runnig")
-        asyncio.run(self.start_server())
 
     def get_ip_address(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -45,10 +44,39 @@ class Server(QObject):
         return ip
 
     async def start_server(self):
-        async with websockets.serve(
-            self.register, self.get_ip_address(), self.load_port()
-        ):
-            await asyncio.Future()
+        self.current_port = self.load_port()
+        self.server = await websockets.serve(
+            self.register, self.get_ip_address(), self.current_port
+        )
+        print(f"Server started on port {self.current_port}")
+        await self.server.wait_closed()
+
+    async def stop_server(self):
+        if self.server:
+            self.server.close()
+            await self.server.wait_closed()
+            print("Server stopped")
+
+    async def restart_server(self):
+        await self.stop_server()
+
+        await self.start_server()
+
+    def run(self):
+        print("Server is running")
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.server_task = self.loop.create_task(self.start_server())
+        try:
+            self.loop.run_forever()
+        except KeyboardInterrupt:
+            pass
+
+    def change_port(self):
+        if self.loop and self.loop.is_running():
+            asyncio.run_coroutine_threadsafe(self.restart_server(), self.loop)
+            return True
+        return False
 
     async def register(self, websocket, path):
         name = path.strip("/")
@@ -56,10 +84,10 @@ class Server(QObject):
         print(f"{name} connected")
 
         connection = self.db.create_connection(db_path)
-
         # Check if the user exists, if not, insert the user and get the user_id
         select_user = "SELECT id FROM users WHERE name = ?"
         result = self.db.execute_read_query(connection, select_user, (name,))
+
         if result:
             user_id = result[0][0]
         else:
@@ -91,7 +119,6 @@ class Server(QObject):
                         params = (message, user_id)
                         self.db.execute_query(connection, insert_clips, params)
             await websocket.wait_closed()
-
         finally:
             # Check if the name exists in CONNECTIONS before deleting
             if name in self.CONNECTIONS:

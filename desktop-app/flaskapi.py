@@ -60,6 +60,9 @@ class FlaskAPI(QObject):
     def start(self):
         self.socketio.run(self.app, host="0.0.0.0", port=self.load_port())
 
+    def stop(self):
+        self.socketio.stop()
+
     def get_db_connection(self):
         conn = sqlite3.connect(db_path)
         conn.row_factory = sqlite3.Row

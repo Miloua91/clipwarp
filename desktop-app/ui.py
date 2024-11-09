@@ -77,6 +77,7 @@ class VerticalTabWidget(QTabWidget):
 class Ui_MainWindow(QObject):
     itemDeleted = pyqtSignal(int)
     resetDB = pyqtSignal()
+    settingSave = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -555,17 +556,20 @@ class Ui_MainWindow(QObject):
     def save_port(self):
         port = self.port_edit.toPlainText()
         token = self.token_edit.toPlainText()
-        if port.isdigit():
+
+        if (
+            port.isdigit() and 1024 <= int(port) <= 65534
+        ):  # Check if port is within the valid range
             dlg = QDialog()
             dlg.setFixedSize(340, 100)
 
             layout = QVBoxLayout()
-            message_label = QLabel("You must exit the application to save the changes!")
+            message_label = QLabel("Are you all set with these updates?")
             message_label.setWordWrap(True)
             message_layout = QHBoxLayout()
             message_layout.addWidget(message_label)
 
-            exit_button = QPushButton("Exit")
+            exit_button = QPushButton("Yes")
             exit_button.setFixedSize(50, 33)
             exit_button.clicked.connect(dlg.accept)
             exit_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -583,7 +587,7 @@ class Ui_MainWindow(QObject):
                     }
                 """
             )
-            cancel_button = QPushButton("Cancel")
+            cancel_button = QPushButton("No")
             cancel_button.setFixedSize(50, 33)
             cancel_button.clicked.connect(dlg.reject)
             cancel_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -620,14 +624,22 @@ class Ui_MainWindow(QObject):
                 settings["token"] = str(f"ExponentPushToken[{token}]")
                 with open(setting_path, "w") as f:
                     toml.dump(settings, f)
-                exit(1)
-            print("Port saved successfully.")
+                self.settingSave.emit()
+                print("Port saved successfully.")
+            else:
+                print("Take your time.")
+
         else:
             dlg = QDialog()
             dlg.setFixedSize(240, 100)
 
             layout = QVBoxLayout()
-            message_label = QLabel("Invalid port value. Port must be a number.")
+            if not port.isdigit():
+                message_label = QLabel("Invalid port value. Port must be a number.")
+            else:
+                message_label = QLabel(
+                    "Invalid port value. Port must be between 1024 and 65534."
+                )
             message_label.setWordWrap(True)
             message_layout = QHBoxLayout()
             message_layout.addWidget(message_label)
@@ -660,7 +672,7 @@ class Ui_MainWindow(QObject):
             dlg.setWindowTitle("Invalid Input")
             result = dlg.exec()
             if result == QDialog.Accepted:
-                print("Database reset confirmed")
+                print("Invalid input handled.")
 
     def load_settings(self):
         if os.path.exists(setting_path):

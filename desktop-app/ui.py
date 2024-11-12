@@ -336,8 +336,10 @@ class Ui_MainWindow(QObject):
             font = list_widget.font()
             category = self.truncate_text_to_width(category, font, max_pixel_width)
 
+            unseen_clip = sum(1 for clip in clips if clip["is_seen"] == 0)
+
             if is_category_seen:
-                tab_label = f"{category} ({len(clips)})"
+                tab_label = f"{category} ({unseen_clip})"
                 self.tabWidget.setIconSize(QSize(8, 8))
                 tab_icon = QIcon(load_svg("active-tab-indicator.svg"))
                 self.tabWidget.addTab(list_widget, tab_icon, tab_label)

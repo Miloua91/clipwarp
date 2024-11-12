@@ -23,17 +23,25 @@ class Chat(QObject):
     def __init__(self, ui):
         super().__init__()
         self.ui = ui
-
-        http_session = requests.Session()
-        http_session.verify = False
-
+        self.http_session = requests.Session()
+        self.http_session.verify = False
         self.socketio = socketio.Client()
+        self.current_port = self.load_port()
+        self.connect_to_server()
+        self.socketio.on("delete", self.on_delete)
+        self.socketio.on("reset", self.on_delete)
+        self.socketio.on("edit", self.on_edit)
+        self.fetch_clips()
+        self.ui.Send.clicked.connect(self.on_button_click)
+        self.ui.Paste.clicked.connect(self.paste_text)
 
+    def connect_to_server(self):
         retries = 0
         while True:
             try:
-                url = f"http://{self.get_ip_address()}:{self.load_port()}"
+                url = f"http://{self.get_ip_address()}:{self.current_port}"
                 self.socketio.connect(url)
+                print(f"Connected to server on port {self.current_port}")
                 break  # Connection successful
             except socketio.exceptions.ConnectionError:
                 retries += 1
@@ -41,14 +49,20 @@ class Chat(QObject):
                 print(f"Connection failed. Retrying in {delay} seconds...")
                 time.sleep(delay)
 
-        self.socketio.on("delete", self.on_delete)
-        self.socketio.on("reset", self.on_delete)
-        self.socketio.on("edit", self.on_edit)
+    def disconnect_from_server(self):
+        try:
+            self.socketio.disconnect()
+            print("Disconnected from server")
+        except Exception as e:
+            print(f"Error disconnecting from server: {e}")
 
-        self.fetch_clips()
-
-        self.ui.Send.clicked.connect(self.on_button_click)
-        self.ui.Paste.clicked.connect(self.paste_text)
+    def check_and_update_port(self):
+        new_port = self.load_port()
+        if self.current_port != new_port:
+            self.disconnect_from_server()
+            self.current_port = new_port
+            self.connect_to_server()
+            self.fetch_clips()
 
     def load_port(self):
         if os.path.exists(setting_path):

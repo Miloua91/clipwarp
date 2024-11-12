@@ -69,8 +69,8 @@ class MainWindow(QMainWindow):
         self.api.stop()
         self.thread.quit()
         self.thread.wait()
-
         self.start_api()
+        self.Chat.check_and_update_port()
 
     def start_api(self):
         self.thread = QThread()

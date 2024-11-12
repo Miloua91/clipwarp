@@ -22,7 +22,12 @@ class FlaskAPI(QObject):
         super(FlaskAPI, self).__init__()
         self.app = Flask(__name__)
         CORS(self.app)
-        self.socketio = SocketIO(self.app, cors_allowed_origins="*")
+        self.socketio = SocketIO(
+            self.app,
+            cors_allowed_origins="*",
+            ping_interval=5,
+            ping_timeout=3,
+        )
         self.app.add_url_rule("/", "get_clips", self.get_clips, methods=["GET"])
         self.app.add_url_rule(
             "/edit/<int:clip_id>",

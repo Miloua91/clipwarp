@@ -44,7 +44,6 @@ class Client(QObject):
         try:
             self.websocket = await websockets.connect(uri)
             self.connection_status_signal.emit(True)
-            print(f"Connected to server on port {self.current_port}")
             async for message in self.websocket:
                 self.recv_signal.emit(message)
         except Exception as e:

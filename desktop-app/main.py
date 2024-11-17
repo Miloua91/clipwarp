@@ -1,5 +1,7 @@
+import asyncio
 import os
 import sys
+from asyncio import get_event_loop
 
 from notifypy import Notify
 from PyQt5.QtCore import QObject, QThread
@@ -35,6 +37,7 @@ from flaskapi import FlaskAPI
 from pc import Client
 from serve import Serve
 from server import Server
+from socket_client import SocketClient
 from ui import Ui_MainWindow
 
 os.environ["QT_QPA_PLATFORM"] = "xcb"
@@ -63,14 +66,22 @@ class MainWindow(QMainWindow):
         self.db_function()
         self.Chat = Chat(self.ui)
         self.client_function()
+        self.socket_client()
         self.ui.settingSave.connect(self.restart_api)
 
     def restart_api(self):
-        self.api.stop()
-        self.thread.quit()
-        self.thread.wait()
+        print("Restarting API...")
+        if hasattr(self, "socket"):
+            self.socket.stop()
+        if hasattr(self, "api"):
+            self.api.stop()
+        if hasattr(self, "thread"):
+            self.thread.quit()
+            self.thread.wait(5000)  # Wait up to 5 seconds
+        print("Starting new socket client...")
+        self.socket_client()
+        print("Starting new API...")
         self.start_api()
-        self.Chat.check_and_update_port()
 
     def start_api(self):
         self.thread = QThread()
@@ -88,6 +99,13 @@ class MainWindow(QMainWindow):
         self.server_thread.started.connect(self.server.run)
         self.server_thread.finished.connect(self.server_thread.deleteLater)
         self.server_thread.start()
+
+    def socket_client(self):
+        self.socket = SocketClient()
+        self.socket.delete_clip.connect(self.Chat.delete)
+        self.socket.reset_db.connect(self.Chat.on_reset)
+        self.socket.edit_clip.connect(self.Chat.on_edit)
+        self.socket.start()
 
     def show_msg(self, msg):
         notification = Notify()
@@ -112,8 +130,8 @@ class MainWindow(QMainWindow):
         self.client = Client()
         self.Chat.message_signal.connect(self.client.bridge)
         self.Chat.clips_fetched.connect(self.ui.load_clips)
-        self.ui.itemDeleted.connect(self.Chat.delete_clip)
-        self.ui.resetDB.connect(self.Chat.reset_db)
+        self.ui.itemDeleted.connect(self.Chat.on_delete)
+        self.ui.resetDB.connect(self.Chat.on_reset)
         self.ui.settingSave.connect(self.client.change_port)
         self.client.recv_signal.connect(self.Chat.show_msg)
         self.client.moveToThread(self.client_thread)

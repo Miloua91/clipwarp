@@ -25,44 +25,9 @@ class Chat(QObject):
         self.ui = ui
         self.http_session = requests.Session()
         self.http_session.verify = False
-        self.socketio = socketio.Client()
-        self.current_port = self.load_port()
-        self.connect_to_server()
-        self.socketio.on("delete", self.on_delete)
-        self.socketio.on("reset", self.on_delete)
-        self.socketio.on("edit", self.on_edit)
         self.fetch_clips()
         self.ui.Send.clicked.connect(self.on_button_click)
         self.ui.Paste.clicked.connect(self.paste_text)
-
-    def connect_to_server(self):
-        retries = 0
-        while True:
-            try:
-                url = f"http://{self.get_ip_address()}:{self.current_port}"
-                self.socketio.connect(url)
-                print(f"Connected to server on port {self.current_port}")
-                break  # Connection successful
-            except socketio.exceptions.ConnectionError:
-                retries += 1
-                delay = 2**retries  # Exponential backoff
-                print(f"Connection failed. Retrying in {delay} seconds...")
-                time.sleep(delay)
-
-    def disconnect_from_server(self):
-        try:
-            self.socketio.disconnect()
-            print("Disconnected from server")
-        except Exception as e:
-            print(f"Error disconnecting from server: {e}")
-
-    def check_and_update_port(self):
-        new_port = self.load_port()
-        if self.current_port != new_port:
-            self.disconnect_from_server()
-            self.current_port = new_port
-            self.connect_to_server()
-            self.fetch_clips()
 
     def load_port(self):
         if os.path.exists(setting_path):
@@ -83,7 +48,7 @@ class Chat(QObject):
         else:
             print("Failed to fetch clips from server")
 
-    def delete_clip(self, clip_id):
+    def on_delete(self, clip_id):
         response = requests.delete(
             f"http://{self.get_ip_address()}:{self.load_port()}/delete/{clip_id}",
             verify=False,
@@ -93,7 +58,7 @@ class Chat(QObject):
         else:
             print("Failed to delete clip from server")
 
-    def on_delete(self):
+    def delete(self):
         response = requests.get(
             f"http://{self.get_ip_address()}:{self.load_port()}", verify=False
         )
@@ -113,12 +78,12 @@ class Chat(QObject):
         else:
             print("Failed to fetch clips from server")
 
-    def reset_db(self):
+    def on_reset(self):
         response = requests.post(
             f"http://{self.get_ip_address()}:{self.load_port()}/reset", verify=False
         )
         if response.status_code == 200:
-            self.fetch_clips
+            self.fetch_clips()
         else:
             print("Failed to fetch clips from server")
 
@@ -127,6 +92,7 @@ class Chat(QObject):
 
     def on_button_click(self):
         message = self.ui.plainTextEdit.toPlainText()
+        self.fetch_clips()
         if message:
             self.push = Push()
             self.push_thread = PushThread(message, self.push)
@@ -134,7 +100,6 @@ class Chat(QObject):
             self.push_thread.start()
             self.message_signal.emit(message)
             self.ui.plainTextEdit.setPlainText("")
-            self.fetch_clips()
 
     def cleanup_push_thread(self):
         if self.push_thread is not None:

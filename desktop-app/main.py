@@ -102,9 +102,9 @@ class MainWindow(QMainWindow):
 
     def socket_client(self):
         self.socket = SocketClient()
-        self.socket.delete_clip.connect(self.Chat.delete)
-        self.socket.reset_db.connect(self.Chat.on_reset)
-        self.socket.edit_clip.connect(self.Chat.on_edit)
+        self.socket.delete_clip.connect(self.Chat.refresh)
+        self.socket.reset_db.connect(self.Chat.refresh)
+        self.socket.edit_clip.connect(self.Chat.refresh)
         self.socket.start()
 
     def show_msg(self, msg):

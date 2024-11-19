@@ -5,7 +5,7 @@
     "scheme": "clipwarp",
     "version": "1.1.0",
     "orientation": "portrait",
-    "icon": "./assets/splash.png",
+    "icon": "./assets/adaptive-icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",

@@ -51,7 +51,8 @@
         }
       ],
       "expo-font",
-      "expo-share-intent"
+      "expo-share-intent",
+      "expo-localization"
     ],
     "extra": {
       "eas": {

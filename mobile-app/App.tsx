@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import "./global.css";
 import * as Clipboard from "expo-clipboard";
-import * as SQLite from "expo-sqlite/legacy";
+import * as SQLite from "expo-sqlite";
 import AwesomeButton, {
   ThemedButton,
 } from "react-native-really-awesome-button";
@@ -103,7 +103,7 @@ function App() {
   });
   */
 
-  const [db, setDb] = useState(SQLite.openDatabase("clipwarp.db")); // SQLite database to save clipboard locally
+  const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null);
   const [val, setVal] = useState<Clip[]>([]); // Clips are saved here
   const [currentVal, setCurrentVal] = useState<string | undefined>(undefined); // Text input value
   const [clipsDb, setClipsDb] = useState<ClipDb[]>([]);
@@ -139,6 +139,21 @@ function App() {
     textSelectedColor,
     textNonSelectedColor,
   } = themes[theme];
+
+  useEffect(() => {
+    const openDatabase = async () => {
+      try {
+        const database = await SQLite.openDatabaseAsync("clipwarp.db"); // Open the database
+        setDb(database); // Set the database in state
+      } catch (error) {
+        console.error("Failed to open database:", error);
+      } finally {
+        setLoading(false); // Set loading to false after the database is opened
+      }
+    };
+
+    openDatabase();
+  }, []);
 
   NavigationBar.setBackgroundColorAsync(bgColor);
 
@@ -195,6 +210,19 @@ function App() {
 
   async function registerForPushNotificationsAsync() {
     let token;
+
+    await Notifications.setNotificationCategoryAsync("default", [
+      {
+        identifier: "copy",
+        buttonTitle: i18n.t("copyClip"),
+        options: { isDestructive: true },
+      },
+      {
+        identifier: "open",
+        buttonTitle: i18n.t("openLink"),
+        options: { isDestructive: true },
+      },
+    ]);
 
     if (Platform.OS === "android") {
       await Notifications.setNotificationChannelAsync("default", {
@@ -459,22 +487,24 @@ function App() {
     }
   }
 
-  const deleteDatabase = () => {
-    db.transaction((tx) => {
-      // Drop the clips table if it exists
-      tx.executeSql("DROP TABLE IF EXISTS clips", [], () => {});
-    });
+  const deleteDatabase = async () => {
+    try {
+      // Drop the `clips` table if it exists
+      if (db) {
+        await db.runAsync("DROP TABLE IF EXISTS clips");
 
-    // Recreate the clips table
-    db.transaction((tx) => {
-      tx.executeSql(
-        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
-        [],
-      );
-    });
+        // Recreate the `clips` table
+        await db.runAsync(
+          "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
+        );
 
-    // Update the val state to reflect the empty database
-    setVal([]);
+        // Clear the state to reflect the empty database
+        setVal([]);
+        console.log("Database reset successfully.");
+      }
+    } catch (error) {
+      console.error("Failed to reset the database:", error);
+    }
   };
 
   function resetAlert() {
@@ -491,39 +521,51 @@ function App() {
     ]);
   }
 
-  const resetDatabase = () => {
-    if (connection) {
-      deleteAllClipsDb();
+  const resetDatabase = async () => {
+    try {
+      if (connection) {
+        await deleteAllClipsDb(); // Assuming this is an async function
+      }
+
+      // Drop the `clips` table if it exists
+      if (db) {
+        await db.runAsync("DROP TABLE IF EXISTS clips");
+
+        // Recreate the `clips` table
+        await db.runAsync(
+          "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
+        );
+
+        // Clear the state to reflect the empty database
+        setVal([]);
+        console.log("Database has been reset successfully.");
+      }
+    } catch (error) {
+      console.error("Failed to reset the database:", error);
     }
-    db.transaction((tx) => {
-      // Drop the clips table if it exists
-      tx.executeSql("DROP TABLE IF EXISTS clips", [], () => {});
-    });
-
-    // Recreate the clips table
-    db.transaction((tx) => {
-      tx.executeSql(
-        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
-        [],
-      );
-    });
-
-    // Update the val state to reflect the empty database
-    setVal([]);
   };
 
   useEffect(() => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
-      );
-    });
+    const initializeDatabase = async () => {
+      try {
+        // Create the `clips` table if it doesn't exist
+        if (db) {
+          await db.runAsync(
+            "CREATE TABLE IF NOT EXISTS clips (id INTEGER PRIMARY KEY AUTOINCREMENT, clip TEXT)",
+          );
 
-    db.transaction((tx) => {
-      tx.executeSql("SELECT * FROM clips", [], (txObj, resultSet) =>
-        setVal(resultSet.rows._array),
-      );
-    });
+          // Fetch all rows from the `clips` table
+          const result: Clip[] = await db.getAllAsync("SELECT * FROM clips");
+
+          // Update the state with the fetched rows
+          setVal(result);
+        }
+      } catch (error) {
+        console.error("Error initializing the database:", error);
+      }
+    };
+
+    initializeDatabase();
   }, [db]);
 
   const fetchCopiedText = async () => {
@@ -531,7 +573,7 @@ function App() {
     setCurrentVal(text);
   };
 
-  const addClip = () => {
+  const addClip = async () => {
     if (currentVal === undefined || !currentVal?.trim()) {
       return ToastAndroid.show("Your input is empty", ToastAndroid.CENTER);
     }
@@ -548,18 +590,23 @@ function App() {
       };
       ws();
     } else {
-      db.transaction((tx) => {
-        tx.executeSql(
-          "INSERT INTO clips (clip) values (?)",
-          [currentVal],
-          (txObj, resultSet) => {
-            let existingClips = [...val];
-            existingClips.push({ id: resultSet.insertId, clip: currentVal });
-            setVal(existingClips);
-            setCurrentVal(undefined);
-          },
-        );
-      });
+      try {
+        if (db) {
+          const result = await db.runAsync(
+            "INSERT INTO clips (clip) VALUES (?)",
+            currentVal, // Binding the value to the query
+          );
+
+          // Update the state with the newly inserted clip
+          const newClip = { id: result.lastInsertRowId, clip: currentVal };
+          setVal((prevClips) => [...prevClips, newClip]);
+
+          // Reset the current value
+          setCurrentVal(undefined);
+        }
+      } catch (error) {
+        console.error("Failed to insert into the database:", error);
+      }
     }
   };
 
@@ -605,56 +652,66 @@ function App() {
         console.error(error);
       }
     } else {
-      db.transaction((tx) => {
-        tx.executeSql(
-          "UPDATE clips SET clip = ? WHERE id = ?",
-          [newText, id],
-          (txObj, resultSet) => {
-            if (resultSet.rowsAffected > 0) {
-              let updatedClips = [...val].map((clip) => {
-                if (clip.id === id) {
-                  return { ...clip, clip: newText };
-                }
-                return clip;
-              });
-              setVal(updatedClips);
-              setEdit(false);
-              if (inputRef.current) {
-                setCurrentVal("");
-                inputRef.current.blur();
-              }
+      try {
+        if (db) {
+          const result = await db.runAsync(
+            "UPDATE clips SET clip = ? WHERE id = ?",
+            [newText, id], // Binding parameters
+          );
+
+          if (result.changes > 0) {
+            // Update the state with the modified clip
+            const updatedClips = val.map((clip) =>
+              clip.id === id ? { ...clip, clip: newText } : clip,
+            );
+            setVal(updatedClips);
+            setEdit(false);
+
+            if (inputRef.current) {
+              setCurrentVal("");
+              inputRef.current.blur();
             }
-          },
-        );
-      });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to update the clip:", error);
+      }
     }
   };
 
-  const deleteClip = (id: number) => {
+  const deleteClip = async (id: number) => {
     const clipToDelete = val.find((clip) => clip.id === id);
 
     if (clipToDelete) {
       setDeletedClip(clipToDelete);
 
-      db.transaction((tx) => {
-        tx.executeSql(
-          "DELETE FROM clips WHERE id = ?",
-          [id],
-          (txObj, resultSet) => {
-            if (resultSet.rowsAffected > 0) {
-              const existingClips = val.filter((clip) => clip.id !== id);
-              setVal(existingClips);
-              setVisibleBar(true);
-            }
-          },
-        );
-      });
+      try {
+        if (db) {
+          const result = await db.runAsync(
+            "DELETE FROM clips WHERE id = ?",
+            id,
+          ); // Binding the ID
+
+          if (result.changes > 0) {
+            // Update state to remove the deleted clip
+            const existingClips = val.filter((clip) => clip.id !== id);
+            setVal(existingClips);
+
+            // Show the notification bar
+            setVisibleBar(true);
+          } else {
+            console.warn(`No rows affected. Clip with id ${id} may not exist.`);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to delete the clip:", error);
+      }
     } else {
       console.warn(`Clip with id ${id} not found.`);
     }
   };
 
-  const undoDelete = () => {
+  const undoDelete = async () => {
     if (connection && deletedClipDb) {
       const ws = async () => {
         try {
@@ -673,16 +730,23 @@ function App() {
       deletedClip.id !== undefined &&
       deletedClip.clip
     ) {
-      db.transaction((tx) => {
-        tx.executeSql(
-          "INSERT INTO clips (id, clip) VALUES (?, ?)",
-          [deletedClip.id as number, deletedClip.clip],
-          (txObj, resultSet) => {
-            setVal((prev) => [...prev, deletedClip]);
-            setDeletedClip(null);
-          },
-        );
-      });
+      try {
+        if (db) {
+          const result = await db.runAsync(
+            "INSERT INTO clips (id, clip) VALUES (?, ?)",
+            [deletedClip.id as number, deletedClip.clip], // Binding parameters
+          );
+
+          if (result.changes > 0) {
+            setVal((prev) => [...prev, deletedClip]); // Add the deleted clip back to the state
+            setDeletedClip(null); // Clear the `deletedClip`
+          } else {
+            console.warn(`Failed to reinsert clip with id ${deletedClip.id}`);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to reinsert the deleted clip:", error);
+      }
     } else {
       console.warn("No connection or deleted clip data available for undo.");
     }
@@ -794,27 +858,31 @@ function App() {
     );
   }
 
-  const deleteClips = (ids: Set<number | undefined>) => {
+  const deleteClips = async (ids: Set<number | undefined>) => {
     const idArray = Array.from(ids).filter(
       (id): id is number => id !== undefined,
     );
     if (idArray.length === 0) return;
 
-    db.transaction((tx) => {
+    try {
       const placeholders = idArray.map(() => "?").join(", ");
-      tx.executeSql(
-        `DELETE FROM clips WHERE id IN (${placeholders})`,
-        idArray,
-        (txObj, resultSet) => {
-          if (resultSet.rowsAffected > 0) {
-            const existingClips = val.filter(
-              (clip) => !idArray.includes(clip.id as number),
-            );
-            setVal(existingClips);
-          }
-        },
-      );
-    });
+      const query = `DELETE FROM clips WHERE id IN (${placeholders})`;
+
+      if (db) {
+        const result = await db.runAsync(query, ...idArray); // Spread the array for binding parameters
+
+        if (result.changes > 0) {
+          const existingClips = val.filter(
+            (clip) => !idArray.includes(clip.id as number),
+          );
+          setVal(existingClips); // Update state after deletion
+        } else {
+          console.warn("No rows were deleted. Check if the ids exist.");
+        }
+      }
+    } catch (error) {
+      console.error("Failed to delete clips:", error);
+    }
   };
 
   const deleteSelectedItems = () => {

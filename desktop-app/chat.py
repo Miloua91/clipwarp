@@ -58,7 +58,7 @@ class Chat(QObject):
         else:
             print("Failed to delete clip from server")
 
-    def delete(self):
+    def refresh(self):
         response = requests.get(
             f"http://{self.get_ip_address()}:{self.load_port()}", verify=False
         )
@@ -66,33 +66,23 @@ class Chat(QObject):
             clips = response.json()
             self.clips_fetched.emit(clips)
         else:
-            print("Failed to fetch clips from server")
-
-    def on_edit(self):
-        response = requests.get(
-            f"http://{self.get_ip_address()}:{self.load_port()}", verify=False
-        )
-        if response.status_code == 200:
-            clips = response.json()
-            self.clips_fetched.emit(clips)
-        else:
-            print("Failed to fetch clips from server")
+            print("Failed to delete clip from server")
 
     def on_reset(self):
         response = requests.post(
             f"http://{self.get_ip_address()}:{self.load_port()}/reset", verify=False
         )
         if response.status_code == 200:
+            print("Database has been reset")
             self.fetch_clips()
         else:
-            print("Failed to fetch clips from server")
+            print("Failed to reset database from server")
 
     def show_msg(self, msg):
         self.fetch_clips()
 
     def on_button_click(self):
         message = self.ui.plainTextEdit.toPlainText()
-        self.fetch_clips()
         if message:
             self.push = Push()
             self.push_thread = PushThread(message, self.push)
@@ -100,6 +90,7 @@ class Chat(QObject):
             self.push_thread.start()
             self.message_signal.emit(message)
             self.ui.plainTextEdit.setPlainText("")
+        self.refresh()
 
     def cleanup_push_thread(self):
         if self.push_thread is not None:

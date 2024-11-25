@@ -1,11 +1,18 @@
 import os
 import sqlite3
+import time
 from sqlite3 import Error
 
-from PyQt5.QtCore import QObject
+import pyperclip
+import toml
+from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
 db_path = os.path.join(
     os.path.expanduser("~"), ".config", "clipwarp", "assets", "clipwarp.db"
+)
+
+setting_path = os.path.join(
+    os.path.expanduser("~"), ".config", "clipwarp", "assets", "setting.toml"
 )
 
 
@@ -13,10 +20,11 @@ class Database(QObject):
     def create_connection(self, path):
         connection = None
         try:
-            connection = sqlite3.connect(path)
+            connection = sqlite3.connect(
+                path, check_same_thread=False
+            )  # Thread-safe SQLite connection
         except Error as e:
             print(f"The error '{e}' occurred")
-
         return connection
 
     def execute_query(self, connection, query, params=None):
@@ -69,3 +77,38 @@ class Database(QObject):
         self.execute_query(connection, create_clips_table)
 
         return connection
+
+    def save_clip(self, text, user_id=1):
+        connection = self.create_db()
+        query = "INSERT INTO clips (clips_text, user_id) VALUES (?, ?)"
+        self.execute_query(connection, query, (text, user_id))
+        connection.close()
+
+
+class ClipboardMonitor(QObject):
+    new_clip = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.last_text = ""
+
+    def running(self):
+        if os.path.exists(setting_path):
+            settings = toml.load(setting_path)
+            return settings.get("monitor", True)
+        else:
+            return True
+
+    def run(self):
+        while self.running():
+            try:
+                current_text = pyperclip.paste()
+                if current_text != self.last_text:
+                    self.last_text = current_text
+                    self.new_clip.emit(current_text)
+            except Exception as e:
+                print(f"Error monitoring clipboard: {e}")
+            time.sleep(0.5)
+
+    def stop(self):
+        self.running = False

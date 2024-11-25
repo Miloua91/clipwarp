@@ -32,7 +32,7 @@ def load_ico(file_name):
 
 
 from chat import Chat
-from db import Database
+from db import ClipboardMonitor, Database
 from flaskapi import FlaskAPI
 from pc import Client
 from serve import Serve
@@ -67,6 +67,7 @@ class MainWindow(QMainWindow):
         self.Chat = Chat(self.ui)
         self.client_function()
         self.socket_client()
+        self.monitor_clips()
         self.ui.settingSave.connect(self.restart_api)
 
     def restart_api(self):
@@ -84,15 +85,15 @@ class MainWindow(QMainWindow):
         self.start_api()
 
     def start_api(self):
-        self.thread = QThread()
         self.api = FlaskAPI()
+        self.thread = QThread()
         self.api.moveToThread(self.thread)
         self.thread.started.connect(self.api.start)
         self.thread.start()
 
     def server_function(self):
-        self.server_thread = QThread()
         self.server = Server()
+        self.server_thread = QThread()
         self.server.message_signal.connect(lambda msg: self.show_msg(msg))
         self.ui.settingSave.connect(self.server.change_port)
         self.server.moveToThread(self.server_thread)
@@ -118,16 +119,26 @@ class MainWindow(QMainWindow):
     def db_function(self):
         self.connection = Database().create_db()
 
+    def monitor_clips(self):
+        self.db = Database()
+        self.monitor = ClipboardMonitor()
+        self.monitor_thread = QThread()
+        self.monitor.new_clip.connect(self.db.save_clip)
+        self.monitor.new_clip.connect(self.Chat.refresh)
+        self.monitor.moveToThread(self.monitor_thread)
+        self.monitor_thread.started.connect(self.monitor.run)
+        self.monitor_thread.start()
+
     def serve_function(self):
-        self.serve_thread = QThread()
         self.serve = Serve()
+        self.serve_thread = QThread()
         self.serve.moveToThread(self.serve_thread)
         self.serve_thread.started.connect(self.serve.start)
         self.serve_thread.start()
 
     def client_function(self):
-        self.client_thread = QThread()
         self.client = Client()
+        self.client_thread = QThread()
         self.Chat.message_signal.connect(self.client.bridge)
         self.Chat.clips_fetched.connect(self.ui.load_clips)
         self.ui.itemDeleted.connect(self.Chat.on_delete)

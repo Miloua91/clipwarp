@@ -9,6 +9,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QFontMetrics, QIcon
 from PyQt5.QtWidgets import *
+from qtpy.QtCore import Qt, Slot
+
+from toggle import AnimatedToggle, Toggle
 
 # TODO: Make the app work when there is no connection
 # TODO: Try to change the maximize button behavior and icon
@@ -430,6 +433,20 @@ class Ui_MainWindow(QObject):
         port_layout.addWidget(self.port_edit)
         layout.addLayout(port_layout)
 
+        toggle_label = QLabel("Clip Manager")
+        self.toggle = AnimatedToggle(
+            checked_color="#8d99ae", pulse_checked_color="#8d99ae00"
+        )
+        self.toggle.setFixedHeight(36)
+        self.toggle.setFixedWidth(56)
+
+        toggle_layout = QHBoxLayout()
+        toggle_layout.addWidget(toggle_label)
+        toggle_layout.addWidget(self.toggle)
+        layout.addLayout(toggle_layout)
+
+        self.toggle.setChecked(self.monitor())
+
         token_label = QLabel("Notificatoin token")
         self.token_edit = QPlainTextEdit("Get token from ClipWarp app")
         self.token_edit.setFixedHeight(26)
@@ -490,8 +507,24 @@ class Ui_MainWindow(QObject):
 
         new_window.setLayout(layout)
         self.load_settings()
-        new_window.setFixedSize(200, 200)
+        new_window.setFixedSize(200, 250)
         new_window.exec_()
+
+    def monitor(self):
+        if os.path.exists(setting_path):
+            settings = toml.load(setting_path)
+            return settings.get("monitor", True)
+        else:
+            return True
+
+    def save_toggle_state(self):
+        toggle_state = self.toggle.isChecked()
+        settings = {}
+        if os.path.exists(setting_path):
+            settings = toml.load(setting_path)
+        settings["monitor"] = bool(toggle_state)
+        with open(setting_path, "w") as f:
+            toml.dump(settings, f)
 
     def reset_db(self):
         dlg = QDialog()
@@ -626,6 +659,7 @@ class Ui_MainWindow(QObject):
                 settings["token"] = str(f"ExponentPushToken[{token}]")
                 with open(setting_path, "w") as f:
                     toml.dump(settings, f)
+                self.save_toggle_state()
                 self.settingSave.emit()
                 print("Port saved successfully.")
             else:

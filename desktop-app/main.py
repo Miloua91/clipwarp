@@ -71,17 +71,16 @@ class MainWindow(QMainWindow):
         self.ui.settingSave.connect(self.restart_api)
 
     def restart_api(self):
-        print("Restarting API...")
-        if hasattr(self, "socket"):
-            self.socket.stop()
-        if hasattr(self, "api"):
-            self.api.stop()
-        if hasattr(self, "thread"):
-            self.thread.quit()
-            self.thread.wait(5000)  # Wait up to 5 seconds
-        print("Starting new socket client...")
+        if self.monitor.running():
+            self.monitor_clips()
+        else:
+            self.monitor_thread.quit()
+            self.monitor_thread.wait()
+        self.socket.stop()
+        self.api.stop()
+        self.thread.quit()
+        self.thread.wait(5000)  # Wait up to 5 seconds
         self.socket_client()
-        print("Starting new API...")
         self.start_api()
 
     def start_api(self):

@@ -9,9 +9,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QObject, QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QFontMetrics, QIcon
 from PyQt5.QtWidgets import *
-from qtpy.QtCore import Qt, Slot
 
-from toggle import AnimatedToggle, Toggle
+from toggle import AnimatedToggle
 
 # TODO: Make the app work when there is no connection
 # TODO: Try to change the maximize button behavior and icon
@@ -229,15 +228,15 @@ class Ui_MainWindow(QObject):
                 delete_button.setStyleSheet(
                     """
                     QPushButton {
-                        border: none; 
-                        background-color: transparent; 
+                        border: none;
+                        background-color: transparent;
                     }
                     QPushButton:hover {
-                        background-color: #e76f51; 
+                        background-color: #e76f51;
                         border-radius: 4px;
                     }
                     QPushButton:pressed {
-                        background-color: #333; 
+                        background-color: #333;
                     }
                     """
                 )
@@ -254,15 +253,15 @@ class Ui_MainWindow(QObject):
                 copy_button.setStyleSheet(
                     """
                     QPushButton {
-                        border: none; 
-                        background-color: transparent; 
+                        border: none;
+                        background-color: transparent;
                     }
                     QPushButton:hover {
-                        background-color: #2a9d8f; 
+                        background-color: #2a9d8f;
                         border-radius: 4px;
                     }
                     QPushButton:pressed {
-                        background-color: #333; 
+                        background-color: #333;
                     }
                     """
                 )
@@ -277,15 +276,15 @@ class Ui_MainWindow(QObject):
                 url_button.setStyleSheet(
                     """
                     QPushButton {
-                        border: none; 
-                        background-color: transparent; 
+                        border: none;
+                        background-color: transparent;
                     }
                     QPushButton:hover {
-                        background-color: #e9c46a; 
+                        background-color: #e9c46a;
                         border-radius: 4px;
                     }
                     QPushButton:pressed {
-                        background-color: #333; 
+                        background-color: #333;
                     }
                     """
                 )
@@ -301,7 +300,7 @@ class Ui_MainWindow(QObject):
                     """
                         QLabel {
                             font: 10px;
-                            background-color: transparent; 
+                            background-color: transparent;
                             padding-top: 28px;
                         }
                         """
@@ -313,7 +312,7 @@ class Ui_MainWindow(QObject):
                     """
                         QLabel {
                             font: 10px;
-                            background-color: transparent; 
+                            background-color: transparent;
                             padding-top: 28px;
                         }
                         """
@@ -475,7 +474,7 @@ class Ui_MainWindow(QObject):
                                 background-color: #ef4444;
         color: #f0f0f0;
         border: 1px solid #ccc;
-        border-radius: 5px;    
+        border-radius: 5px;
     }
     QPushButton::hover {
         background-color: #f87171;
@@ -495,7 +494,7 @@ class Ui_MainWindow(QObject):
                         background-color: #333;
                         color: #f0f0f0;
                         border: 1px solid #ccc;
-                        border-radius: 5px;    
+                        border-radius: 5px;
                     }
                     QPushButton::hover {
                         background-color: #474747
@@ -549,7 +548,7 @@ class Ui_MainWindow(QObject):
                         background-color: #ef4444;
                         color: #f0f0f0;
                         border: 1px solid #ccc;
-                        border-radius: 5px;    
+                        border-radius: 5px;
                     }
                     QPushButton::hover {
                         background-color: #f87171
@@ -567,7 +566,7 @@ class Ui_MainWindow(QObject):
                         background-color: #d4d4d4;
                         color: #18181b;
                         border: 1px solid #ccc;
-                        border-radius: 5px;    
+                        border-radius: 5px;
                     }
                     QPushButton::hover {
                         background-color: #e5e5e5
@@ -615,7 +614,7 @@ class Ui_MainWindow(QObject):
                         background-color: #333;
                         color: #f0f0f0;
                         border: 1px solid #ccc;
-                        border-radius: 5px;    
+                        border-radius: 5px;
                     }
                     QPushButton::hover {
                         background-color: #474747
@@ -633,7 +632,7 @@ class Ui_MainWindow(QObject):
                             background-color: #d4d4d4;
                             color: #18181b;
                             border: 1px solid #ccc;
-                            border-radius: 5px;    
+                            border-radius: 5px;
                         }
                         QPushButton::hover {
                             background-color: #e5e5e5
@@ -691,7 +690,7 @@ class Ui_MainWindow(QObject):
                             background-color: #0ea5e9;
                             color: #f0f0f0;
                             border: 1px solid #ccc;
-                            border-radius: 5px;    
+                            border-radius: 5px;
                         }
                         QPushButton::hover {
                             background-color: #38bdf8

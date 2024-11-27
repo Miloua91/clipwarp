@@ -1,7 +1,6 @@
 import asyncio
 import os
 import socket
-import ssl
 
 import toml
 import websockets

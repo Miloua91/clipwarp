@@ -1,13 +1,10 @@
 import os
 import socket
-import time
 
 import requests
-import socketio
 import toml
 from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QSystemTrayIcon
+from PyQt5.QtWidgets import QApplication
 
 from pushnotif import Push, PushThread
 

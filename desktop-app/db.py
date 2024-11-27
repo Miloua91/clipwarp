@@ -5,7 +5,7 @@ from sqlite3 import Error
 
 import pyperclip
 import toml
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 
 db_path = os.path.join(
     os.path.expanduser("~"), ".config", "clipwarp", "assets", "clipwarp.db"
@@ -64,11 +64,11 @@ class Database(QObject):
 
         create_clips_table = """
         CREATE TABLE IF NOT EXISTS clips(
-          id INTEGER PRIMARY KEY AUTOINCREMENT, 
-          clips_text TEXT NOT NULL, 
-          user_id INTEGER NOT NULL, 
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          clips_text TEXT NOT NULL,
+          user_id INTEGER NOT NULL,
           is_seen BOOLEAN DEFAULT FALSE,
-          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP, 
+          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (user_id) REFERENCES users (id)
         );
         """

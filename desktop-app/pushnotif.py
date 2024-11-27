@@ -7,7 +7,6 @@ from exponent_server_sdk import (
     PushClient,
     PushMessage,
     PushServerError,
-    PushTicketError,
 )
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 from requests.exceptions import ConnectionError, HTTPError

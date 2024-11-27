@@ -1,10 +1,8 @@
-import asyncio
 import os
 import sys
-from asyncio import get_event_loop
 
 from notifypy import Notify
-from PyQt5.QtCore import QObject, QThread
+from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QApplication,
@@ -13,6 +11,15 @@ from PyQt5.QtWidgets import (
     QMenu,
     QSystemTrayIcon,
 )
+
+from chat import Chat
+from db import ClipboardMonitor, Database
+from flaskapi import FlaskAPI
+from pc import Client
+from serve import Serve
+from server import Server
+from socket_client import SocketClient
+from ui import Ui_MainWindow
 
 
 def resource_path(relative_path):
@@ -30,15 +37,6 @@ def load_ico(file_name):
     else:
         return file_path
 
-
-from chat import Chat
-from db import ClipboardMonitor, Database
-from flaskapi import FlaskAPI
-from pc import Client
-from serve import Serve
-from server import Server
-from socket_client import SocketClient
-from ui import Ui_MainWindow
 
 os.environ["QT_QPA_PLATFORM"] = "xcb"
 
@@ -208,7 +206,7 @@ class MainWindow(QMainWindow):
                 }
                 TabBar::tab {
                     height: 32px;
-                    width: 158px; 
+                    width: 158px;
                     background-color: #424242;
                 }
                 QTabBar::tab:selected {

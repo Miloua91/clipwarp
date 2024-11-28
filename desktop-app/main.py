@@ -70,14 +70,19 @@ class MainWindow(QMainWindow):
 
     def restart_api(self):
         if self.monitor.running():
-            self.monitor_clips()
-        else:
-            self.monitor_thread.quit()
-            self.monitor_thread.wait()
-        self.socket.stop()
-        self.api.stop()
-        self.thread.quit()
-        self.thread.wait(5000)  # Wait up to 5 seconds
+            if not self.monitor_thread.isRunning():
+                self.monitor_clips()
+        elif not self.monitor.running():
+            if self.monitor_thread.isRunning():
+                self.monitor_thread.quit()
+                self.monitor_thread.wait()
+        if hasattr(self, "socket"):
+            self.socket.stop()
+        if hasattr(self, "api"):
+            self.api.stop()
+        if hasattr(self, "thread"):
+            self.thread.quit()
+            self.thread.wait(5000)  # Wait up to 5 seconds
         self.socket_client()
         self.start_api()
 

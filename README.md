@@ -82,15 +82,38 @@ git clone https://github.com/Miloua91/clipwarp.git
    cd clipwarp/desktop-app
    ```
 
-2. Create a virtual environment:
-   ```sh
-   python -m venv env .
-   ```
 
-3. Activate the virtual environment:
-   ```sh
-   source env/bin/activate
-   ```
+2. Create a Python Virtual Environment:
+
+   - Using [virtualenv](https://pypi.org/project/virtualenv/):
+
+     _Note_: Check how to install virtualenv on your system here [link](https://learnpython.com/blog/how-to-use-virtualenv-python/).
+
+     ```bash
+     virtualenv env
+     ```
+
+   **OR**
+
+   - Create a Python Virtual Environment:
+
+     ```bash
+     python -m venv env
+     ```
+
+3. Activate the Virtual Environment.
+
+   - On Windows.
+
+     ```bash
+     env\Scripts\activate
+     ```
+
+   - On macOS and Linux.
+
+     ```bash
+     source env/bin/activate
+     ```
 
 4. Install the required Python packages:
    ```sh
@@ -104,13 +127,17 @@ git clone https://github.com/Miloua91/clipwarp.git
 
 #### Build the Desktop App with PyInstaller
 
-1. Build the app:
-   ```sh
-   pyinstaller main.spec
-   ```
+1. With [PyInstaller](https://pypi.org/project/pyinstaller/): build the app on desktop
 
-2. Launch the app:
-   ```sh
+     _Note_: Check how to use PyInstaller on your system here [link](https://pyinstaller.org/en/v4.1/usage.html).
+
+     ```
+     pyinstaller main.spec
+     ```
+
+2. Launch the app
+
+   ```
    ./dist/ClipWarp
    ```
 

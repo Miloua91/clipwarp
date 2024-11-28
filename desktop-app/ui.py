@@ -506,7 +506,7 @@ class Ui_MainWindow(QObject):
 
         new_window.setLayout(layout)
         self.load_settings()
-        new_window.setFixedSize(200, 250)
+        new_window.setFixedSize(200, 240)
         new_window.exec_()
 
     def monitor(self):

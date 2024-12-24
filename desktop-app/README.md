@@ -60,6 +60,8 @@ Lunch the app
 python main.py
 ```
 
+Currently the project is being developed using Python 3.
+
 ##### Build the desktop app
 
    - With [PyInstaller](https://pypi.org/project/pyinstaller/): build the app on desktop

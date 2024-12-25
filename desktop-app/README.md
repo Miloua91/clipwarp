@@ -60,7 +60,7 @@ Lunch the app
 python main.py
 ```
 
-Currently the project is being developed using Python 3.
+Currently the project is being developed using Python 3.13
 
 ##### Build the desktop app
 

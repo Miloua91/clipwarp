@@ -125,6 +125,8 @@ git clone https://github.com/Miloua91/clipwarp.git
    python main.py
    ```
 
+Currently the project is being developed using Python 3.13
+
 #### Build the Desktop App with PyInstaller
 
 1. With [PyInstaller](https://pypi.org/project/pyinstaller/): build the app on desktop

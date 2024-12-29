@@ -1,7 +1,7 @@
 ## Web app
 
 <div align='center'>
-   <img alt='ClipWarp' src='http://mokhincode.com/webApp.png'/>
+   <img alt='ClipWarp' src='http://miloua.com/webApp.png'/>
 </div>
 
 Clone the repo to your machine

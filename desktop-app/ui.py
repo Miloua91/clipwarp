@@ -216,7 +216,7 @@ class Ui_MainWindow(QObject):
                 clip_text = clip["clips_text"]
                 username = clip["user_name"]
                 date = clip["date"]
-                max_pixel_width = 340
+                max_pixel_width = 320
                 font = list_widget.font()
                 clip_text = self.truncate_text_to_width(
                     clip_text, font, max_pixel_width
@@ -269,6 +269,29 @@ class Ui_MainWindow(QObject):
                 copy_icon = QIcon(load_svg("copy.svg"))
                 copy_button.setIcon(copy_icon)
                 copy_button.clicked.connect(
+                    lambda _, text=clip["clips_text"]: self.copy_clip(text)
+                )
+
+                edit_button = QPushButton("")
+                edit_button.setStyleSheet(
+                    """
+                    QPushButton {
+                        border: none;
+                        background-color: transparent;
+                    }
+                    QPushButton:hover {
+                        background-color: #cdb4db;
+                        border-radius: 4px;
+                    }
+                    QPushButton:pressed {
+                        background-color: #333;
+                    }
+                    """
+                )
+                edit_button.setFixedSize(24, 24)
+                edit_icon = QIcon(load_svg("edit.svg"))
+                edit_button.setIcon(edit_icon)
+                edit_button.clicked.connect(
                     lambda _, text=clip["clips_text"]: self.copy_clip(text)
                 )
 
@@ -326,6 +349,7 @@ class Ui_MainWindow(QObject):
                 button_layout.addWidget(date_label)
                 if self.tabWidget.count() > 0:
                     button_layout.addWidget(url_button)
+                button_layout.addWidget(edit_button)
                 button_layout.addWidget(copy_button)
                 button_layout.addWidget(delete_button)
                 button_layout.setAlignment(Qt.AlignRight)

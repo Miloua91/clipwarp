@@ -98,7 +98,7 @@ git clone https://github.com/Miloua91/clipwarp.git
    - Create a Python Virtual Environment:
 
      ```bash
-     python -m venv env
+     python -m venv env .
      ```
 
 3. Activate the Virtual Environment.

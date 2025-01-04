@@ -31,7 +31,7 @@ Create a Python Virtual Environment:
    - Create a Python Virtual Environment:
 
      ```bash
-     python -m venv env
+     python -m venv env .
      ```
 
 Activate the Virtual Environment.

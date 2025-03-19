@@ -16,7 +16,9 @@
       "icon": "./assets/notifIcon.png",
       "color": "#000000"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mokhincode.ClipWarp"
@@ -33,7 +35,9 @@
       "favicon": "./assets/icon.png"
     },
     "plugins": [
-      ["expo-asset"],
+      [
+        "expo-asset"
+      ],
       [
         "expo-build-properties",
         {
@@ -52,7 +56,8 @@
       ],
       "expo-font",
       "expo-share-intent",
-      "expo-localization"
+      "expo-localization",
+      "expo-sqlite"
     ],
     "extra": {
       "eas": {
